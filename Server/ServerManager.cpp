@@ -1,10 +1,12 @@
 #include "ServerManager.hpp"
 
 ServerManager::ServerManager() {
-	std::cout << MAGENTA << "\tServersManager default constructor called" << RESET << std::endl;
 
-	// initConfig();
-	// initServers();
+	FD_ZERO(&_recv_fd_pool);
+	// FD_ZERO(&_send_fd_pool);
+	_max_fd = 0;
+
+	std::cout << MAGENTA << "\tServersManager default constructor called" << RESET << std::endl;
 
 	// DEBUG PRINT SERVERS DATA
 	_server.printServerData();
@@ -17,15 +19,10 @@ ServerManager::~ServerManager() {
 	std::cout << RED << "\tServersManager destructor called" << RESET << std::endl;
 }
 
-void	ServerManager::_initFdSets() {
+void	ServerManager::_fcntl() {
 
-	FD_ZERO(&_recv_fd_pool);
-	FD_ZERO(&_send_fd_pool);
 	int	fcntl_ret = 0;
-	int	serverFd = 0;
-	_max_fd = 0;
-
-	serverFd = _server.getServerFd();
+	int	serverFd = _server.getServerFd();
 
 	fcntl_ret = fcntl(serverFd, F_SETFL, O_NONBLOCK);
 	checkErrorAndExit(fcntl_ret, "fcntl() failed. Exiting..");
@@ -57,9 +54,9 @@ void	ServerManager::_closeConnection(int fd) {
 	if (FD_ISSET(fd, &_recv_fd_pool)) {
 		_removeFromSet(fd, &_recv_fd_pool);
 	}
-	if (FD_ISSET(fd, &_send_fd_pool)) {
-		_removeFromSet(fd, &_send_fd_pool);
-	}
+	// if (FD_ISSET(fd, &_send_fd_pool)) {
+	// 	_removeFromSet(fd, &_send_fd_pool);
+	// }
 	close(fd);
 	clientsMap.erase(fd);
 }
@@ -86,17 +83,14 @@ void	ServerManager::checkErrorAndExit(int returnValue, const std::string& msg) {
 void	ServerManager::run() {
 
 	fd_set	recv_fd_pool_copy;
-	fd_set	send_fd_pool_copy;
 	int		select_ret = 0;
 
-	_initFdSets();
+	_fcntl();
 
 	while (true) {
 
 		recv_fd_pool_copy = _recv_fd_pool;
-		// send_fd_pool_copy = _send_fd_pool;
 
-		// select_ret = select(_max_fd + 1, &recv_fd_pool_copy, &send_fd_pool_copy, NULL, NULL);
 		select_ret = select(_max_fd + 1, &recv_fd_pool_copy, NULL, NULL, NULL);
 		checkErrorAndExit(select_ret, "select() failed. Exiting..");
 
@@ -104,56 +98,56 @@ void	ServerManager::run() {
 
 			if (FD_ISSET(fd, &recv_fd_pool_copy) && !isClient(fd)) {
 
-				_accept(fd);
+				_accept();
 			}
 			else if (FD_ISSET(fd, &recv_fd_pool_copy) && isClient(fd)) {
 
 				_handle(fd);
 			}
-			else if (FD_ISSET(fd, &send_fd_pool_copy)) {
-
-				_respond(fd);
-			}
+			// else if (FD_ISSET(fd, &send_fd_pool_copy)) {
+			// 	_respond(fd);
+			// }
 		}
 
 		// check for timeout ?!
 	}
 }
 
-// void	ServerManager::_accept(int fd) {
 void	ServerManager::_accept() {
 
 	struct sockaddr_in	address;
 	socklen_t			address_len = sizeof(address);
-	int					fcntl_ret = 0;
 	int					serverFd = _server.getServerFd();
+	int					return_value = 0;
+	int					clientFd = 0;
 
-	fd = accept(serverFd, (struct sockaddr *)&address, (socklen_t *)&address_len);
-	if (fd == -1) {
+	clientFd = accept(serverFd, (struct sockaddr *)&address, (socklen_t *)&address_len);
+	if (clientFd == -1) {
 		std::cerr << RED << "\t[-] Error accepting connection.. accept() failed..";
-		std::cerr << " serverFd: [" << serverFd << "], fd:[" << fd << "]" << std::endl;
+		std::cerr << " serverFd: [" << serverFd << "], clientFd:[" << clientFd << "]" << std::endl;
 		std::cerr << RESET << std::endl;
 		return ;
 	}
 
-	std::cout << timeStamp() << GREEN << "[+] New connection to [" << _server.getServerName() << "] fd:[" << serverFd << "], client fd:[" << fd << "], IP:[" << inet_ntoa(address.sin_addr) << "]" << RESET << std::endl;
+	std::cout << timeStamp() << GREEN << "[+] New connection to [" << _server.getServerName() << "] fd:[" << serverFd << "], client fd:[" << clientFd << "], IP:[" << inet_ntoa(address.sin_addr) << "]" << RESET << std::endl;
 
-	_addToSet(fd, &_recv_fd_pool);
+	_addToSet(clientFd, &_recv_fd_pool);
 
-	fcntl_ret = fcntl(fd, F_SETFL, O_NONBLOCK);
-	if (fcntl_ret == -1) {
+	return_value = fcntl(clientFd, F_SETFL, O_NONBLOCK);
+	if (return_value == -1) {
 		std::cerr << RED << "\t[-] Error setting socket to non-blocking mode.. fcntl() failed." << RESET << std::endl;
-		_closeConnection(fd);
+		_closeConnection(clientFd);
 		return ;
 	}
 
-	t_buffer buff;
+	int	enable = 1;
+	return_value = setsockopt(clientFd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable));
+	checkErrorAndExit(return_value, "\t[-] Error setting socket options.. setsockopt() failed.");
 
-	buff.serverFd = serverFd;
-	buff.requestBuffer = "";
-	buff.responseBuffer = "";
+	// Add the new client to the clientsMap
+	addClient(clientFd, address);
 
-	clientsMap.insert(std::make_pair(fd, buff));
+	log(clientFd);
 }
 
 void	ServerManager::_handle(int fd) {
@@ -177,21 +171,19 @@ void	ServerManager::_handle(int fd) {
 		return ;
 	}
 
-	clientsMap[fd].requestBuffer.append(buffer, bytes_read);
+	// clientsMap[fd].requestBuffer.append(buffer, bytes_read);
+	clientsMap[fd].clientMessageBuffer = std::string(buffer, bytes_read);
 
-	std::cout << CYAN << "[*] Request received from client fd:[" << fd << "]" << RESET << std::endl;
+	std::cout << CYAN << "[*] received from client fd[" << fd << "]: " << RESET;
+	std::cout << clientsMap[fd].clientMessageBuffer;
 
-	// HttpRequest 	httpRequest(clientsMap[fd].requestBuffer);
-
-	// HttpResponse	response(&httpRequest);
-	// clientsMap[fd].responseBuffer = response.getResponse();
-
-	// might need to check if the body is not empty and handle CGI and other stuff
-
-	_removeFromSet(fd, &_recv_fd_pool);
-	_addToSet(fd, &_send_fd_pool);
+	// _removeFromSet(fd, &_recv_fd_pool);
+	// _addToSet(fd, &_send_fd_pool);
 }
 
+/*
+** NOT SURE IF THIS FUNCTION IS NEEDED ?!
+**
 void	ServerManager::_respond(int fd) {
 
 	int		bytes_sent = 0;
@@ -206,23 +198,55 @@ void	ServerManager::_respond(int fd) {
 		_closeConnection(fd);
 		return ;
 	}
-	else if (bytes_sent < bytes_to_send) {
-		std::cout << YELLOW << "[!] Not all data has been sent to the client. " << RESET << std::endl;
-		clientsMap[fd].responseBuffer.erase(0, bytes_sent);
-		return ;
-	}
 	else {
 		std::cout << GREEN << "[+] Response sent to client fd:[" << fd << "]" << RESET << std::endl;
 	}
 
-	_removeFromSet(fd, &_send_fd_pool);
+	// _removeFromSet(fd, &_send_fd_pool);
 	_addToSet(fd, &_recv_fd_pool);
 
-	clientsMap[fd].requestBuffer.clear();
+	clientsMap[fd].clientMessageBuffer.clear();
 	clientsMap[fd].responseBuffer.clear();
 }
+*/
 
 bool	ServerManager::isClient(int fd) {
 
 	return clientsMap.count(fd) > 0;
+}
+
+void	ServerManager::addClient(int clientFd, struct sockaddr_in &address) {
+
+	t_client	buff;
+
+	char	*client_ip = inet_ntoa(address.sin_addr);
+	if (client_ip == NULL) {
+		std::cerr << RED << "\t[-] Error: inet_ntoa() failed." << RESET << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+	buff.port = address.sin_port;
+	buff.hostName = client_ip;
+	buff.nickName = "..default-test-NICK-NAME";
+	buff.userName = "..default-test-USER-NAME";
+	buff.realName = "..default-test-REAL-NAME";
+	buff.clientMessageBuffer = "..default-test-REQUEST";
+	buff.responseBuffer = "..default-test-RESPONSE";
+
+	clientsMap.insert(std::make_pair(clientFd, buff));
+}
+
+void	ServerManager::log(int clientFd) {
+
+	t_client &client = clientsMap[clientFd];
+
+	std::cout << timeStamp() << YELLOW << "[!] Logging client fd:[" << clientFd << "]" << RESET << std::endl;
+	std::cout << YELLOW << "\tport: " << client.port << RESET << std::endl;
+	std::cout << YELLOW << "\thostName: " << client.hostName << RESET << std::endl;
+	std::cout << YELLOW << "\tnickName: " << client.nickName << RESET << std::endl;
+	std::cout << YELLOW << "\tuserName: " << client.userName << RESET << std::endl;
+	std::cout << YELLOW << "\trealName: " << client.realName << RESET << std::endl;
+	std::cout << YELLOW << "\trequestBuffer: " << client.clientMessageBuffer << RESET << std::endl;
+	std::cout << YELLOW << "\tresponseBuffer: " << client.responseBuffer << RESET << std::endl;
+
 }

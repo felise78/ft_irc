@@ -1,5 +1,5 @@
 
-NAME = irsserv
+NAME = ircserv
 
 CXX = c++
 CXXFLAGS = -Wall -Werror -Wextra -std=c++98 -g
@@ -10,7 +10,7 @@ VPATH = Socket \
 SRCS = main.cpp \
 	SocketListen.cpp \
 	Server.cpp \
-#	ServerManager.cpp
+	ServerManager.cpp
 
 OBJS = $(SRCS:.cpp=.o)
 

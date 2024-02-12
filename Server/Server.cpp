@@ -6,6 +6,9 @@ Server::Server() :
 	_serverPassword(SERVER_PASSWORD) {
 
 	std::cout << MAGENTA << "\tServer constructor called" << RESET << std::endl;
+
+	std::cout << YELLOW << "\tinitializing server socket.." << RESET << std::endl;
+	initServerSocket();
 }
 
 Server::~Server() {
