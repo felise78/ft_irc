@@ -3,7 +3,7 @@
 ServerManager::ServerManager() {
 
 	FD_ZERO(&_recv_fd_pool);
-	// FD_ZERO(&_send_fd_pool);
+	FD_ZERO(&_send_fd_pool);
 	_max_fd = 0;
 
 	std::cout << MAGENTA << "\tServersManager default constructor called" << RESET << std::endl;
@@ -11,6 +11,7 @@ ServerManager::ServerManager() {
 	// DEBUG PRINT SERVERS DATA
 	_server.printServerData();
 
+	// This will start the main loop of the server
 	run();
 }
 
@@ -54,9 +55,9 @@ void	ServerManager::_closeConnection(int fd) {
 	if (FD_ISSET(fd, &_recv_fd_pool)) {
 		_removeFromSet(fd, &_recv_fd_pool);
 	}
-	// if (FD_ISSET(fd, &_send_fd_pool)) {
-	// 	_removeFromSet(fd, &_send_fd_pool);
-	// }
+	if (FD_ISSET(fd, &_send_fd_pool)) {
+		_removeFromSet(fd, &_send_fd_pool);
+	}
 	close(fd);
 	clientsMap.erase(fd);
 }
@@ -83,8 +84,10 @@ void	ServerManager::checkErrorAndExit(int returnValue, const std::string& msg) {
 void	ServerManager::run() {
 
 	fd_set	recv_fd_pool_copy;
+	fd_set	send_fd_pool_copy;
 	int		select_ret = 0;
 
+	// This will set the server socket fd to non-blocking mode and add it to the recv_fd_pool
 	_fcntl();
 
 	while (true) {
@@ -96,17 +99,17 @@ void	ServerManager::run() {
 
 		for (int fd = 3; fd <= _max_fd; fd++) {
 
-			if (FD_ISSET(fd, &recv_fd_pool_copy) && !isClient(fd)) {
+			if (fd == _server.getServerFd()) {
 
 				_accept();
 			}
-			else if (FD_ISSET(fd, &recv_fd_pool_copy) && isClient(fd)) {
+			else if (FD_ISSET(fd, &recv_fd_pool_copy)) {
 
 				_handle(fd);
 			}
-			// else if (FD_ISSET(fd, &send_fd_pool_copy)) {
-			// 	_respond(fd);
-			// }
+			else if (FD_ISSET(fd, &send_fd_pool_copy)) {
+				_respond(fd);
+			}
 		}
 
 		// check for timeout ?!
@@ -133,7 +136,9 @@ void	ServerManager::_accept() {
 
 	_addToSet(clientFd, &_recv_fd_pool);
 
+	// This will set the client socket fd to non-blocking mode (needed for select(), read(), recv(), write(), send()..)
 	return_value = fcntl(clientFd, F_SETFL, O_NONBLOCK);
+
 	if (return_value == -1) {
 		std::cerr << RED << "\t[-] Error setting socket to non-blocking mode.. fcntl() failed." << RESET << std::endl;
 		_closeConnection(clientFd);
@@ -150,6 +155,9 @@ void	ServerManager::_accept() {
 	log(clientFd);
 }
 
+/*
+** This is handling the requests from the irc client side
+*/
 void	ServerManager::_handle(int fd) {
 
 	char	buffer[BUF_SIZE] = {0};
@@ -177,13 +185,13 @@ void	ServerManager::_handle(int fd) {
 	std::cout << CYAN << "[*] received from client fd[" << fd << "]: " << RESET;
 	std::cout << clientsMap[fd].clientMessageBuffer;
 
-	// _removeFromSet(fd, &_recv_fd_pool);
-	// _addToSet(fd, &_send_fd_pool);
+	_removeFromSet(fd, &_recv_fd_pool);
+	_addToSet(fd, &_send_fd_pool);
 }
 
 /*
-** NOT SURE IF THIS FUNCTION IS NEEDED ?!
-**
+** The following function is handling the responses logic from server to the irc client
+*/
 void	ServerManager::_respond(int fd) {
 
 	int		bytes_sent = 0;
@@ -202,17 +210,11 @@ void	ServerManager::_respond(int fd) {
 		std::cout << GREEN << "[+] Response sent to client fd:[" << fd << "]" << RESET << std::endl;
 	}
 
-	// _removeFromSet(fd, &_send_fd_pool);
+	_removeFromSet(fd, &_send_fd_pool);
 	_addToSet(fd, &_recv_fd_pool);
 
 	clientsMap[fd].clientMessageBuffer.clear();
 	clientsMap[fd].responseBuffer.clear();
-}
-*/
-
-bool	ServerManager::isClient(int fd) {
-
-	return clientsMap.count(fd) > 0;
 }
 
 void	ServerManager::addClient(int clientFd, struct sockaddr_in &address) {

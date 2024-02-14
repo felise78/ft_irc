@@ -33,7 +33,7 @@ class ServerManager {
 		Server						_server;
 
 		fd_set						_recv_fd_pool; // To store the socket FDs of the clients
-		// fd_set						_send_fd_pool; // To store the socket FDs of the clients
+		fd_set						_send_fd_pool; // To store the socket FDs of the clients
 		int							_max_fd; // To store the max socket FD
 
 		void						_fcntl();
@@ -57,7 +57,6 @@ class ServerManager {
 		std::string					timeStamp();
 		void						checkErrorAndExit(int returnValue, const std::string& msg);
 		void						run();
-		bool						isClient(int fd);
 
 		void						addClient(int clientFd, struct sockaddr_in &address);
 		void						log(int clientFd);

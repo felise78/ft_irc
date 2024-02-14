@@ -8,7 +8,6 @@ VPATH = Socket \
 		Server
 
 SRCS = main.cpp \
-	SocketListen.cpp \
 	Server.cpp \
 	ServerManager.cpp
 
