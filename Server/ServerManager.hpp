@@ -21,7 +21,7 @@ typedef struct s_client {
 	std::string		hostName;
 	std::string		nickName;
 	std::string		userName;
-	std::string		realName;
+	std::string		password;
 	std::string		clientMessageBuffer;
 	std::string		responseBuffer; // not sure if this is needed
 
@@ -60,6 +60,10 @@ class ServerManager {
 
 		void						addClient(int clientFd, struct sockaddr_in &address);
 		void						log(int clientFd);
+		bool						isClient(int fd);
+
+		// TESTING
+		// void						composeResponse(int fd);
 
 };
 
