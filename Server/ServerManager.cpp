@@ -33,7 +33,7 @@ void	ServerManager::_fcntl() {
 
 	_addToSet(serverFd, &_recv_fd_pool);
 
-	_max_fd = serverFd;
+	_max_fd = serverFd; // isn't this handled in addToSet?
 }
 
 void	ServerManager::_addToSet(int fd, fd_set *set) {
@@ -175,7 +175,6 @@ void	ServerManager::_handle(int fd) {
 	int		bytes_read = 0;
 
 	bytes_read = read(fd, buffer, BUF_SIZE);
-
 	std::cout << timeStamp();
 
 	if (bytes_read == 0) {
