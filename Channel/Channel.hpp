@@ -13,6 +13,7 @@
 			std::string						_theme; // presentation du sujet du channel / regles
 			std::string						_key; // channel password
 			std::map<std::string, User> 	_users;
+			User&							_operator;
 			int								_limit;
 
 		public :
