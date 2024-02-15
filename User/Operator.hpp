@@ -6,12 +6,14 @@
 	class Operator : public User 
 	{
 		private:
-		void	kick(const User& user, const Channel& channel);
-		void	invite(const User& user, const Channel& channel);
-		void	topic(const Channel& channel);
+		void	_kick(User& user, Channel& channel);
+		void	_invite(User& user, Channel& channel);
+		void	_topic(Channel& channel, const Operator& op);
+		void	_mode(const std::string& flag, Channel& channel, Operator& op);
+		bool	_canModifyTopic;
 
 		public : 
-		Operator(std::string & nickname, std::string & username, std::string & password);
+		Operator(const std::string & nickname, const std::string & username);
 		~Operator();
 	};
 
@@ -28,5 +30,9 @@
 	// 	— k : Définir/supprimer la clé du canal (mot de passe)
 	// 	— o : Donner/retirer le privilège de l’opérateur de canal
 	// 	— l : Définir/supprimer la limite d’utilisateurs pour le canal
+
+
+	// Les opérateurs du canal sont généralement désignés par un symbole "@" 
+	// devant leur nom d'utilisateur dans la liste des utilisateurs du canal.
 
 #endif

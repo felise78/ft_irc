@@ -3,7 +3,7 @@
 
 	#include <string>
 	#include <map>
-	#include "../Channel/Channel.hpp"
+	class Channel;
 
 	class User {
 
@@ -16,9 +16,9 @@
 		std::map<std::string, Channel>	_channels;
 
 		public :
-
-		User(const std::string & nickname, const std::string & username, const std::string & password);
-		~User();
+		User(const std::string & nickname, const std::string & username);
+		//User(const std::string & nickname, const std::string & username, const std::string & password);
+		virtual ~User();
 		void	setSocket(const int & socket);
 		void 	setNickname(const std::string & nickname);
 		void 	setUsername(const std::string & username);
