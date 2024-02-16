@@ -15,12 +15,14 @@
 			std::string						_theme; 	// theme and/or rules of channel
 			std::string						_key; 		// channel password
 			std::map<std::string, User*> 	_users;
+			
 			int								_limit; 	// max number of users
 			bool							_invit; 	// channel requests invit or not
 
 		public :
 			Channel(const std::string& name);
 			~Channel();
+			// setters and getters
 			void	setName(const std::string & name);
 			void	setTheme(const std::string & theme);
 			void	setKey(const std::string & key);
@@ -34,6 +36,9 @@
 			const std::map<std::string, User*>& getUsers( void ) const;
 			const int& getLimit( void ) const;
 			const bool& getInvit( void ) const;
+
+			void	removeUser(User& user);
+			void	printUsers( void ) const; // for debug
 	};
 
 #endif

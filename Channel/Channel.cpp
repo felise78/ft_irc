@@ -91,3 +91,25 @@ const bool& 	Channel::getInvit( void ) const
 {
 	return _invit;
 }
+
+// other member functions
+
+void	Channel::removeUser(User& user)
+{
+	 auto it = _users.find(user.getUsername()); // Recherche l'utilisateur dans la map
+        if (it != _users.end())
+		{ // Si l'utilisateur est trouvé
+           // delete it->second; // Supprime l'utilisateur de la mémoire heap
+            _users.erase(it);
+		}
+}
+
+void	Channel::printUsers( void ) const
+{
+	std::map<std::string, User*>::iterator it;
+
+	for (it = _users.begin(); it !=_users.end(); ++it)
+	{
+		
+	}
+}
