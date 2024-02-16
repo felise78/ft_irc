@@ -1,40 +1,61 @@
 #include "Server.hpp"
 
 Server::Server() : 
-	_socket_fd(-1),
-	_port(PORT),
-	_serverName(SERVER_NAME),
-	_serverPassword(SERVER_PASSWORD) {
+	_socket_fd(-1) {
+	
+	// THIS MUST BE PARSED FROM MAIN argv
+	setPort(PORT);
+	setServerName(SERVER_NAME);
+	setServerPassword(SERVER_PASS);
 
-	std::cout << MAGENTA << "\tServer constructor called" << RESET << std::endl;
-
+	// std::cout << MAGENTA << "\tServer constructor called" << RESET << std::endl;
 	std::cout << YELLOW << "\tinitializing server socket [ listen ].." << RESET << std::endl;
-	initServerSocket();
+
+	initSocket();
+	connectToNetwork();
+	startListenToNetwork();
 }
 
 Server::~Server() {
-
-	std::cout << RED << "\tServer destructor called" << RESET << std::endl;
+	// std::cout << RED << "\tServer destructor called" << RESET << std::endl;
 
 	// This might leak when server is interrupted with ctrl+c. Need to handle this in signal handler
 	close(_socket_fd);
 }
 
-int		Server::getServerFd() const {
+/*
+** SETTERS
+*/
+void	Server::setPort(const int & port) {
+	_port = port;
+}
 
+void	Server::setServerName(const std::string & serverName) {
+	_serverName = serverName;
+}
+
+void	Server::setServerPassword(const std::string & serverPassword) {
+	_serverPassword = serverPassword;
+}
+
+/*
+** GETTERS
+*/
+int		Server::getServerFd() const {
 	return (_socket_fd);
 }
 
-std::string	Server::getServerName() const {
+int		Server::getPort() const {
+	return _port;
+}
 
+std::string const &	Server::getServerName() const {
 	return _serverName;
 }
 
-void	Server::initServerSocket() {
+bool Server::passwordVerified(std::string const & pass) const {
 
-	initSocket();
-	connectToNetwork();
-	startListenToNetwork(BACKLOG);
+	return (pass == _serverPassword);
 }
 
 void	Server::initSocket() {
@@ -73,9 +94,9 @@ void	Server::connectToNetwork() {
 	}
 }
 
-void	Server::startListenToNetwork(int backlog) {
+void	Server::startListenToNetwork() {
 
-	int	listenReturn = listen(_socket_fd, backlog);
+	int	listenReturn = listen(_socket_fd, BACKLOG);
 
 	if (listenReturn < 0) {
 		perror("In Server::startListenToNetwork()");
@@ -84,15 +105,14 @@ void	Server::startListenToNetwork(int backlog) {
 }
 
 /*
-** This function is for testing purposes only !!!
+** This function is for testing purposes
 ** PRINTS THE SERVER DATA
 */
 void	Server::printServerData() const {
 
 	std::cout << YELLOW << "[!] Server DATA:" << RESET << std::endl;
-	std::cout << YELLOW << "\tServer fd: " << getServerFd() << RESET << std::endl;
+	std::cout << YELLOW << "\tServer fd:   " << getServerFd() << RESET << std::endl;
 	std::cout << YELLOW << "\tServer port: " << _port << RESET << std::endl;
 	std::cout << YELLOW << "\tServer name: " << _serverName << RESET << std::endl;
-	std::cout << YELLOW << "\tServer password: " << _serverPassword << RESET << std::endl;
-
+	std::cout << YELLOW << "\tServer pass: " << _serverPassword << RESET << std::endl;
 }

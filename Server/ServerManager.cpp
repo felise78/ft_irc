@@ -1,12 +1,12 @@
 #include "ServerManager.hpp"
 
 ServerManager::ServerManager() {
+	// std::cout << MAGENTA << "\tServersManager default constructor called" << RESET << std::endl;
 
 	FD_ZERO(&_recv_fd_pool);
 	FD_ZERO(&_send_fd_pool);
-	_max_fd = 0;
-
-	std::cout << MAGENTA << "\tServersManager default constructor called" << RESET << std::endl;
+	_serverFd = _server.getServerFd();
+	_max_fd = _serverFd;
 
 	// DEBUG PRINT SERVERS DATA
 	_server.printServerData();
@@ -15,7 +15,7 @@ ServerManager::ServerManager() {
 	_fcntl();
 
 	// This will start the main loop of the server
-	run();
+	_run();
 }
 
 ServerManager::~ServerManager() {
@@ -23,68 +23,10 @@ ServerManager::~ServerManager() {
 	std::cout << RED << "\tServersManager destructor called" << RESET << std::endl;
 }
 
-void	ServerManager::_fcntl() {
-
-	int	fcntl_ret = 0;
-	int	serverFd = _server.getServerFd();
-
-	fcntl_ret = fcntl(serverFd, F_SETFL, O_NONBLOCK);
-	checkErrorAndExit(fcntl_ret, "fcntl() failed. Exiting..");
-
-	_addToSet(serverFd, &_recv_fd_pool);
-
-	_max_fd = serverFd; // isn't this handled in addToSet?
-}
-
-void	ServerManager::_addToSet(int fd, fd_set *set) {
-
-	if (fd > _max_fd) {
-		_max_fd = fd;
-	}
-	FD_SET(fd, set);
-}
-
-void	ServerManager::_removeFromSet(int fd, fd_set *set) {
-
-	if (fd == _max_fd) {
-		_max_fd--;
-	}
-	FD_CLR(fd, set);
-}
-
-void	ServerManager::_closeConnection(int fd) {
-	std::cout << timeStamp() << YELLOW << "[!] Closing connection with fd:[" << fd << "]." << RESET << std::endl;
-
-	if (FD_ISSET(fd, &_recv_fd_pool)) {
-		_removeFromSet(fd, &_recv_fd_pool);
-	}
-	if (FD_ISSET(fd, &_send_fd_pool)) {
-		_removeFromSet(fd, &_send_fd_pool);
-	}
-	close(fd);
-	clientsMap.erase(fd);
-}
-
-std::string	ServerManager::timeStamp() {
-
-	std::time_t currentTime = std::time(NULL);
-    std::tm* now = std::localtime(&currentTime);
-    char buffer[64];
-    std::strftime(buffer, sizeof(buffer), "[%d/%m/%Y %H:%M:%S]", now);
-
-	return std::string(buffer);
-}
-
-void	ServerManager::checkErrorAndExit(int returnValue, const std::string& msg) {
-
-	if (returnValue == -1) {
-
-		std::cerr << RED << "\t[-]" << msg << RESET << std::endl;
-		exit(EXIT_FAILURE);
-	}
-}
-
-void	ServerManager::run() {
+/*
+** Main loop of the server is here (accepting new connections, handling requests, responding to clients..)
+*/
+void	ServerManager::_run() {
 
 	fd_set	recv_fd_pool_copy;
 	fd_set	send_fd_pool_copy;
@@ -103,7 +45,7 @@ void	ServerManager::run() {
 
 			if (FD_ISSET(fd, &recv_fd_pool_copy) && fd == _server.getServerFd()) {
 
-				_accept();
+				_accept(fd);
 			}
 			if (FD_ISSET(fd, &recv_fd_pool_copy) && isClient(fd)) {
 
@@ -124,29 +66,26 @@ void	ServerManager::run() {
 ** we call `accept()` to accept the new connection to the server.
 ** We also add the new client's fd to the recv_fd_pool to be handled later. 
 */
-void	ServerManager::_accept() {
+void	ServerManager::_accept(int clientFd) {
 
 	struct sockaddr_in	address;
 	socklen_t			address_len = sizeof(address);
-	int					serverFd = _server.getServerFd();
-	int					return_value = 0;
-	int					clientFd = 0;
 
-	clientFd = accept(serverFd, (struct sockaddr *)&address, (socklen_t *)&address_len);
+	clientFd = accept(_serverFd, (struct sockaddr *)&address, (socklen_t *)&address_len);
 
 	if (clientFd == -1) {
 		std::cerr << RED << "\t[-] Error accepting connection.. accept() failed..";
-		std::cerr << " serverFd: [" << serverFd << "], clientFd:[" << clientFd << "]" << std::endl;
+		std::cerr << " serverFd: [" << _serverFd << "], clientFd:[" << clientFd << "]" << std::endl;
 		std::cerr << RESET << std::endl;
 		return ;
 	}
 
-	std::cout << timeStamp() << GREEN << "[+] New connection to [" << _server.getServerName() << "] fd:[" << serverFd << "], client fd:[" << clientFd << "], IP:[" << inet_ntoa(address.sin_addr) << "]" << RESET << std::endl;
+	std::cout << timeStamp() << GREEN << "[+] New connection to [" << _server.getServerName() << "] fd:[" << _serverFd << "], client fd:[" << clientFd << "], IP:[" << inet_ntoa(address.sin_addr) << "]" << RESET << std::endl;
 
 	_addToSet(clientFd, &_recv_fd_pool);
 
 	// This will set the client socket fd to non-blocking mode (needed for select(), read(), recv(), write(), send()..)
-	return_value = fcntl(clientFd, F_SETFL, O_NONBLOCK);
+	int return_value = fcntl(clientFd, F_SETFL, O_NONBLOCK);
 
 	if (return_value == -1) {
 		std::cerr << RED << "\t[-] Error setting socket to non-blocking mode.. fcntl() failed." << RESET << std::endl;
@@ -158,8 +97,8 @@ void	ServerManager::_accept() {
 	return_value = setsockopt(clientFd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable));
 	checkErrorAndExit(return_value, "\t[-] Error setting socket options.. setsockopt() failed.");
 
-	// Add the new client to the clientsMap
-	addClient(clientFd, address);
+	// Initializing the new client and adding its class instance to the clientsMap
+	initClient(clientFd, address);
 
 	log(clientFd);
 }
@@ -195,7 +134,8 @@ void	ServerManager::_handle(int fd) {
 	/* DEBUG */
 	// At this point received data can be parsed and added to client's class (NAME, NICK, PASS etc..)
 	std::cout << CYAN << "[*] received from client fd[" << fd << "]: " << RESET << std::endl;
-	std::cout << MAGENTA << clientsMap[fd].clientMessageBuffer << RESET << std::endl;
+	std::cout << MAGENTA << clientsMap[fd].clientMessageBuffer << RESET;
+	std::cout << CYAN << "parsing..." << RESET << std::endl;
 	/* ***** */
 
 	_removeFromSet(fd, &_recv_fd_pool);
@@ -244,9 +184,58 @@ void	ServerManager::_respond(int fd) {
 	clientsMap[fd].responseBuffer.clear();
 }
 
-void	ServerManager::addClient(int clientFd, struct sockaddr_in &address) {
 
-	t_client	buff;
+/*
+** This function sets the server's socket fd to non-blocking mode
+*/
+void	ServerManager::_fcntl() {
+
+	int	fcntl_ret = 0;
+
+	fcntl_ret = fcntl(_serverFd, F_SETFL, O_NONBLOCK);
+	checkErrorAndExit(fcntl_ret, "fcntl() failed. Exiting..");
+
+	_addToSet(_serverFd, &_recv_fd_pool);
+}
+
+// Adds file descriptor to a set
+void	ServerManager::_addToSet(int fd, fd_set *set) {
+
+	if (fd > _max_fd) {
+		_max_fd = fd;
+	}
+	FD_SET(fd, set);
+}
+
+void	ServerManager::_removeFromSet(int fd, fd_set *set) {
+
+	if (fd == _max_fd) {
+		_max_fd--;
+	}
+	FD_CLR(fd, set);
+}
+
+void	ServerManager::_closeConnection(int fd) {
+	std::cout << timeStamp() << YELLOW << "[!] Closing connection with fd:[" << fd << "]." << RESET << std::endl;
+
+	if (FD_ISSET(fd, &_recv_fd_pool)) {
+		_removeFromSet(fd, &_recv_fd_pool);
+	}
+	if (FD_ISSET(fd, &_send_fd_pool)) {
+		_removeFromSet(fd, &_send_fd_pool);
+	}
+	close(fd);
+	clientsMap.erase(fd);
+}
+
+/*
+** This function will initialize an instance of a user
+** as well as add its to the clientsMap !!
+** 
+*/
+void	ServerManager::initClient(int clientFd, struct sockaddr_in &address) {
+
+	Client	newClient;
 
 	char	*client_ip = inet_ntoa(address.sin_addr);
 	if (client_ip == NULL) {
@@ -254,29 +243,56 @@ void	ServerManager::addClient(int clientFd, struct sockaddr_in &address) {
 		exit(EXIT_FAILURE);
 	}
 
-	buff.port = address.sin_port;
-	buff.hostName = client_ip;
-	buff.nickName = "";
-	buff.userName = "";
-	buff.password = "";
-	buff.clientMessageBuffer = "";
-	buff.responseBuffer = "";
+	int	port = ntohs(address.sin_port);
+	newClient.setPort(port);
 
-	clientsMap.insert(std::make_pair(clientFd, buff));
+	newClient.setSocket(clientFd);
+	newClient.setHostName(client_ip);
+
+	// newClient.setHostName("must be parsed from the client's request: `clientMessageBuffer`");
+	// newClient.setUserName("must be parsed from the client's request: `clientMessageBuffer`");
+	// newClient.setPassword("must be parsed from the client's request: `clientMessageBuffer`");
+
+	clientsMap.insert(std::make_pair(clientFd, newClient));
+}
+
+
+
+
+/*
+** GENERAL HELPER FUNCTIONS
+*/
+std::string	ServerManager::timeStamp() {
+
+	std::time_t currentTime = std::time(NULL);
+    std::tm* now = std::localtime(&currentTime);
+    char buffer[64];
+    std::strftime(buffer, sizeof(buffer), "[%d/%m/%Y %H:%M:%S]", now);
+
+	return std::string(buffer);
+}
+
+void	ServerManager::checkErrorAndExit(int returnValue, const std::string& msg) {
+
+	if (returnValue == -1) {
+
+		std::cerr << RED << "\t[-]" << msg << RESET << std::endl;
+		exit(EXIT_FAILURE);
+	}
 }
 
 void	ServerManager::log(int clientFd) {
 
-	t_client &client = clientsMap[clientFd];
+	Client &client = clientsMap[clientFd];
 
-	std::cout << timeStamp() << YELLOW << "[!] Logging client fd:[" << clientFd << "]" << RESET << std::endl;
-	std::cout << YELLOW << "\tport: " << client.port << RESET << std::endl;
-	std::cout << YELLOW << "\thostName: " << client.hostName << RESET << std::endl;
-	std::cout << YELLOW << "\tnickName: " << client.nickName << RESET << std::endl;
-	std::cout << YELLOW << "\tuserName: " << client.userName << RESET << std::endl;
-	std::cout << YELLOW << "\tpassword: " << client.password << RESET << std::endl;
-	std::cout << YELLOW << "\trequestBuffer: " << client.clientMessageBuffer << RESET << std::endl;
-	std::cout << YELLOW << "\tresponseBuffer: " << client.responseBuffer << RESET << std::endl;
+	std::cout << timeStamp() << YELLOW << "[!] Logging client fd:[" << client.getSocket() << "]" << RESET << std::endl;
+	std::cout << YELLOW << "\tport: " << client.getPort() << RESET << std::endl;
+	std::cout << YELLOW << "\thostName: " << client.getHostName() << RESET << std::endl;
+	// std::cout << YELLOW << "\tnickName: " << client.getNickName() << RESET << std::endl;
+	// std::cout << YELLOW << "\tuserName: " << client.getUserName() << RESET << std::endl;
+	// std::cout << YELLOW << "\tpassword: " << client.getPassword << RESET << std::endl;
+	// std::cout << YELLOW << "\trequestBuffer: " << client.clientMessageBuffer << RESET << std::endl;
+	// std::cout << YELLOW << "\tresponseBuffer: " << client.responseBuffer << RESET << std::endl;
 
 }
 
@@ -285,7 +301,3 @@ bool	ServerManager::isClient(int fd) {
 	// return (clientsMap.find(fd) != clientsMap.end())
 	return clientsMap.count(fd) > 0;
 }
-
-// void	ServerManager::composeResponse(int fd) {
-
-// }
