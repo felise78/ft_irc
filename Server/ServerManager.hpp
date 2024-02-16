@@ -2,6 +2,7 @@
 #define SERVERMANAGER_HPP
 
 #include "Server.hpp"
+#include "ClientRequest.hpp"
 
 #include <sys/types.h>  // for u_long
 #include <sys/select.h> // for fd_set
@@ -15,7 +16,6 @@
 #define BUF_SIZE	10240
 
 /*
-** This struct is to store the client's data
 ** This class here is for testing and easier further integration ..
 */
 class Client {
@@ -92,9 +92,6 @@ class ServerManager {
 		void						checkErrorAndExit(int returnValue, const std::string& msg);
 		void						log(int clientFd);
 		bool						isClient(int fd);
-
-		// TESTING
-		// void						composeResponse(int fd);
 
 };
 

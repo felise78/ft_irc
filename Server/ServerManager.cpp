@@ -19,8 +19,7 @@ ServerManager::ServerManager() {
 }
 
 ServerManager::~ServerManager() {
-
-	std::cout << RED << "\tServersManager destructor called" << RESET << std::endl;
+	// std::cout << RED << "\tServersManager destructor called" << RESET << std::endl;
 }
 
 /*
@@ -136,6 +135,9 @@ void	ServerManager::_handle(int fd) {
 	std::cout << CYAN << "[*] received from client fd[" << fd << "]: " << RESET << std::endl;
 	std::cout << MAGENTA << clientsMap[fd].clientMessageBuffer << RESET;
 	std::cout << CYAN << "parsing..." << RESET << std::endl;
+
+	ClientRequest	clientRequest(clientsMap[fd].clientMessageBuffer);
+	clientRequest.printCommands();
 	/* ***** */
 
 	_removeFromSet(fd, &_recv_fd_pool);
@@ -255,8 +257,6 @@ void	ServerManager::initClient(int clientFd, struct sockaddr_in &address) {
 
 	clientsMap.insert(std::make_pair(clientFd, newClient));
 }
-
-
 
 
 /*
