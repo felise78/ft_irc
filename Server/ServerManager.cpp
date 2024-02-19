@@ -96,8 +96,8 @@ void	ServerManager::_accept(int clientFd) {
 	return_value = setsockopt(clientFd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable));
 	checkErrorAndExit(return_value, "\t[-] Error setting socket options.. setsockopt() failed.");
 
-	// Initializing the new client and adding its class instance to the clientsMap
-	initClient(clientFd, address);
+	// Initializing the new User and adding its class instance to the UsersMap
+	initUser(clientFd, address);
 
 	log(clientFd);
 }
@@ -127,21 +127,31 @@ void	ServerManager::_handle(int fd) {
 		return ;
 	}
 
-	// clientsMap[fd].requestBuffer.append(buffer, bytes_read);
-	clientsMap[fd].clientMessageBuffer = std::string(buffer, bytes_read);
+	// UsersMap[fd].requestBuffer.append(buffer, bytes_read);
+	usersMap[fd].userMessageBuffer = std::string(buffer, bytes_read);
 
 	/* DEBUG */
-	// At this point received data can be parsed and added to client's class (NAME, NICK, PASS etc..)
+	// At this point received data can be parsed and added to User's class (NAME, NICK, PASS etc..)
 	std::cout << CYAN << "[*] received from client fd[" << fd << "]: " << RESET << std::endl;
-	std::cout << MAGENTA << clientsMap[fd].clientMessageBuffer << RESET;
+	std::cout << MAGENTA << usersMap[fd].userMessageBuffer << RESET;
 	std::cout << CYAN << "parsing..." << RESET << std::endl;
 
-	ClientRequest	clientRequest(clientsMap[fd].clientMessageBuffer);
-	clientRequest.printCommands();
+	User &user = usersMap[fd];
+
+	// UserRequest	userRequest(user.userMessageBuffer);
+	UserRequest	userRequest(user);
+	userRequest.printCommands();
+
+	// We add the client's fd to the send_fd_pool once the client is authenticated (received NICK, USER, PASS..)
+	if (user.authenticated()) {
+
+		_removeFromSet(fd, &_recv_fd_pool);
+		_addToSet(fd, &_send_fd_pool);
+	}
 	/* ***** */
 
-	_removeFromSet(fd, &_recv_fd_pool);
-	_addToSet(fd, &_send_fd_pool);
+	// _removeFromSet(fd, &_recv_fd_pool);
+	// _addToSet(fd, &_send_fd_pool);
 }
 
 /*
@@ -150,40 +160,48 @@ void	ServerManager::_handle(int fd) {
 */
 void	ServerManager::_respond(int fd) {
 
+	User &user = usersMap[fd];
+
+	UserResponse	userResponse(user, _server);
+
 	/* DEBUG */
 	// According to the protocol the first response to the IRC client shall be 001 RPL_WELCOME, 002 RPL_YOURHOST, 003 RPL_CREATED, 004 RPL_MYINFO
-	// Once received data from the client is complete the status of the client can be changed to `READY` and the first response can be composed and sent
+	// Once received data from the client is complete the status of the User can be changed to `READY` and the first response can be composed and sent
 	// composeResponse(fd);	
 	/* ***** */
 
 	int		bytes_sent = 0;
-	int		bytes_to_send = clientsMap[fd].responseBuffer.length();
+	int		bytes_to_send = user.responseBuffer.length();
 
-	bytes_sent = send(fd, clientsMap[fd].responseBuffer.c_str(), bytes_to_send, 0);
+	bytes_sent = send(fd, user.responseBuffer.c_str(), bytes_to_send, 0);
 
 	std::cout << timeStamp();
 
 	if (bytes_sent == -1) {
-		std::cerr << RED << "[-] Error sending data to the client.. send() failed." << RESET << std::endl;
+		std::cerr << RED << "[-] Error sending data to the User.. send() failed." << RESET << std::endl;
 		_closeConnection(fd);
 		return ;
 	}
 	else {
 		std::cout << GREEN << "[+] Response sent to client fd:[" << fd << "]";
 		std::cout << ", bytes sent: [" << bytes_sent << "]" << RESET << std::endl;
+		std::cout << ". . . . . . . . . . . . . . . . . . . . . . . . . . . " << std::endl;
 	}
 
 	/* DEBUG */
 	// std::cout << CYAN;
-	// std::cout << clientsMap[fd].responseBuffer << std::endl;
+	// std::cout << UsersMap[fd].responseBuffer << std::endl;
 	// std::cout << RESET;
 	/* ***** */
 
-	_removeFromSet(fd, &_send_fd_pool);
-	_addToSet(fd, &_recv_fd_pool);
+	if (user.handshaked() == true) {
 
-	clientsMap[fd].clientMessageBuffer.clear();
-	clientsMap[fd].responseBuffer.clear();
+		_removeFromSet(fd, &_send_fd_pool);
+		_addToSet(fd, &_recv_fd_pool);
+
+		user.userMessageBuffer.clear();
+		user.responseBuffer.clear();
+	}
 }
 
 
@@ -227,17 +245,17 @@ void	ServerManager::_closeConnection(int fd) {
 		_removeFromSet(fd, &_send_fd_pool);
 	}
 	close(fd);
-	clientsMap.erase(fd);
+	usersMap.erase(fd);
 }
 
 /*
 ** This function will initialize an instance of a user
-** as well as add its to the clientsMap !!
+** as well as add its to the UsersMap !!
 ** 
 */
-void	ServerManager::initClient(int clientFd, struct sockaddr_in &address) {
+void	ServerManager::initUser(int clientFd, struct sockaddr_in &address) {
 
-	Client	newClient;
+	User	newUser;
 
 	char	*client_ip = inet_ntoa(address.sin_addr);
 	if (client_ip == NULL) {
@@ -246,16 +264,16 @@ void	ServerManager::initClient(int clientFd, struct sockaddr_in &address) {
 	}
 
 	int	port = ntohs(address.sin_port);
-	newClient.setPort(port);
+	newUser.setPort(port);
 
-	newClient.setSocket(clientFd);
-	newClient.setHostName(client_ip);
+	newUser.setSocket(clientFd);
+	newUser.setHostName(client_ip);
 
-	// newClient.setHostName("must be parsed from the client's request: `clientMessageBuffer`");
-	// newClient.setUserName("must be parsed from the client's request: `clientMessageBuffer`");
-	// newClient.setPassword("must be parsed from the client's request: `clientMessageBuffer`");
+	// newUser.setHostName("must be parsed from the User's request: `UserMessageBuffer`");
+	// newUser.setUserName("must be parsed from the User's request: `UserMessageBuffer`");
+	// newUser.setPassword("must be parsed from the User's request: `UserMessageBuffer`");
 
-	clientsMap.insert(std::make_pair(clientFd, newClient));
+	usersMap.insert(std::make_pair(clientFd, newUser));
 }
 
 
@@ -283,21 +301,21 @@ void	ServerManager::checkErrorAndExit(int returnValue, const std::string& msg) {
 
 void	ServerManager::log(int clientFd) {
 
-	Client &client = clientsMap[clientFd];
+	User &user = usersMap[clientFd];
 
-	std::cout << timeStamp() << YELLOW << "[!] Logging client fd:[" << client.getSocket() << "]" << RESET << std::endl;
-	std::cout << YELLOW << "\tport: " << client.getPort() << RESET << std::endl;
-	std::cout << YELLOW << "\thostName: " << client.getHostName() << RESET << std::endl;
-	// std::cout << YELLOW << "\tnickName: " << client.getNickName() << RESET << std::endl;
-	// std::cout << YELLOW << "\tuserName: " << client.getUserName() << RESET << std::endl;
-	// std::cout << YELLOW << "\tpassword: " << client.getPassword << RESET << std::endl;
-	// std::cout << YELLOW << "\trequestBuffer: " << client.clientMessageBuffer << RESET << std::endl;
-	// std::cout << YELLOW << "\tresponseBuffer: " << client.responseBuffer << RESET << std::endl;
+	std::cout << timeStamp() << YELLOW << "[!] Logging client fd:[" << user.getSocket() << "]" << RESET << std::endl;
+	std::cout << YELLOW << "\tport: " << user.getPort() << RESET << std::endl;
+	std::cout << YELLOW << "\thostName: " << user.getHostName() << RESET << std::endl;
+	// std::cout << YELLOW << "\tnickName: " << User.getNickName() << RESET << std::endl;
+	// std::cout << YELLOW << "\tuserName: " << User.getUserName() << RESET << std::endl;
+	// std::cout << YELLOW << "\tpassword: " << User.getPassword << RESET << std::endl;
+	// std::cout << YELLOW << "\trequestBuffer: " << User.UserMessageBuffer << RESET << std::endl;
+	// std::cout << YELLOW << "\tresponseBuffer: " << User.responseBuffer << RESET << std::endl;
 
 }
 
 bool	ServerManager::isClient(int fd) {
 
-	// return (clientsMap.find(fd) != clientsMap.end())
-	return clientsMap.count(fd) > 0;
+	// return (UsersMap.find(fd) != UsersMap.end())
+	return usersMap.count(fd) > 0;
 }
