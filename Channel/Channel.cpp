@@ -5,12 +5,14 @@
 
 Channel::Channel(const std::string& name) : _name(name)
 {
-	std::cout << "Channel " << _name << " has been created" << std::endl;
+	_nb_users = 0; // ou alors il faut forcement mettre un user/op dedans ?
+	_is_limit = false;
+	//std::cout << "Channel " << _name << " has been created" << std::endl;
 }
 
 Channel::~Channel()
 {
-	std::cout << "Channel " << _name << " has been destructed" << std::endl;
+	//std::cout << "Channel " << _name << " has been destructed" << std::endl;
 }
 
 // ------------------- SETTERS ---------------------- // 
@@ -32,10 +34,32 @@ void	Channel::setKey(const std::string & key)
 
 void	Channel::setUser(User& user)
 {
-	//_users.insert(std::make_pair(user.getUsername(), user));
-	_users[user.getUsername()] = &user; 
-	//si je veux modifier le
-	// USER qui a deja cette clef
+	if (_is_limit == true)
+	{
+		if (_nb_users < _limit)
+		{
+			_users[user.getUsername()] = &user;
+			user.setChannel(*this);
+			_nb_users++;
+			//_users.insert(std::make_pair(user.getUsername(), user));
+			// behavior for if the user already exists ?
+		}
+		else 
+			std::cout << "User limit has been reached in this channel" << std::endl;
+	}
+	else
+	{
+		_users[user.getUsername()] = &user;
+		user.setChannel(*this);
+		_nb_users++;
+		//_users.insert(std::make_pair(user.getUsername(), user));
+		// behavior for if the user already exists ?
+	}
+}
+
+void	Channel::setNbUsers(const int& nb)
+{
+	_nb_users = nb;
 }
 
 void	Channel::setLimit(const int & limit)
@@ -82,6 +106,11 @@ const std::map<std::string, User*>& 	Channel::getUsers( void ) const
 	return _users;
 }
 
+const int& Channel::getNbUsers( void ) const
+{
+	return _nb_users;
+}
+
 const int& 		Channel::getLimit( void ) const
 {
 	return _limit;
@@ -92,24 +121,26 @@ const bool& 	Channel::getInvit( void ) const
 	return _invit;
 }
 
-// other member functions
+// ------------------- MEMBER FUNCTIONS ---------------------- // 
 
 void	Channel::removeUser(User& user)
 {
-	 auto it = _users.find(user.getUsername()); // Recherche l'utilisateur dans la map
-        if (it != _users.end())
-		{ // Si l'utilisateur est trouvé
-           // delete it->second; // Supprime l'utilisateur de la mémoire heap
-            _users.erase(it);
-		}
+
+	std::map<std::string, User*>::iterator it;
+	it = _users.find(user.getUsername());
+    if (it != _users.end())
+	{
+		user.removeChannel(*this);
+        _users.erase(it);
+		_nb_users--;
+	}
 }
 
-void	Channel::printUsers( void ) const
+void Channel::printUsers( void) const
 {
-	std::map<std::string, User*>::iterator it;
+	std::map<std::string, User*>::const_iterator it;
 
-	for (it = _users.begin(); it !=_users.end(); ++it)
-	{
-		
-	}
+    std::cout << "Users in this channel:" << std::endl;
+    for ( it = _users.begin(); it != _users.end(); ++it)
+        std::cout << it->second->getUsername() << std::endl;
 }

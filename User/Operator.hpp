@@ -9,12 +9,14 @@
 		void	_kick(User& user, Channel& channel);
 		void	_invite(User& user, Channel& channel);
 		void	_topic(Channel& channel, const Operator& op);
-		void	_mode(const std::string& flag, Channel& channel, Operator& op);
+		void	_mode(const int& flag, Channel& channel, Operator& op, User& user);
 		bool	_canModifyTopic;
 
 		public : 
 		Operator(const std::string & nickname, const std::string & username);
 		~Operator();
+		const bool& getTopic( void ) const;
+		void setTopic( const bool& topic );
 	};
 
 	
