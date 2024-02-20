@@ -63,7 +63,7 @@ void	ServerManager::_run() {
 /*
 ** As long as `select()` returns a positive value
 ** we call `accept()` to accept the new connection to the server.
-** We also add the new client's fd to the recv_fd_pool to be handled later. 
+** We also add the new client's fd to the recv_fd_pool to be handled later in `_handle()`. 
 */
 void	ServerManager::_accept(int clientFd) {
 
