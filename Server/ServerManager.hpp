@@ -15,6 +15,10 @@
 #include <netinet/in.h>
 
 #define BUF_SIZE	10240
+#define MSG_SIZE	512 // 512 bytes is the maximum length of a message in the IRC protocol
+
+#define CARIAGE_RETURN	'\r' // 13 (All IRC messages are separated by a CRLF (carriage return followed by a line feed)
+#define LINE_FEED		'\n' // 10
 
 /*
 ** This class here is for testing and easier further integration ..

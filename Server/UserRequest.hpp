@@ -6,35 +6,58 @@
 #include <map>
 #include <string.h>
 #include <iomanip> // std::setw and std::setfill
+#include <algorithm> // std::transform
+#include <cctype> // std::toupper
 
 #include "ServerManager.hpp"
+#include "CommandHandler.hpp"
 
 class User;
 
 #define BUF_SIZE 10240 // 100 KB to store the request from the browser
 
-enum requestCMD {
+typedef enum requestCMD {
 
 	NONE,
 	CAP,
-	PASS,
+	INFO,
+	INVITE,
+	JOIN,
+	KICK,
+	LIST,
+	MODE,
+	NAMES,
 	NICK,
-	USER
-};
+	NOTICE,
+	OPER,
+	PART,
+	PASS,
+	PING,
+	PONG,
+	PRIVMSG,
+	QUIT,
+	TOPIC,
+	USER,
+	VERSION,
+	WHO,
+	WHOIS
+
+}	e_cmd;
 
 class UserRequest {
 	private:
 
 		User 								&_user;
 
-		enum requestCMD						_CMD;
-		std::map<std::string, std::string>	_commands;
+		e_cmd 								_CMD; // Current command from the client
+		std::map<e_cmd, std::string>		_enumToString; // map to convert enum to string
+		std::map<std::string, std::string>	_commandsFromClient; // the key is the command and the value is the rest of the message line
 
 		// parsing helpers	
 		void _basicParsing(const std::string& buffer);
 		void _lineParsing(const std::string& line);
 		void _authenticatingUser();
-		void _extractCMD();
+		void _handleCommand();
 
 	public:
 
@@ -48,9 +71,10 @@ class UserRequest {
 		// Clean parsing helpers
 		std::string			trim(const std::string& str);
 		enum requestCMD		isCMD(const std::string& str);
-		void				printInHEX(char *buff, int len);
+		std::string			handleCtrl_D(const std::string& str); // removes Ctrl+D from the string
 
 		/* DEBUG */
+		void				printInHEX(char *buff, int len);
 		void				printCommands();
 
 };

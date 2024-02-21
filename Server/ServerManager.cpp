@@ -133,7 +133,7 @@ void	ServerManager::_handle(int fd) {
 	/* DEBUG */
 	// At this point received data can be parsed and added to User's class (NAME, NICK, PASS etc..)
 	std::cout << CYAN << "[*] received from client fd[" << fd << "]: " << RESET << std::endl;
-	std::cout << MAGENTA << usersMap[fd].userMessageBuffer << RESET;
+	// std::cout << MAGENTA << usersMap[fd].userMessageBuffer << RESET;
 	std::cout << CYAN << "parsing..." << RESET << std::endl;
 
 	User &user = usersMap[fd];
@@ -141,6 +141,7 @@ void	ServerManager::_handle(int fd) {
 	// UserRequest	userRequest(user.userMessageBuffer);
 	UserRequest	userRequest(user);
 	userRequest.printCommands();
+	/* ***** */
 
 	// We add the client's fd to the send_fd_pool once the client is authenticated (received NICK, USER, PASS..)
 	if (user.authenticated()) {
