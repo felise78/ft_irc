@@ -9,7 +9,9 @@ VPATH = Socket \
 
 SRCS = main.cpp \
 	Server.cpp \
-	ServerManager.cpp
+	ServerManager.cpp \
+	UserRequest.cpp \
+	UserResponse.cpp
 
 OBJS = $(SRCS:.cpp=.o)
 
