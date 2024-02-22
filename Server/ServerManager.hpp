@@ -2,7 +2,7 @@
 #define SERVERMANAGER_HPP
 
 #include "Server.hpp"
-#include "UserRequest.hpp"
+#include "../Request/UserRequestParsing.hpp"
 #include "UserResponse.hpp"
 
 #include <sys/types.h>  // for u_long
@@ -17,9 +17,6 @@
 #define BUF_SIZE	10240
 #define MSG_SIZE	512 // 512 bytes is the maximum length of a message in the IRC protocol
 
-#define CARIAGE_RETURN	'\r' // 13 (All IRC messages are separated by a CRLF (carriage return followed by a line feed)
-#define LINE_FEED		'\n' // 10
-
 /*
 ** This class here is for testing and easier further integration ..
 */
@@ -28,10 +25,10 @@ class User {
 	private:
 		int				port;
 		int				socket;
-		std::string		hostName; // ..parsed in `UserRequest` class.. PARSING IS NOT COMPLETE YET
-		std::string		nickName; // ..parsed in `UserRequest` class.. PARSING IS NOT COMPLETE YET
-		std::string		userName; // ..parsed in `UserRequest` class.. PARSING IS NOT COMPLETE YET
-		std::string		password; // ..parsed in `UserRequest` class.. PARSING IS NOT COMPLETE YET
+		std::string		hostName; // ..parsed in `UserRequestParsing` class..
+		std::string		nickName; // ..parsed in `UserRequestParsing` class..
+		std::string		userName; // ..parsed in `UserRequestParsing` class..
+		std::string		password; // ..parsed in `UserRequestParsing` class..
 		bool			_authenticated; // ..to use for new User verification (NICK, USER, PASS)
 		bool			_handshaked; // ..to use for composing the first response message to the client (RPL_WELCOME, RPL_YOURHOST, RPL_CREATED, RPL_MYINFO..) 
 		
@@ -89,13 +86,13 @@ class ServerManager {
 
 	public:
 		// `UserMap` key is the User's socket FD and the value is the User object
-		std::map<int, User>		usersMap;
+		std::map<int, User>			usersMap;
 
 		ServerManager();
 		~ServerManager();
 
 		// Initializing User's data. Command Passing.
-		// Maybe we can moove this logic to the User class..
+		// Maybe we can moove this logic to the User class.. ?!
 		void						initUser(int UserFd, struct sockaddr_in &address);
 
 		// General Helpers

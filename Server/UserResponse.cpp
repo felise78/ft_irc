@@ -12,7 +12,7 @@ UserResponse::UserResponse(User & user, Server const & server)
 	}
 	else {
 
-		responceBuilder();
+		responseBuilder();
 	}
 }
 
@@ -34,16 +34,11 @@ void UserResponse::handshakeResponse() {
 	_user.responseBuffer += RPL_YOURHOST(serverName, serverVersion) + "\r\n";
 	_user.responseBuffer += RPL_CREATED(serverCreated) + "\r\n";
 	_user.responseBuffer += RPL_MYINFO(serverName, serverVersion, userModes, channModes) + "\r\n";
-/*
-	_user.responseBuffer = serverName + " 001 " + nickName + " :Welcome to the Internet Relay Network " + userName + "!" + "\r\n";
-	_user.responseBuffer += serverName + " 002 " + nickName + " :Your host is " + serverName + ", running version 1.0" + "\r\n";
-	_user.responseBuffer += serverName + " 003 " + nickName + " :This server was created " + "server.getCreationDate()" + "\r\n";
-	_user.responseBuffer += serverName + " 004 " + nickName + " " + serverName + " 1.0 " + "ao" + " " + "O" + "\r\n";
-*/
+
 	_user.setHandshaked(true);
 }
 
-void UserResponse::responceBuilder() {
+void UserResponse::responseBuilder() {
 
 	// BUILDING RESPONSES BASED ON THE COMMANDS RECEIVED FROM THE CLIENT
 

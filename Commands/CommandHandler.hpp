@@ -1,22 +1,69 @@
 #ifndef COMMANDHANDLER_HPP
 #define COMMANDHANDLER_HPP
 
-#include "UserRequest.hpp"
+#include "../Request/UserRequestParsing.hpp"
 
 using namespace std;
 
-// Abstract class for the commands
+class User;
+
+/*
+** The following enumeration represents available commands 
+** that the server can handle
+*/
+typedef enum requestCMD {
+
+	NONE,
+	CAP,
+	INFO,
+	INVITE,
+	JOIN,
+	KICK,
+	LIST,
+	MODE,
+	NAMES,
+	NICK,
+	NOTICE,
+	OPER,
+	PART,
+	PASS,
+	PING,
+	PONG,
+	PRIVMSG,
+	QUIT,
+	TOPIC,
+	USER,
+	VERSION,
+	WHO,
+	WHOIS
+
+}	e_cmd;
+
+
 class CommandHandler {
 
 	public:
 
-		User				&_user;
-		map<string, string>	&_commandsFromClient;
+		User							&user;
+		map<string, string>				&commandsFromClient;
+		map<e_cmd, string>				mapEnumToString; // map to convert CMD enum to string
+		map<string, void (CommandHandler::*)() >	cmdToHandler; // map to convert CMD to handler method
 
-		ACmd(User &usr, map<string, string> &commands) : { _user = usr; _commandsFromClient = commands; };
-		~ACmd() {};
+		CommandHandler(User &usr, map<string, string> &commands);
+		~CommandHandler();
 
-		void	executeCommand();
+		// This method will return enum representation of the string command..
+		e_cmd				getCMD(const std::string & str); // enum requestCMD
+
+		void				authenticateUser();
+		void				executeCommand();
+
+		// COMMAND HANDLERS
+		void				handleNONE();
+		void				handleCAP();
+		void				handlePASS();
+		void				handleNICK();
+		void				handleUSER();
 
 };
 
