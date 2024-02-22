@@ -2,6 +2,8 @@
 #define REQUEST_HPP
 
 #include <string>
+#include <map>
+#include <iostream>
 
 typedef enum	e_commands
 {
@@ -18,20 +20,17 @@ typedef enum	e_commands
 class Request
 {
 	private:
-		std::string input;
-		std::string	prefix;
-		std::string	command;
-		std::string params;
+      std::string                         _input_buffer;
+      std::map<std::string, std::string>  _input_map;
 
 	public:
 		Request();
 		~Request();
-		std::string const&	getInput();
-		std::string const&	getCommand();
-		std::string const&	getPrefix();
-		std::string const&	getParams();
-
-
+		std::string const&	getMessage() const;
+		std::string const&	getCommand() const;
+		std::string const&	getPrefix() const;
+		std::string const&	getParams() const;
+      void                 set_to_map();
 };
 
 #endif
