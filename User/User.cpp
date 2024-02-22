@@ -1,20 +1,17 @@
 #include "User.hpp"
 #include "../Channel/Channel.hpp"
 
-#define DEBUG 1 //
-#include <iostream> //
+#include <iostream> 
 
-User::User(const std::string & nickname, const std::string & username, const std::string & password) : _nickname(nickname), _username(username), _password(password)
+User::User(const std::string & nickname, const std::string & username) : _nickname(nickname), _username(username)
 {
-	if (DEBUG)
-		std::cout << "User " << _username << " has been successfully created." << std::endl;
+	std::cout << "User " << _username << " has been created" << std::endl;
 }
 
 User::~User()
 {
-
+	std::cout << "User " << _username << " has been destructed" << std::endl;
 }
-
 
 void	User::setSocket(const int & socket)
 {
