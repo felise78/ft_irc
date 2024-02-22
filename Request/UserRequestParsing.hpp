@@ -1,5 +1,5 @@
-#ifndef USERREQUEST_HPP
-#define USERREQUEST_HPP
+#ifndef USERREQUESTPARSING_HPP
+#define USERREQUESTPARSING_HPP
 
 #include <sstream> // std::stringstream
 #include <string>
@@ -9,72 +9,31 @@
 #include <algorithm> // std::transform
 #include <cctype> // std::toupper
 
-#include "ServerManager.hpp"
-#include "CommandHandler.hpp"
+#include "../Server/ServerManager.hpp"
+#include "../Commands/CommandHandler.hpp"
 
 class User;
 
-#define BUF_SIZE 10240 // 100 KB to store the request from the browser
-
-typedef enum requestCMD {
-
-	NONE,
-	CAP,
-	INFO,
-	INVITE,
-	JOIN,
-	KICK,
-	LIST,
-	MODE,
-	NAMES,
-	NICK,
-	NOTICE,
-	OPER,
-	PART,
-	PASS,
-	PING,
-	PONG,
-	PRIVMSG,
-	QUIT,
-	TOPIC,
-	USER,
-	VERSION,
-	WHO,
-	WHOIS
-
-}	e_cmd;
-
-class UserRequest {
-	private:
-
-		User 								&_user;
-
-		e_cmd 								_CMD; // Current command from the client
-		std::map<e_cmd, std::string>		_enumToString; // map to convert enum to string
-		std::map<std::string, std::string>	_commandsFromClient; // the key is the command and the value is the rest of the message line
-
-		// parsing helpers	
-		void _basicParsing(const std::string& buffer);
-		void _lineParsing(const std::string& line);
-		void _authenticatingUser();
-		void _handleCommand();
+class UserRequestParsing {
 
 	public:
 
-		// UserRequest(const std::string& requestBuffer); // Constructor reseives the request buffer from HttpServer::_handle() method
-		UserRequest(User & user);
-		~UserRequest();
+		User 								&_user;
 
-		// Getters
-		std::string			getCMD();
+		std::map<std::string, std::string>	_commandsFromClient; // the key is the command and the value is the rest of the message line
 
-		// Clean parsing helpers
+		UserRequestParsing(User & user);
+		~UserRequestParsing();
+
+		// parsing helpers	
+		void				basicParsing(const std::string& buffer);
+		void				lineParsing(const std::string& line);
 		std::string			trim(const std::string& str);
-		enum requestCMD		isCMD(const std::string& str);
 		std::string			handleCtrl_D(const std::string& str); // removes Ctrl+D from the string
 
+
 		/* DEBUG */
-		void				printInHEX(char *buff, int len);
+		void				printInHEX(char *buff, int len); // this will show `\r` and `\n` in HEX
 		void				printCommands();
 
 };
@@ -82,7 +41,7 @@ class UserRequest {
 #endif
 
 /*
-** ABOUT `CAP LS` recuest from `irssi` client:
+** ABOUT `CAP LS` request from `irssi` client:
 ** 
 
 The CAP LS command is used by an IRC client to request a list of capabilities that the server supports. 

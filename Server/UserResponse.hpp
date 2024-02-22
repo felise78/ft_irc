@@ -29,7 +29,7 @@ class UserResponse {
 		~UserResponse();
 
 		void			handshakeResponse();
-		void			responceBuilder();
+		void			responseBuilder();
 
 };
 

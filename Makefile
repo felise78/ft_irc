@@ -4,13 +4,16 @@ NAME = ircserv
 CXX = c++
 CXXFLAGS = -Wall -Werror -Wextra -std=c++98 -g
 
-VPATH = Socket \
-		Server
+VPATH = Server \
+		Commands \
+		Request \
+		User
 
 SRCS = main.cpp \
 	Server.cpp \
 	ServerManager.cpp \
-	UserRequest.cpp \
+	UserRequestParsing.cpp \
+	CommandHandler.cpp \
 	UserResponse.cpp
 
 OBJS = $(SRCS:.cpp=.o)

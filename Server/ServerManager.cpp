@@ -79,7 +79,7 @@ void	ServerManager::_accept(int clientFd) {
 		return ;
 	}
 
-	std::cout << timeStamp() << GREEN << "[+] New connection to [" << _server.getServerName() << "] fd:[" << _serverFd << "], client fd:[" << clientFd << "], IP:[" << inet_ntoa(address.sin_addr) << "]" << RESET << std::endl;
+	std::cout << timeStamp() << GREEN << "[+] New connection. Cliend fd: [" << clientFd << "], IP:[" << inet_ntoa(address.sin_addr) << "], port:[" << ntohs(address.sin_port) << "]" << RESET << std::endl;
 
 	_addToSet(clientFd, &_recv_fd_pool);
 
@@ -139,8 +139,8 @@ void	ServerManager::_handle(int fd) {
 	User &user = usersMap[fd];
 
 	// UserRequest	userRequest(user.userMessageBuffer);
-	UserRequest	userRequest(user);
-	userRequest.printCommands();
+	UserRequestParsing	userRequest(user);
+	// userRequest.printCommands();
 	/* ***** */
 
 	// We add the client's fd to the send_fd_pool once the client is authenticated (received NICK, USER, PASS..)
@@ -303,10 +303,11 @@ void	ServerManager::checkErrorAndExit(int returnValue, const std::string& msg) {
 void	ServerManager::log(int clientFd) {
 
 	User &user = usersMap[clientFd];
+	(void)user;
 
-	std::cout << timeStamp() << YELLOW << "[!] Logging client fd:[" << user.getSocket() << "]" << RESET << std::endl;
-	std::cout << YELLOW << "\tport: " << user.getPort() << RESET << std::endl;
-	std::cout << YELLOW << "\thostName: " << user.getHostName() << RESET << std::endl;
+	// std::cout << timeStamp() << YELLOW << "[!] Logging client fd:[" << user.getSocket() << "]" << RESET << std::endl;
+	// std::cout << YELLOW << "\tport: " << user.getPort() << RESET << std::endl;
+	// std::cout << YELLOW << "\thostName: " << user.getHostName() << RESET << std::endl;
 	// std::cout << YELLOW << "\tnickName: " << User.getNickName() << RESET << std::endl;
 	// std::cout << YELLOW << "\tuserName: " << User.getUserName() << RESET << std::endl;
 	// std::cout << YELLOW << "\tpassword: " << User.getPassword << RESET << std::endl;
