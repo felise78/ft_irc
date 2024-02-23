@@ -3,7 +3,6 @@
 
 	#include <map>
 	#include <string>
-	#include "../User/Operator.hpp"
 
 	class User;
 	class Operator;
