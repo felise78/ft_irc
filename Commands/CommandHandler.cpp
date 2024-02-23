@@ -140,3 +140,75 @@ void	CommandHandler::handleUSER() {
 
 	user.setUserName(commandsFromClient["USER"]);
 }
+
+
+
+void	CommandHandler::handleMODE()
+{
+	if (User.getIsOp() == false)
+		return;
+	
+	if(flag == "-i")
+	{
+		// /mode #monsalon -i
+		if (channel.getInvit() == true) 
+			channel.setInvit(false);
+	}
+	else if(flag  == "+i")
+	{
+		if (channel.getInvit() == false)
+			channel.setInvit(true);
+	}
+	else if(flag == "-t")
+		;
+	else if(flag == "+t")
+		;
+	else if(flag == "-k")
+	{
+		// retirer le mot de passe du channel
+	}
+	else if(flag == "+k")
+		;
+	else if(flag == "-o")
+		;
+	else if(flag == "+o")
+		;
+	else if(flag == "-l")
+		;
+	else if(flag == "+l")
+		;
+	else
+		;
+
+
+
+	switch (flag)
+	{
+		case 'i':
+		{
+			
+			else 
+			break;
+		}
+		case 't':
+		{
+			if (user.getCanModifyTopic() == true)
+				user.setCanModifyTopic(false);
+			else if (user.getCanModifyTopic() == false)
+				user.setCanModifyTopic(true);
+			break;
+		}
+		case 'k':
+		{
+			break;
+		}
+		case 'o':
+		{
+
+		}
+		case 'l':
+			break;
+		default:
+			; // error wrong flag
+	}
+}

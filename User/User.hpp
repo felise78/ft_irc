@@ -23,11 +23,11 @@
 		// ..to use for composing the first response message to the client (RPL_WELCOME, RPL_YOURHOST, RPL_CREATED, RPL_MYINFO..)
 		bool							_isOp; 
 		bool							_canModifyTopic;
-		// ce qui etait dans Operateur
-		void	_kick(User& user, Channel& channel);
-		void	_invite(User& user, Channel& channel);
-		void	_topic(Channel& channel);
-		void	_mode(const int& flag, Channel& channel, User& user);
+		// ce qui etait dans Operateur -> a mettre dans CommandHandler
+		// void	_kick(User& user, Channel& channel);
+		// void	_invite(User& user, Channel& channel);
+		// void	_topic(Channel& channel);
+		// void	_mode(const int& flag, Channel& channel, User& user);
 
 		public :
 		User(const int& fd);

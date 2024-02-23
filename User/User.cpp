@@ -162,44 +162,6 @@ void	User::_topic(Channel& channel)
 	// if (_canModifyTopic)
 }
 
-void	User::_mode(const int& flag, Channel& channel, User& user)
-{
-	if (_isOp == false)
-		return;
-
-	switch (flag)
-	{
-		case 'i':
-		{
-			if (channel.getInvit() == true)
-				channel.setInvit(false);
-			else if (channel.getInvit() == false)
-				channel.setInvit(true);
-			break;
-		}
-		case 't':
-		{
-			if (user.getCanModifyTopic() == true)
-				user.setCanModifyTopic(false);
-			else if (user.getCanModifyTopic() == false)
-				user.setCanModifyTopic(true);
-			break;
-		}
-		case 'k':
-		{
-			break;
-		}
-		case 'o':
-		{
-
-		}
-		case 'l':
-			break;
-		default:
-			; // error wrong flag
-	}
-}
-
 	// COMMANDES SPECIFIQUES AUX OPERATEURS : 
 
 	// KICK - Ejecter un client du channel

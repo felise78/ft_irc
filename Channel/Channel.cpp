@@ -3,10 +3,8 @@
 #include "../User/User.hpp"
 #include <iostream>
 
-Channel::Channel(const std::string& name) : _name(name)
+Channel::Channel(const std::string& name) : _name(name), _nb_users(0), _limited(false)
 {
-	_nb_users = 0; // ou alors il faut forcement mettre un user/op dedans ?
-	_is_limit = false;
 	//std::cout << "Channel " << _name << " has been created" << std::endl;
 }
 
@@ -34,27 +32,22 @@ void	Channel::setKey(const std::string & key)
 
 void	Channel::setUser(User& user)
 {
-	if (_is_limit == true)
+	if (_limited == true)
 	{
-		if (_nb_users < _limit)
+		if (_nb_users >= _limit)
 		{
-			_users[user.getUsername()] = &user;
-			user.setChannel(*this);
-			_nb_users++;
-			//_users.insert(std::make_pair(user.getUsername(), user));
-			// behavior for if the user already exists ?
+			std::cout << "User limit has been reached in this channel" << std::endl; // for debug // throw error ? 
+			return;
 		}
-		else 
-			std::cout << "User limit has been reached in this channel" << std::endl;
 	}
-	else
-	{
-		_users[user.getUsername()] = &user;
-		user.setChannel(*this);
-		_nb_users++;
-		//_users.insert(std::make_pair(user.getUsername(), user));
-		// behavior for if the user already exists ?
-	}
+	_users[user.getUsername()] = &user;
+	user.setChannel(*this);
+	_nb_users++;
+}
+
+void	Channel::setUser(User& op)
+{
+	_ops[op.getUsername()] = &op;
 }
 
 void	Channel::setNbUsers(const int& nb)
@@ -69,7 +62,7 @@ void	Channel::setLimit(const int & limit)
 
 void	Channel::setInvit(const bool & invit)
 {
-	_invit = invit;
+	_invit_only = invit;
 }
 
 // ------------------- GETTERS ---------------------- // 
@@ -92,18 +85,16 @@ const std::string&	Channel::getKey( void ) const
 User& Channel::getUser( const std::string & username ) const
 {
 	return *_users.at(username);
-	// std::map<std::string, User>::const_iterator it = _users.find(username);
-
-	// if (it == _users.end())
-	// 	return it->second; // pas bon il faudra que je change car ce n'est pas correct 
-	// 	// faire un throw
-	// else 
-	// 	return it->second;
 }
 
 const std::map<std::string, User*>& 	Channel::getUsers( void ) const
 {
 	return _users;
+}
+
+User& Channel::getOp( const std::string & username ) const
+{
+	return *_op.at(username);
 }
 
 const int& Channel::getNbUsers( void ) const
@@ -118,7 +109,7 @@ const int& 		Channel::getLimit( void ) const
 
 const bool& 	Channel::getInvit( void ) const
 {
-	return _invit;
+	return _invit_only;
 }
 
 // ------------------- MEMBER FUNCTIONS ---------------------- // 
