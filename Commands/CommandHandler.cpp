@@ -1,4 +1,5 @@
 #include "CommandHandler.hpp"
+#include "../User/User.hpp"
 
 CommandHandler::CommandHandler(User &usr, map<string, string> &commands) :
 	user(usr), commandsFromClient(commands) { 
@@ -141,74 +142,87 @@ void	CommandHandler::handleUSER() {
 	user.setUserName(commandsFromClient["USER"]);
 }
 
+void	CommandHandler::handleINVITE() {
 
+	std::cout << YELLOW << "INVITE command received.." << RESET << std::endl;
+
+	// format de la commade : /INVITE nickname #channel
+}
+
+void	CommandHandler::handleTOPIC()	{
+
+	std::cout << YELLOW << "TOPIC command received.." << RESET << std::endl;
+
+	// format de la commande : /TOPIC #channel 
+
+
+	std::cout << channel.getTheme() << std::endl;
+
+	// if param apres le nom du channel
+	if (user.getCanModifyTopic() == true)
+	{
+		channel.setTheme(new_theme);
+	}
+}
+
+void	CommandHandler::handleKICK()
+{
+	std::cout << YELLOW << "KICK command received.." << RESET << std::endl;
+
+	if (user.getIsOp() == false)
+		return;
+
+	// format de la commande : /KICK #channel nickname
+}
 
 void	CommandHandler::handleMODE()
 {
-	if (User.getIsOp() == false)
+	std::cout << YELLOW << "MODE command received.." << RESET << std::endl;
+
+	if (user.getIsOp() == false)
 		return;
 	
-	if(flag == "-i")
+	//format de la commande :  /mode #channel flag
+	std::string channel;
+	std::string flag;
+
+	if(flag == "-i")								
 	{
-		// /mode #monsalon -i
+		if (user.getChannel(channel))
 		if (channel.getInvit() == true) 
 			channel.setInvit(false);
 	}
-	else if(flag  == "+i")
+	else if(flag  == "+i") 					
 	{
 		if (channel.getInvit() == false)
 			channel.setInvit(true);
 	}
-	else if(flag == "-t")
-		;
-	else if(flag == "+t")
-		;
-	else if(flag == "-k")
+	else if(flag == "-t")					
+	{
+		if (user.getCanModifyTopic() == true)
+				user.setCanModifyTopic(false);
+	}
+	else if(flag == "+t")						
+	{
+		if (user.getCanModifyTopic() == false)
+				user.setCanModifyTopic(true);
+	}
+	else if(flag == "-k")							
 	{
 		// retirer le mot de passe du channel
 	}
 	else if(flag == "+k")
-		;
-	else if(flag == "-o")
-		;
-	else if(flag == "+o")
-		;
-	else if(flag == "-l")
-		;
-	else if(flag == "+l")
-		;
-	else
-		;
-
-
-
-	switch (flag)
 	{
-		case 'i':
-		{
-			
-			else 
-			break;
-		}
-		case 't':
-		{
-			if (user.getCanModifyTopic() == true)
-				user.setCanModifyTopic(false);
-			else if (user.getCanModifyTopic() == false)
-				user.setCanModifyTopic(true);
-			break;
-		}
-		case 'k':
-		{
-			break;
-		}
-		case 'o':
-		{
-
-		}
-		case 'l':
-			break;
-		default:
-			; // error wrong flag
+		// definir un mot de passe				// /mode #channel +k password
 	}
+	else if(flag == "-o")
+		;										// /mode #channel -o user
+	else if(flag == "+o")
+		;										// /mode #channel +o user
+	else if(flag == "-l")
+		;										// /mode #channel -l
+	else if(flag == "+l")
+		;										// /mode #channel +l int
+	// else
+	// 	; // error unknown flag or parsed before ?
 }

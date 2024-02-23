@@ -113,7 +113,7 @@ const bool&	User::getCanModifyTopic( void ) const
 	return _canModifyTopic;
 }
 
-// ----------------------------------- MEMBER FUNCTIONS ------------------------------------- // 
+// fonction membres 
 
 void	User::removeChannel(Channel& channel)
 {
@@ -134,43 +134,3 @@ void User::printChannels( void ) const
     for ( it = _channels.begin(); it != _channels.end(); ++it)
         std::cout << it->second->getName() << std::endl;
 }
-
-void	User::_kick(User& user, Channel& channel)
-{
-	//if (DEBUG)
-	{
-		user.getUsername();
-		user.printChannels();
-		channel.getName();
-	}
-	user.removeChannel(channel);
-}
-
-void	User::_invite(User& user, Channel& channel)
-{
-	// inviter un client // envoyer une request ?
-	(void)user;
-	(void)channel;
-}
-
-void	User::_topic(Channel& channel)
-{
-	if (_isOp == false)
-		return;
-	std::cout << channel.getTheme() << std::endl;
-	// modifier le theme ?
-	// if (_canModifyTopic)
-}
-
-	// COMMANDES SPECIFIQUES AUX OPERATEURS : 
-
-	// KICK - Ejecter un client du channel
-	// INVITE - Inviter un client au channel
-	// TOPIC - Modifier ou afficher le thème du channel
-	// MODE - Changer le mode du channel :
-	// 	— i : Définir/supprimer le canal sur invitation uniquement
-	// 	— t : Définir/supprimer les restrictions de la commande TOPIC pour les opé-
-	// 		rateurs de canaux
-	// 	— k : Définir/supprimer la clé du canal (mot de passe)
-	// 	— o : Donner/retirer le privilège de l’opérateur de canal
-	// 	— l : Définir/supprimer la limite d’utilisateurs pour le canal

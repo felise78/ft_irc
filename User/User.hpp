@@ -16,22 +16,17 @@
 		std::string						_realName; // ..parsed in `UserRequestParsing` class..
 		std::string 					_password; // ..parsed in `UserRequestParsing` class..
 		std::map<std::string, Channel*>	_channels;
-		std::string						_clientMessageBuffer; // il y aura un type message ?
-		std::string						_responseBuffer;
-		bool							_authenticated;
-		bool							_handshaked;
 		// ..to use for composing the first response message to the client (RPL_WELCOME, RPL_YOURHOST, RPL_CREATED, RPL_MYINFO..)
 		bool							_isOp; 
 		bool							_canModifyTopic;
-		// ce qui etait dans Operateur -> a mettre dans CommandHandler
-		// void	_kick(User& user, Channel& channel);
-		// void	_invite(User& user, Channel& channel);
-		// void	_topic(Channel& channel);
-		// void	_mode(const int& flag, Channel& channel, User& user);
 
 		public :
 		User(const int& fd);
 		~User();
+		// std::string						userMessageBuffer; // il y aura un type message ?
+		// std::string						responseBuffer;
+		// bool							authenticated;
+		// bool							handshaked;
 		// Setters //
 		void	setPort(const int& port);
 		void	setSocket(const int& socket);

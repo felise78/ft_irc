@@ -45,7 +45,7 @@ void	Channel::setUser(User& user)
 	_nb_users++;
 }
 
-void	Channel::setUser(User& op)
+void	Channel::setOp(User& op)
 {
 	_ops[op.getUsername()] = &op;
 }
@@ -94,7 +94,7 @@ const std::map<std::string, User*>& 	Channel::getUsers( void ) const
 
 User& Channel::getOp( const std::string & username ) const
 {
-	return *_op.at(username);
+	return *_ops.at(username);
 }
 
 const int& Channel::getNbUsers( void ) const
