@@ -7,6 +7,7 @@ CXXFLAGS = -Wall -Werror -Wextra -std=c++98 -g
 VPATH = Server \
 		Commands \
 		Request \
+		Channel \
 		User
 
 SRCS = main.cpp \
@@ -14,7 +15,9 @@ SRCS = main.cpp \
 	ServerManager.cpp \
 	UserRequestParsing.cpp \
 	CommandHandler.cpp \
-	UserResponse.cpp
+	UserResponse.cpp \
+	Channel.cpp \
+	User.cpp
 
 OBJS = $(SRCS:.cpp=.o)
 

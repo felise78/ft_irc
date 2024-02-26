@@ -40,14 +40,14 @@ void	Channel::setUser(User& user)
 			return;
 		}
 	}
-	_users[user.getUsername()] = &user;
+	_users[user.getUserName()] = &user;
 	user.setChannel(*this);
 	_nb_users++;
 }
 
 void	Channel::setOp(User& op)
 {
-	_ops[op.getUsername()] = &op;
+	_ops[op.getUserName()] = &op;
 }
 
 void	Channel::setNbUsers(const int& nb)
@@ -118,7 +118,7 @@ void	Channel::removeUser(User& user)
 {
 
 	std::map<std::string, User*>::iterator it;
-	it = _users.find(user.getUsername());
+	it = _users.find(user.getUserName());
     if (it != _users.end())
 	{
 		user.removeChannel(*this);
@@ -133,5 +133,5 @@ void Channel::printUsers( void) const
 
     std::cout << "Users in this channel:" << std::endl;
     for ( it = _users.begin(); it != _users.end(); ++it)
-        std::cout << it->second->getUsername() << std::endl;
+        std::cout << it->second->getUserName() << std::endl;
 }

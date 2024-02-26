@@ -4,7 +4,7 @@
 #include "Server.hpp"
 #include "../Request/UserRequestParsing.hpp"
 #include "UserResponse.hpp"
-
+#include "../User/User.hpp"
 #include <sys/types.h>  // for u_long
 #include <sys/select.h> // for fd_set
 #include <arpa/inet.h> // inet_ntoa
@@ -19,7 +19,6 @@
 
 /*
 ** This class here is for testing and easier further integration ..
-*/
 class User {
 	
 	private:
@@ -60,6 +59,7 @@ class User {
 		bool			handshaked() { return this->_handshaked; }
 
 };
+*/
 /* ***** */
 
 class ServerManager {
@@ -87,6 +87,8 @@ class ServerManager {
 	public:
 		// `UserMap` key is the User's socket FD and the value is the User object
 		std::map<int, User>			usersMap;
+		// Add Channel map here of all created channels
+		std::map<std::string, Channel *>	channelMap;
 
 		ServerManager();
 		~ServerManager();

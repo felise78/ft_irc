@@ -2,6 +2,7 @@
 #define COMMANDHANDLER_HPP
 
 #include "../Request/UserRequestParsing.hpp"
+#include "../Channel/Channel.hpp"
 
 using namespace std;
 

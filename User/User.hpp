@@ -21,33 +21,37 @@
 		bool							_canModifyTopic;
 
 		public :
-		User(const int& fd);
-		~User();
-		// std::string						userMessageBuffer; // il y aura un type message ?
-		// std::string						responseBuffer;
-		// bool							authenticated;
-		// bool							handshaked;
+		User() : _port(0), _socket(0), _hostName(""), _nickName(""), _userName(""), _password(""), _authenticated(false), _handshaked(false) {};
+		~User() {};
+		std::string						userMessageBuffer; // il y aura un type message ?
+		std::string						responseBuffer;
+		bool							_authenticated;
+		bool							_handshaked;
 		// Setters //
 		void	setPort(const int& port);
 		void	setSocket(const int& socket);
-		void 	setNickname(const std::string& nickname);
-		void 	setUsername(const std::string& username);
-		void 	setHostname(const std::string& hostname);
+		void 	setNickName(const std::string& nickname);
+		void 	setUserName(const std::string& username);
+		void 	setHostName(const std::string& hostname);
 		void 	setPassword(const std::string& password);
 		void	setChannel(Channel& channel);
 		void	setIsOp( const bool& isOp );
 		void	setCanModifyTopic( const bool& topic );
+		void			setAuthenticated(bool authenticated);
+		void			setHandshaked(bool handshaked);
 		// Getters //
 		const int& getPort( void ) const;
 		const int& getSocket( void ) const;
-		const std::string& getNickname( void ) const;
-		const std::string& getUsername( void ) const;
-		const std::string& getHostname( void ) const;
+		const std::string& getNickName( void ) const;
+		const std::string& getUserName( void ) const;
+		const std::string& getHostName( void ) const;
 		const std::string& getPassword( void ) const;
 		Channel& getChannel( const std::string& name ) const;
 		const std::map<std::string, Channel*>& getChannels( void ) const;
 		const bool& getIsOp( void ) const;
 		const bool& getCanModifyTopic( void ) const;
+		bool			authenticated();
+		bool			handshaked();
 
 		void	printChannels( void ) const;   // for debug
 		void	removeChannel(Channel& channel);

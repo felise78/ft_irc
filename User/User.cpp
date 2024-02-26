@@ -2,17 +2,22 @@
 #include "../Channel/Channel.hpp"
 #include <iostream> 
 
-User::User(const int& fd) : _socket(fd)
-{
-	//std::cout << "User has been created" << std::endl;
-}
+// User::User(const int& fd) : _socket(fd)
+// {
+// 	//std::cout << "User has been created" << std::endl;
+// }
 
-User::~User()
-{
-	//std::cout << "User " << _userName << " has been destructed" << std::endl;
-}
+// User::~User()
+// {
+// 	//std::cout << "User " << _userName << " has been destructed" << std::endl;
+// }
 
 // --------------------------------------- SETTERS ---------------------------------------- // 
+
+void	User::setAuthenticated(bool authenticated)
+{ this->_authenticated = authenticated; }
+
+void	User::setHandshaked(bool handshaked) { this->_handshaked = handshaked; }
 
 void	User::setPort(const int& port)
 {
@@ -24,17 +29,17 @@ void	User::setSocket(const int& socket)
 	_socket = socket;
 }
 
-void 	User::setNickname(const std::string& nickname)
+void 	User::setNickName(const std::string& nickname)
 {
 	_nickName = nickname;
 }
 
-void 	User::setUsername(const std::string& username)
+void 	User::setUserName(const std::string& username)
 {
 	_userName = username;
 }
 
-void 	User::setHostname(const std::string& hostname)
+void 	User::setHostName(const std::string& hostname)
 {
 	_hostName = hostname;
 }
@@ -63,6 +68,10 @@ void	User::setCanModifyTopic( const bool& topic )
 
 // ---------------------------------------- GETTERS ----------------------------------------- // 
 
+bool	User::authenticated() { return this->_authenticated; }
+
+bool	User::handshaked() { return this->_handshaked; }
+
 const int& User::getPort( void ) const
 {
 	return _port;
@@ -73,17 +82,17 @@ const int& User::getSocket( void ) const
 	return _socket;
 }
 
-const std::string& User::getNickname( void ) const
+const std::string& User::getNickName( void ) const
 {
 	return _nickName;
 }
 
-const std::string& User::getUsername( void ) const
+const std::string& User::getUserName( void ) const
 {
 	return _userName;
 }
 
-const std::string& User::getHostname( void ) const
+const std::string& User::getHostName( void ) const
 {
 	return _hostName;
 }
