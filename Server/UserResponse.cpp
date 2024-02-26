@@ -30,18 +30,19 @@ void UserResponse::handshakeResponse() {
 	std::string nickName = _user.getNickName();
 	std::string userName = _user.getUserName();
 
-	_user.responseBuffer = RPL_WELCOME(nickName) + "\r\n";
-	_user.responseBuffer += RPL_YOURHOST(serverName, serverVersion) + "\r\n";
-	_user.responseBuffer += RPL_CREATED(serverCreated) + "\r\n";
-	_user.responseBuffer += RPL_MYINFO(serverName, serverVersion, userModes, channModes) + "\r\n";
+	std::stringstream reply_buffer;
 
+	reply_buffer << RPL_WELCOME(nickName, nickName, "localhost") << RPL_YOURHOST(nickName.c_str())
+	<< RPL_CREATED(nickName.c_str(), serverCreated.c_str()) << RPL_MYINFO(nickName.c_str());
+	_user.responseBuffer = reply_buffer.str();
+	std::cout << _user.responseBuffer;
 	_user.setHandshaked(true);
 }
 
 void UserResponse::responseBuilder() {
 
 	// BUILDING RESPONSES BASED ON THE COMMANDS RECEIVED FROM THE CLIENT
-
+	(void) _server; //delete
 	if (_user.userMessageBuffer.empty()) {
 
 		_user.responseBuffer = "\t<empty request>\n";
@@ -51,3 +52,12 @@ void UserResponse::responseBuilder() {
 		_user.responseBuffer = "\t..coucou. The Matrix has you.. waiting for command..\n";
 	}
 }
+
+// #include <sstream>
+// int	main(void)
+// {
+// 	std::stringstream strcat;
+
+// 	strcat << RPL_WELCOME("pia", "pia", "localhost") << RPL_YOURHOST("pia") << RPL_CREATED("pia", "1st jan 24") << RPL_MYINFO("pia");
+// 	std::cout << strcat.str();
+// }

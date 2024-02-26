@@ -4,10 +4,10 @@
 /*From https://datatracker.ietf.org/doc/html/rfc2812#section-5*/
 
 /* SUCCESSFUL REGISTRATION: */
-#define RPL_WELCOME "Welcome to the Internet Relay Network <nick>!<user>@<host>"
-#define RPL_YOURHOST "Your host is <servername>, running version <ver>"
-#define RPL_CREATED "This server was created <date>"
-#define RPL_MYINFO "<servername> <version> <available user modes><available channel modes>"
+#define RPL_WELCOME(nick, user, host) ":localhost 001 " + nick + " :Welcome to the Internet Relay Network " + nick "! " + user + "@" + host
+#define RPL_YOURHOST(nick, servername, ver) ":localhost 002 " + nick + " :Your host is " + servername + ", running version " + ver
+#define RPL_CREATED(nick, date) ":localhost 003 " + nick + " :This server was created " + date
+#define RPL_MYINFO (nick) ":localhost 004 " + nick + " : ircserv.1 itkol"
 
 /*The PING command is used to test the presence of an active client or server at the other 
 end of the connection.  Servers send a PING message at regular intervals if no other activity 

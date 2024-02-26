@@ -1,54 +1,118 @@
 #include "Request.hpp"
 
-Request::Request();
+/*CONSTRUCTORS/DESTRUCTORS*/
+Request::Request(std::string buffer) : _input_buffer(buffer)
 {
-    std::cout << "Request constructor called" << std::endl;
+	if (DEBUG)
+		std::cout << "Request constructor called" << std::endl;
 }
 
 Request::~Request()
 {
-    std::cout << "Request destructor called" << std::endl;
+	if (DEBUG)
+		std::cout << "Request destructor called" << std::endl;
 }
 
-std::string const&	Request::getMessage() const
+/*SETTERS*/
+int		Request::set_prefix(std::string const& param)
 {
-    std::map<std::string, std::string>::iterator it = _input_map.find("message");
-    if (it != _input_map.end())
-        return (it->second);
-    return (NULL);
+	if (param.empty())
+		throw std::runtime_error("command not found");
+	if (param[0] == ':')
+	{
+		_input_map.insert(std::make_pair("prefix", param));
+		return (0);
+	}
+	return (1);
 }
+
+void	Request::set_command(std::string const& param)
+{
+	if (param.empty())
+		return ;
+	_input_map.insert(std::make_pair("command", param));
+}
+
+#include <stdio.h>
+void	Request::set_params(std::vector<std::string>& split_buffer)
+{
+	if (split_buffer.empty())
+		return ;
+	typedef std::vector<std::string>::const_iterator it;
+	for (it i = split_buffer.begin(); i != split_buffer.end();)
+	{
+		_input_map.insert(std::make_pair("param", *i));
+		printf("%s\n", i->c_str());
+		i = split_buffer.erase(i);
+		printf("%s\n", i->c_str());
+	}
+}
+
+/*GETTERS*/
 		
 std::string const&	Request::getCommand() const
 {
-    std::map<std::string, std::string>::iterator it = _input_map.find("command");
+    std::map<std::string, std::string>::const_iterator it = _input_map.find("command");
     if (it != _input_map.end())
         return (it->second);
-    return (NULL);
+	else
+		throw std::runtime_error("no command found");
 }
 
 std::string const&	Request::getPrefix() const
 {
-    std::map<std::string, std::string>::iterator it = _input_map.find("prefix");
+    std::map<std::string, std::string>::const_iterator it = _input_map.find("prefix");
     if (it != _input_map.end())
         return (it->second);
-    return (NULL);
+	else
+		throw std::runtime_error("no prefix found");
 }
 
-std::string const&  Request::getParams() const
-{
-    std::map<std::string, std::string>::iterator it = _input_map.find("parameter");
-    if (it != _input_map.end())
-        return (it->second);
-    return (NULL);
-}
+/*OTHER*/
 
 void  Request::set_to_map()
 {
-    if (!_input_buffer)
-        return ; // Throw exception?
-    for (int i = 0; _input_buffer[i] != 0; i++)
-    {
-        if (_input_buffer[0] == ':')
-            
-    }
+    if (_input_buffer.empty())
+		return ; // Throw exception?
+	std::stringstream	ss(_input_buffer);
+	std::string			newString;
+	std::vector<std::string>	split_buffer;
+	while (std::getline(ss, newString, ' '))
+	{
+		if (set_prefix(newString))
+		{
+			set_command(newString);
+			continue;
+		}
+		
+	}
+	// set_prefix(split_buffer);
+	// set_command(split_buffer);
+	set_params(split_buffer);
+	if (DEBUG)
+		print_map();
+
 }
+
+void	Request::print_map() const
+{
+	std::map<std::string, std::string>::const_iterator it;
+	for (it = _input_map.begin(); it != _input_map.end(); ++it)
+	{
+		std::cout << "Key: " << it->first << "\nValue: " << it->second << std::endl;
+	}
+}
+
+// int	main(void)
+// {
+// 	// Request test("KICK #general johndoe :shithead");
+
+// 	// test.set_to_map();
+// 	std::string test = "Here is a sentence with all these words";
+// 	std::string newString;
+// 	std::stringstream	stream(test);
+// 	while (std::getline(stream, newString, 'r'))
+// 	{
+// 		std::cout << newString << std::endl;
+// 	}
+// }
