@@ -1,66 +1,136 @@
 #include "User.hpp"
 #include "../Channel/Channel.hpp"
-
 #include <iostream> 
 
-User::User(const std::string & nickname, const std::string & username) : _nickname(nickname), _username(username)
+User::User(const int& fd) : _socket(fd)
 {
-	std::cout << "User " << _username << " has been created" << std::endl;
+	//std::cout << "User has been created" << std::endl;
 }
 
 User::~User()
 {
-	std::cout << "User " << _username << " has been destructed" << std::endl;
+	//std::cout << "User " << _userName << " has been destructed" << std::endl;
 }
 
-void	User::setSocket(const int & socket)
+// --------------------------------------- SETTERS ---------------------------------------- // 
+
+void	User::setPort(const int& port)
+{
+	_port = port;
+}
+
+void	User::setSocket(const int& socket)
 {
 	_socket = socket;
 }
 
-void 	User::setNickname(const std::string & nickname)
+void 	User::setNickname(const std::string& nickname)
 {
-	_nickname = nickname;
+	_nickName = nickname;
 }
 
-void 	User::setUsername(const std::string & username)
+void 	User::setUsername(const std::string& username)
 {
-	_username = username;
+	_userName = username;
 }
 
-void 	User::setPassword(const std::string & password)
+void 	User::setHostname(const std::string& hostname)
+{
+	_hostName = hostname;
+}
+
+void 	User::setPassword(const std::string& password)
 {
 	_password = password;
 }
 
-void	User::setChannel(const Channel & channel)
+void	User::setChannel(Channel& channel)
 {
-	_channels.insert(std::make_pair(channel.getName(), channel));
-
-	/*Lorsque vous appelez insert, cela va ajouter un élément à la 
-	map _channels où la clé sera le nom du canal et la valeur sera le canal 
-	lui-même. Si la clé existe déjà, l'insertion échouera car les clés doivent
-	être uniques dans une map. Si vous souhaitez remplacer le canal existant
-	en cas de clé en double, vous pouvez utiliser operator[] à la place de 
-	insert :   _channels[channel.getName()] = channel; */
+	//_channels.insert(std::make_pair(channel.getName(), channel));
+	_channels[channel.getName()] = &channel;
+	// checker si le channel existe deja et voir quel comportement je veux
 }
 
-const int & User::getSocket( void ) const
+void	User::setIsOp( const bool& isOp )
+{
+	_isOp = isOp;
+}
+
+void	User::setCanModifyTopic( const bool& topic )
+{
+	_canModifyTopic = topic;
+}
+
+// ---------------------------------------- GETTERS ----------------------------------------- // 
+
+const int& User::getPort( void ) const
+{
+	return _port;
+}
+
+const int& User::getSocket( void ) const
 {
 	return _socket;
 }
 
 const std::string& User::getNickname( void ) const
 {
-	return _nickname;
+	return _nickName;
 }
 
 const std::string& User::getUsername( void ) const
 {
-	return _username;
+	return _userName;
+}
+
+const std::string& User::getHostname( void ) const
+{
+	return _hostName;
 }
 
 const std::string& User::getPassword( void ) const
 {
 	return _password;
+}
+
+Channel& User::getChannel( const std::string& name ) const
+{
+	return *_channels.at(name);
+}
+
+const std::map<std::string, Channel*>& User::getChannels( void ) const
+{
+	return _channels;
+} 
+
+const bool& User::getIsOp( void ) const
+{
+	return _isOp;
+}
+
+const bool&	User::getCanModifyTopic( void ) const
+{
+	return _canModifyTopic;
+}
+
+// fonction membres 
+
+void	User::removeChannel(Channel& channel)
+{
+	std::map<std::string, Channel*>::iterator it;
+	it = _channels.find(channel.getName());
+    if (it != _channels.end())
+	{
+		channel.removeUser(*this);
+        _channels.erase(it);
+	}
+}
+
+void User::printChannels( void ) const
+{
+	std::map<std::string, Channel*>::const_iterator it;
+
+    std::cout << "Channels in this user:" << std::endl;
+    for ( it = _channels.begin(); it != _channels.end(); ++it)
+        std::cout << it->second->getName() << std::endl;
 }

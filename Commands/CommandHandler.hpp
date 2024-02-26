@@ -64,7 +64,10 @@ class CommandHandler {
 		void				handlePASS();
 		void				handleNICK();
 		void				handleUSER();
-
+		void				handleMODE();
+		void				handleKICK();
+		void				handleINVITE();
+		void				handleTOPIC();
 };
 
 #endif
