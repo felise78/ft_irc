@@ -175,54 +175,56 @@ void	CommandHandler::handleINVITE() {
 // 	// format de la commande : /KICK #channel nickname
 // }
 
-// void	CommandHandler::handleMODE()
-// {
-// 	std::cout << YELLOW << "MODE command received.." << RESET << std::endl;
+void	CommandHandler::handleMODE()
+{
+	std::cout << YELLOW << "MODE command received.." << RESET << std::endl;
 
-// 	if (user.getIsOp() == false)
-// 		return;
+	if (user.getIsOp() == false || !_channel)
+		return;
 	
-// 	//format de la commande :  /mode #channel flag
-// 	std::string channel;
-// 	std::string flag;
+	//format de la commande :  /mode #channel flag
+	// std::string channel; // made this an attribute of CommandHandler;
+	std::string flag; 
 
-// 	if(flag == "-i")								
-// 	{
-// 		if (user.getChannel(channel))
-// 		if (channel.getInvit() == true) 
-// 			channel.setInvit(false);
-// 	}
-// 	else if(flag  == "+i") 					
-// 	{
-// 		if (channel.getInvit() == false)
-// 			channel.setInvit(true);
-// 	}
-// 	else if(flag == "-t")					
-// 	{
-// 		if (user.getCanModifyTopic() == true)
-// 				user.setCanModifyTopic(false);
-// 	}
-// 	else if(flag == "+t")						
-// 	{
-// 		if (user.getCanModifyTopic() == false)
-// 				user.setCanModifyTopic(true);
-// 	}
-// 	else if(flag == "-k")							
-// 	{
-// 		// retirer le mot de passe du channel
-// 	}
-// 	else if(flag == "+k")
-// 	{
-// 		// definir un mot de passe				// /mode #channel +k password
-// 	}
-// 	else if(flag == "-o")
-// 		;										// /mode #channel -o user
-// 	else if(flag == "+o")
-// 		;										// /mode #channel +o user
-// 	else if(flag == "-l")
-// 		;										// /mode #channel -l
-// 	else if(flag == "+l")
-// 		;										// /mode #channel +l int
-// 	// else
-// 	// 	; // error unknown flag or parsed before ?
-// }
+	if(flag == "-i")								
+	{
+		if (_channel->getInvit() == true) 
+			_channel->setInvit(false);
+	}
+	else if(flag  == "+i") 					
+	{
+		if (_channel->getInvit() == false)
+			_channel->setInvit(true);
+	}
+	else if(flag == "-t")
+	// I think here the characteristic of the channel needs to be changed, ie, 
+	// +t = the channel topic can be set only by the chanop, -t = any chan member can set the topic 					
+	// Source: https://datatracker.ietf.org/doc/html/rfc1459#section-4.2.3.1 
+	{
+		if (_channel->getTopicRestricted() == true)
+			_channel->setTopicRestricted(false);
+	}
+	else if(flag == "+t")						
+	{
+		if (_channel->getTopicRestricted() == false)
+			_channel->setTopicRestricted(true);
+	}
+	else if(flag == "-k")							
+	{
+		// retirer le mot de passe du channel
+	}
+	else if(flag == "+k")
+	{
+		// definir un mot de passe				// /mode #channel +k password
+	}
+	else if(flag == "-o")
+		;										// /mode #channel -o user
+	else if(flag == "+o")
+		;										// /mode #channel +o user
+	else if(flag == "-l")
+		;										// /mode #channel -l
+	else if(flag == "+l")
+		;										// /mode #channel +l int
+	// else
+	// 	; // error unknown flag or parsed before ?
+}

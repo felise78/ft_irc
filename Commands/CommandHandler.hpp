@@ -49,7 +49,7 @@ class CommandHandler {
 		map<string, string>				&commandsFromClient;
 		map<e_cmd, string>				mapEnumToString; // map to convert CMD enum to string
 		map<string, void (CommandHandler::*)() >	cmdToHandler; // map to convert CMD to handler method
-
+		Channel*							_channel; // pointer to channel, if channel concerned. pointer so it can be NULL.
 		CommandHandler(User &usr, map<string, string> &commands);
 		~CommandHandler();
 
