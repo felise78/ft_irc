@@ -18,7 +18,8 @@
 			int								_nb_users;
 			int								_limit; 	// max number of users
 			bool							_limited; 
-			bool							_invit_only; 
+			bool							_invit_only;
+			bool							_topic_restricted;	
 
 		public :
 			Channel(const std::string& name);
@@ -32,6 +33,7 @@
 			void	setNbUsers(const int& nb);
 			void	setLimit(const int & limit);
 			void	setInvit(const bool & invit);
+			void	setTopicRestricted(const bool& topic);
 			// getters
 			const std::string& 	getName( void ) const;
 			const std::string& 	getTheme( void ) const;
@@ -42,6 +44,7 @@
 			const int& getNbUsers( void ) const;
 			const int& getLimit( void ) const;
 			const bool& getInvit( void ) const;
+			const bool& getTopicRestricted() const;
 
 			void	removeUser(User& user);
 			void	printUsers( void ) const; // for debug

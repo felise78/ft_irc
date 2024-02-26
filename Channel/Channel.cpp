@@ -3,7 +3,7 @@
 #include "../User/User.hpp"
 #include <iostream>
 
-Channel::Channel(const std::string& name) : _name(name), _nb_users(0), _limited(false)
+Channel::Channel(const std::string& name) : _name(name), _nb_users(0), _limited(false), _topic_restricted(false)
 {
 	//std::cout << "Channel " << _name << " has been created" << std::endl;
 }
@@ -65,6 +65,11 @@ void	Channel::setInvit(const bool & invit)
 	_invit_only = invit;
 }
 
+void	Channel::setTopicRestricted(const bool& topic)
+{
+	_topic_restricted = topic;
+}
+
 // ------------------- GETTERS ---------------------- // 
 
 const std::string& Channel::getName( void ) const
@@ -112,6 +117,10 @@ const bool& 	Channel::getInvit( void ) const
 	return _invit_only;
 }
 
+const bool& Channel::getTopicRestricted() const
+{
+	return _topic_restricted;
+}
 // ------------------- MEMBER FUNCTIONS ---------------------- // 
 
 void	Channel::removeUser(User& user)
