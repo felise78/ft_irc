@@ -6,7 +6,7 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
-#include <User.hpp>
+#include "../User/User.hpp"
 
 #ifndef DEBUG
 	#define DEBUG 0
@@ -28,21 +28,23 @@ typedef enum	e_commands
 class Request
 {
 	private:
-		std::string                         _input_buffer;
-		std::map<std::string, std::string>  _input_map;
-		User&								_user;
-		int		set_prefix(std::string const& param);
-		void	set_command(std::string const& param);
-		void	set_params(std::vector<std::string>& split_buffer);
+		std::string                         	_input_buffer;
+		std::multimap<std::string, std::string>	_input_map; //the multimap allows for different values to have the same key.
+															// This is useful because there can be multiple channels/users/ involved
+		User&									_user; // Request sender 
+		bool									_request_valid;
 	
 	public:
-		Request(std::string buffer);
+		Request(std::string buffer, User& user);
 		~Request();
+		//SETTERS
+		void	parse_args();
+		void 	set_to_map(std::vector<std::string>& split_buffer);
+		//GETTERS
 		std::string const&	getCommand() const; //command
-		std::string const&	getPrefix() const; // prefix (usually sender information)
-		void				set_to_map();
 		//DEBUG
 		void	print_map() const;
+		void	print_vector(std::vector<std::string> const& split_buffer);
 };
 
 #endif
@@ -141,4 +143,18 @@ Examples:
 
    MODE #42 -k oulu                ; Command to remove the "oulu"
 								   channel key on channel "#42".
+*/
+
+/*
+KEYS
+command
+channel
+user (destination, not client requesting)
+flag
+message 
+
+PASS password -> key of password? "arg"?
+NICK nick 
+USER username
+
 */
