@@ -43,7 +43,6 @@
 		const std::string& getHostName( void ) const;
 		const std::string& getPassword( void ) const;
 		Channel& getChannel( const std::string& name ) const;
-		const std::map<std::string, Channel*>& getChannels( void ) const;
 		bool	authenticated();
 		bool	handshaked();
 

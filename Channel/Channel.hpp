@@ -40,7 +40,6 @@
 			const std::string& 	getTheme( void ) const;
 			const std::string&	getKey( void ) const;
 			User& getUser( const std::string & nickname ) const;
-			const std::map<std::string, User*>& getUsers( void ) const;
 			const std::string& getOp( const std::string & nickname ) const;
 			const int& getNb( void ) const;
 			const int& getLimit( void ) const;

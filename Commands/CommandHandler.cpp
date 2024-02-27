@@ -208,11 +208,13 @@ void	CommandHandler::handleKICK()
 {
  	std::cout << YELLOW << "KICK command received.." << RESET << std::endl;
 
-	std::string channel;
-	std::string nickname;
-
 	// format de la commande : /KICK #channel nickname
 
+	std::string channel = args[0];
+	std::string nickname = args[1];
+
+	if (user.getChannel(channel) == NULL)
+		return;
 	if (user.getChannel(channel).getOp(user) == NULL) // verifying that the user is op in the specified channel
 		return;
 	
@@ -220,7 +222,7 @@ void	CommandHandler::handleKICK()
 	{
 		user.getChannel(channel).getUser(nickname).removeChannel(channel);
 		user.getChannel(channel).removeUser(nickname);
-		// remove aussi dans le server_manager si il y aura une copie des channels 
+		server.getChannel(channel).removeUser(nickname); // dunnow if necessarry to remove it in both
 	}
 }
 
@@ -228,12 +230,14 @@ void	CommandHandler::handleMODE()
 {
 	std::cout << YELLOW << "MODE command received.." << RESET << std::endl;
 
+	if (user.getChannel(channel) == NULL)
+		return;
 	if (user.getChannel(channel).getOp(user) == NULL) // verifying that the user is op in the specified channel
 		return;
 	
 	//format de la commande :  /mode #channel flag
-	// std::string channel; // made this an attribute of CommandHandler;
-	std::string flag; 
+	std::string channel = args[0];
+	std::string flag = args[1]; 
 
 	if(flag == "-i")								
 	{
@@ -268,12 +272,14 @@ void	CommandHandler::handleMODE()
 	}
 	else if(flag == "-o")
 	{
-		// format : /mode #channel -o nickname
-
-		
+		// format : /mode #channel -o nickname    // ici nickname == args[2]
+		user.getChannel(channel).removeOp(args[2]);
 	}							
 	else if(flag == "+o")
-		;										// /mode #channel +o user
+	{
+		// format : /mode #channel +o nickname    // ici nickname == args[2]
+		user.getChannel(channel).setOp(args[2])
+	}										
 	else if(flag == "-l")
 		;										// /mode #channel -l
 	else if(flag == "+l")

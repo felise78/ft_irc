@@ -51,6 +51,10 @@ void	Channel::setUser(User& user)
 
 void	Channel::setOp(const std::string& nickname)
 {
+	// protection si le nickname n'existe pas dans le channel
+	if (getUser(nickname) == NULL)
+		return; // throw une erreur ?
+
 	// Les opérateurs du canal sont généralement désignés par un symbole "@" 
 	// devant leur nom d'utilisateur dans la liste des utilisateurs du canal.
 	std::string opNickname = "@" + nickname;
@@ -97,23 +101,18 @@ const std::string&	Channel::getKey( void ) const
 
 User& Channel::getUser( const std::string & nickname ) const
 {
-	return *_users.at(nickname);
-}
-
-const std::map<std::string, User*>& 	Channel::getUsers( void ) const
-{
-	return _users;
+	if (_users[nickname] == _users.end())
+		return NULL;
+	else
+		return _users[nickname];
 }
 
 const std::string& Channel::getOp( const std::string & nickname ) const
 {
-	std::vector<std::string>::iterator it;
-
-	it = _ops.find(nickname);
-	if (it != _ops.end())
-		return nickname;
-	else
+	if (_ops[nickname] == _ops.end())
 		return NULL;
+	else
+		return nickname;
 }
 
 const int& Channel::getNb( void ) const

@@ -94,13 +94,11 @@ const std::string& User::getPassword( void ) const
 
 Channel& User::getChannel( const std::string& name ) const
 {
-	return *_channels.at(name);
+	if (_channels[name] == _channels.end())
+		return NULL;
+	else
+		return _channels[name];
 }
-
-const std::map<std::string, Channel*>& User::getChannels( void ) const
-{
-	return _channels;
-} 
 
 // fonction membres 
 
