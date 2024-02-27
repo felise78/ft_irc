@@ -3,7 +3,7 @@
 #include "../User/User.hpp"
 #include <iostream>
 
-Channel::Channel(const std::string& name) : _name(name), _nb_users(0), _limited(false), _topic_restricted(false)
+Channel::Channel(const std::string& name) : _name(name), _nb(0), _limited(false), _topic_restricted(false)
 {
 	//std::cout << "Channel " << _name << " has been created" << std::endl;
 }
@@ -34,25 +34,25 @@ void	Channel::setUser(User& user)
 {
 	if (_limited == true)
 	{
-		if (_nb_users >= _limit)
+		if (_nb >= _limit)
 		{
 			std::cout << "User limit has been reached in this channel" << std::endl; // for debug // throw error ? 
 			return;
 		}
 	}
-	_users[user.getUserName()] = &user;
+	_users[user.getNickname()] = &user;
 	user.setChannel(*this);
-	_nb_users++;
+	_nb++;
 }
 
-void	Channel::setOp(User& op)
+void	Channel::setOp(const std::string& nickname)
 {
-	_ops[op.getUserName()] = &op;
+	_ops.push_back(nickname);
 }
 
-void	Channel::setNbUsers(const int& nb)
+void	Channel::setNb(const int& nb)
 {
-	_nb_users = nb;
+	_nb = nb;
 }
 
 void	Channel::setLimit(const int & limit)
@@ -87,9 +87,9 @@ const std::string&	Channel::getKey( void ) const
 	return _key;
 }
 
-User& Channel::getUser( const std::string & username ) const
+User& Channel::getUser( const std::string & nickname ) const
 {
-	return *_users.at(username);
+	return *_users.at(nickname);
 }
 
 const std::map<std::string, User*>& 	Channel::getUsers( void ) const
@@ -97,14 +97,20 @@ const std::map<std::string, User*>& 	Channel::getUsers( void ) const
 	return _users;
 }
 
-User& Channel::getOp( const std::string & username ) const
+const std::string& Channel::getOp( const std::string & nickname ) const
 {
-	return *_ops.at(username);
+	std::vector<std::string>::iterator it;
+
+	it = _ops.find(nickname);
+	if (it != _ops.end())
+		return nickname;
+	else
+		return NULL;
 }
 
-const int& Channel::getNbUsers( void ) const
+const int& Channel::getNb( void ) const
 {
-	return _nb_users;
+	return _nb;
 }
 
 const int& 		Channel::getLimit( void ) const
@@ -127,12 +133,12 @@ void	Channel::removeUser(User& user)
 {
 
 	std::map<std::string, User*>::iterator it;
-	it = _users.find(user.getUserName());
+	it = _users.find(user.getNickname());
     if (it != _users.end())
 	{
 		user.removeChannel(*this);
         _users.erase(it);
-		_nb_users--;
+		_nb--;
 	}
 }
 
@@ -142,5 +148,5 @@ void Channel::printUsers( void) const
 
     std::cout << "Users in this channel:" << std::endl;
     for ( it = _users.begin(); it != _users.end(); ++it)
-        std::cout << it->second->getUserName() << std::endl;
+        std::cout << it->second->getNickname() << std::endl;
 }

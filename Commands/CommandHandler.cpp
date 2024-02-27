@@ -142,44 +142,93 @@ void	CommandHandler::handleUSER() {
 	user.setUserName(commandsFromClient["USER"]);
 }
 
+void	CommandHandler::handleJOIN() {
+
+	std::cout << YELLOW << "JOIN command received.." << RESET << std::endl;
+
+	// format : /join #channel
+
+	std::string channel;
+
+	if (server.getChannel(channel))
+	{
+		user.setChannel(server.getChannel(channel));
+		server.getChannel(channel).setUser(*this);
+	}
+	else
+	{
+		Channel new_channel(channel);
+		server.setChannel(new_channel);
+		user.setChannel(new_channel);
+		user.getChannel(channel).setUser(*this);
+	}
+
+}
+
+void	CommandHandler::handlePRIVMSG() {
+
+	std::cout << YELLOW << "PRIVMSG command received.." << RESET << std::endl;
+
+	// format : /msg nickname <message>
+	// I have to verify that the other user-nickname is in the channel too
+
+}
+
 void	CommandHandler::handleINVITE() {
 
 	std::cout << YELLOW << "INVITE command received.." << RESET << std::endl;
 
-	// format de la commade : /INVITE nickname #channel
+	// format : /INVITE nickname #channel
+	
+	// envoie une notification au user/nickname
+	// il doit toujours join
 }
 
-// void	CommandHandler::handleTOPIC()	{
+void	CommandHandler::handleTOPIC()	{
 
 // 	std::cout << YELLOW << "TOPIC command received.." << RESET << std::endl;
 
 // 	// format de la commande : /TOPIC #channel 
 
+	std::string channel;
+	std::string topic;
+
+	// ici pas besoin de verifier si user is op, tout le monde peut imprimer le sujet du channel
 
 // 	std::cout << channel.getTheme() << std::endl;
 
-// 	// if param apres le nom du channel
-// 	if (user.getCanModifyTopic() == true)
-// 	{
-// 		channel.setTheme(new_theme);
-// 	}
-// }
+	// if param apres le nom du channel
+	if (user.getCanModifyTopic() == true)
+	{
+		channel.setTheme(new_theme);
+	}
+}
 
-// void	CommandHandler::handleKICK()
-// {
+void	CommandHandler::handleKICK()
+{
 // 	std::cout << YELLOW << "KICK command received.." << RESET << std::endl;
 
-// 	if (user.getIsOp() == false)
-// 		return;
+	std::string channel;
+	std::string nickname;
 
-// 	// format de la commande : /KICK #channel nickname
-// }
+	// format de la commande : /KICK #channel nickname
+
+	if (user.getChannel(channel).getOp(user) == false) // verifying that the user is op in the specified channel
+		return;
+	
+	if (user.getChannel(channel).getUser(nickname))
+	{
+		user.getChannel(channel).getUser(nickname).removeChannel(channel);
+		user.getChannel(channel).removeUser(nickname);
+		// remove aussi dans le server_manager si il y aura une copie des channels 
+	}
+}
 
 void	CommandHandler::handleMODE()
 {
 	std::cout << YELLOW << "MODE command received.." << RESET << std::endl;
 
-	if (user.getIsOp() == false || !_channel)
+	if (user.getChannel(channel).getOp(user) == false) // verifying that the user is op in the specified channel
 		return;
 	
 	//format de la commande :  /mode #channel flag

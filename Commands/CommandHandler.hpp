@@ -45,6 +45,7 @@ class CommandHandler {
 
 	public:
 
+		ServerManager					&server;
 		User							&user;
 		map<string, string>				&commandsFromClient;
 		map<e_cmd, string>				mapEnumToString; // map to convert CMD enum to string
@@ -65,6 +66,8 @@ class CommandHandler {
 		void				handlePASS();
 		void				handleNICK();
 		void				handleUSER();
+		void				handleJOIN();
+		void				handlePRIVMSG();
 		void				handleMODE();
 		void				handleKICK();
 		void				handleINVITE();
