@@ -56,16 +56,6 @@ void	User::setChannel(Channel& channel)
 	_channels[channel.getName()] = &channel;
 }
 
-void	User::setIsOp( const bool& isOp )
-{
-	_isOp = isOp;
-}
-
-void	User::setCanModifyTopic( const bool& topic )
-{
-	_canModifyTopic = topic;
-}
-
 // ---------------------------------------- GETTERS ----------------------------------------- // 
 
 bool	User::authenticated() { return this->_authenticated; }
@@ -111,16 +101,6 @@ const std::map<std::string, Channel*>& User::getChannels( void ) const
 {
 	return _channels;
 } 
-
-const bool& User::getIsOp( void ) const
-{
-	return _isOp;
-}
-
-const bool&	User::getCanModifyTopic( void ) const
-{
-	return _canModifyTopic;
-}
 
 // fonction membres 
 

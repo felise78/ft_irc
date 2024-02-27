@@ -17,8 +17,6 @@
 		std::string 					_password; // ..parsed in `UserRequestParsing` class..
 		std::map<std::string, Channel*>	_channels;
 		// ..to use for composing the first response message to the client (RPL_WELCOME, RPL_YOURHOST, RPL_CREATED, RPL_MYINFO..)
-		bool							_isOp; 
-		bool							_canModifyTopic;
 
 		public :
 		User() : _port(0), _socket(0), _hostName(""), _nickName(""), _userName(""), _password(""), _authenticated(false), _handshaked(false) {};
@@ -35,10 +33,8 @@
 		void 	setHostName(const std::string& hostname);
 		void 	setPassword(const std::string& password);
 		void	setChannel(Channel& channel);
-		void	setIsOp( const bool& isOp );
-		void	setCanModifyTopic( const bool& topic );
-		void			setAuthenticated(bool authenticated);
-		void			setHandshaked(bool handshaked);
+		void	setAuthenticated(bool authenticated);
+		void	setHandshaked(bool handshaked);
 		// Getters //
 		const int& getPort( void ) const;
 		const int& getSocket( void ) const;
@@ -48,10 +44,8 @@
 		const std::string& getPassword( void ) const;
 		Channel& getChannel( const std::string& name ) const;
 		const std::map<std::string, Channel*>& getChannels( void ) const;
-		const bool& getIsOp( void ) const;
-		const bool& getCanModifyTopic( void ) const;
-		bool			authenticated();
-		bool			handshaked();
+		bool	authenticated();
+		bool	handshaked();
 
 		void	printChannels( void ) const;   // for debug
 		void	removeChannel(Channel& channel);
