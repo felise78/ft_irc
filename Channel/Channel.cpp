@@ -32,6 +32,10 @@ void	Channel::setKey(const std::string & key)
 
 void	Channel::setUser(User& user)
 {
+	// si le user existe deja
+	if (_users[user.getNickName()])
+		return ; // throw une erreur ? 
+	
 	if (_limited == true)
 	{
 		if (_nb >= _limit)

@@ -51,9 +51,9 @@ void 	User::setPassword(const std::string& password)
 
 void	User::setChannel(Channel& channel)
 {
-	//_channels.insert(std::make_pair(channel.getName(), channel));
+	if (_channels.find(channel) != _channels.end()) // si le channel est deja dans User
+		return;
 	_channels[channel.getName()] = &channel;
-	// checker si le channel existe deja et voir quel comportement je veux
 }
 
 void	User::setIsOp( const bool& isOp )
