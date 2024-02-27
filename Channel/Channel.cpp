@@ -40,7 +40,7 @@ void	Channel::setUser(User& user)
 			return;
 		}
 	}
-	_users[user.getNickname()] = &user;
+	_users[user.getNickName()] = &user;
 	user.setChannel(*this);
 	_nb++;
 }
@@ -99,13 +99,14 @@ const std::map<std::string, User*>& 	Channel::getUsers( void ) const
 
 const std::string& Channel::getOp( const std::string & nickname ) const
 {
-	std::vector<std::string>::iterator it;
+	return nickname;
+	// std::vector<std::string>::iterator it;
 
-	it = _ops.find(nickname);
-	if (it != _ops.end())
-		return nickname;
-	else
-		return NULL;
+	// it = _ops.find(nickname);
+	// if (it != _ops.end())
+	// 	return nickname;
+	// else
+	// 	return NULL;
 }
 
 const int& Channel::getNb( void ) const
@@ -133,7 +134,7 @@ void	Channel::removeUser(User& user)
 {
 
 	std::map<std::string, User*>::iterator it;
-	it = _users.find(user.getNickname());
+	it = _users.find(user.getNickName());
     if (it != _users.end())
 	{
 		user.removeChannel(*this);
@@ -148,5 +149,5 @@ void Channel::printUsers( void) const
 
     std::cout << "Users in this channel:" << std::endl;
     for ( it = _users.begin(); it != _users.end(); ++it)
-        std::cout << it->second->getNickname() << std::endl;
+        std::cout << it->second->getNickName() << std::endl;
 }
