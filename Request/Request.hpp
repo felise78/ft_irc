@@ -2,6 +2,15 @@
 #define REQUEST_HPP
 
 #include <string>
+#include <map>
+#include <iostream>
+#include <sstream>
+#include <vector>
+#include <User.hpp>
+
+#ifndef DEBUG
+	#define DEBUG 0
+#endif
 
 typedef enum	e_commands
 {
@@ -12,26 +21,28 @@ typedef enum	e_commands
 	NICK,
 	OPER,
 	JOIN,
-	PRIVMSG
+	PRIVMSG,
+	PART
 }	t_commands;
 
 class Request
 {
 	private:
-		std::string input;
-		std::string	prefix;
-		std::string	command;
-		std::string params;
-
+		std::string                         _input_buffer;
+		std::map<std::string, std::string>  _input_map;
+		User&								_user;
+		int		set_prefix(std::string const& param);
+		void	set_command(std::string const& param);
+		void	set_params(std::vector<std::string>& split_buffer);
+	
 	public:
-		Request();
+		Request(std::string buffer);
 		~Request();
-		std::string const&	getInput();
-		std::string const&	getCommand();
-		std::string const&	getPrefix();
-		std::string const&	getParams();
-
-
+		std::string const&	getCommand() const; //command
+		std::string const&	getPrefix() const; // prefix (usually sender information)
+		void				set_to_map();
+		//DEBUG
+		void	print_map() const;
 };
 
 #endif
@@ -50,16 +61,16 @@ the default message, the nickname of the user issuing the KICK.
  Examples:
 
    KICK &Melbourne Matthew         ; Command to kick Matthew from
-                                   &Melbourne
+								   &Melbourne
 
    KICK #Finnish John :Speaking English
-                                   ; Command to kick John from #Finnish
-                                   using "Speaking English" as the
-                                   reason (comment).
+								   ; Command to kick John from #Finnish
+								   using "Speaking English" as the
+								   reason (comment).
 
    :WiZ!jto@tolsun.oulu.fi KICK #Finnish John
-                                   ; KICK message on channel #Finnish
-                                   from WiZ to remove John from channel
+								   ; KICK message on channel #Finnish
+								   from WiZ to remove John from channel
 
 
 Command: INVITE
@@ -73,12 +84,12 @@ Examples:
 
    :Angel!wings@irc.org INVITE Wiz #Dust
 
-                                   ; Message to WiZ when he has been
-                                   invited by user Angel to channel
-                                   #Dust
+								   ; Message to WiZ when he has been
+								   invited by user Angel to channel
+								   #Dust
 
    INVITE Wiz #Twilight_Zone       ; Command to invite WiZ to
-                                   #Twilight_zone
+								   #Twilight_zone
 
 Command: TOPIC
 Parameters: <channel> [ <topic> ]
@@ -91,16 +102,16 @@ Parameters: <channel> [ <topic> ]
 Examples:
 
    :WiZ!jto@tolsun.oulu.fi TOPIC #test :New topic ; User Wiz setting the
-                                   topic.
+								   topic.
 
    TOPIC #test :another topic      ; Command to set the topic on #test
-                                   to "another topic".
+								   to "another topic".
 
    TOPIC #test :                   ; Command to clear the topic on
-                                   #test.
+								   #test.
 
    TOPIC #test                     ; Command to check the topic for
-                                   #test.
+								   #test.
 
 
 Command: MODE
@@ -112,22 +123,22 @@ a parameter.
 Examples:
 
    MODE #Finnish +imI *!*@*.fi     ; Command to make #Finnish channel
-                                   moderated and 'invite-only' with user
-                                   with a hostname matching *.fi
-                                   automatically invited.
+								   moderated and 'invite-only' with user
+								   with a hostname matching *.fi
+								   automatically invited.
 
    MODE #Finnish +o Kilroy         ; Command to give 'chanop' privileges
-                                   to Kilroy on channel #Finnish.
+								   to Kilroy on channel #Finnish.
 
    MODE #Finnish +v Wiz            ; Command to allow WiZ to speak on
-                                   #Finnish.
+								   #Finnish.
 
    MODE #Fins -s                   ; Command to remove 'secret' flag
-                                   from channel #Fins.
+								   from channel #Fins.
 
    MODE #42 +k oulu                ; Command to set the channel key to
-                                   "oulu".
+								   "oulu".
 
    MODE #42 -k oulu                ; Command to remove the "oulu"
-                                   channel key on channel "#42".
+								   channel key on channel "#42".
 */

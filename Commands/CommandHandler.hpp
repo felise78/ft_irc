@@ -3,10 +3,12 @@
 
 #include "../Request/UserRequestParsing.hpp"
 #include "../Channel/Channel.hpp"
+#include "../Server/ServerManager.hpp"
 
 using namespace std;
 
 class User;
+class ServerManager;
 
 /*
 ** The following enumeration represents available commands 
