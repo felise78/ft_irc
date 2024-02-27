@@ -321,3 +321,16 @@ bool	ServerManager::isClient(int fd) {
 	// return (UsersMap.find(fd) != UsersMap.end())
 	return usersMap.count(fd) > 0;
 }
+
+
+void	ServerManager::setChannel(Channel& channel)
+{
+	if (channelMap[channel.getName()] != channelMap.end())
+		return;
+	channelMap[channel.getName()] = &channel;
+}
+
+Channel& ServerManager::getChannel( const std::string& name ) const
+{
+	return *channelMap.at(name);
+}

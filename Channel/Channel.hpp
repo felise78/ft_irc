@@ -48,6 +48,7 @@
 			const bool& getTopicRestricted() const;
 
 			void	removeUser(User& user);
+			void	removeOp(const std::string& opNickname);
 			void	printUsers( void ) const; // for debug
 	};
 

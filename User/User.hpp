@@ -59,22 +59,3 @@
 	};
 
 #endif
-
-// faire le getter et setter des requests buffers
-
-// COMMANDES SPECIFIQUES AUX OPERATEURS : 
-
-	// KICK - Ejecter un client du channel
-	// INVITE - Inviter un client au channel
-	// TOPIC - Modifier ou afficher le thème du channel
-	// MODE - Changer le mode du channel :
-	// 	— i : Définir/supprimer le canal sur invitation uniquement
-	// 	— t : Définir/supprimer les restrictions de la commande TOPIC pour les opé-
-	// 		rateurs de canaux
-	// 	— k : Définir/supprimer la clé du canal (mot de passe)
-	// 	— o : Donner/retirer le privilège de l’opérateur de canal
-	// 	— l : Définir/supprimer la limite d’utilisateurs pour le canal
-
-
-	// Les opérateurs du canal sont généralement désignés par un symbole "@" 
-	// devant leur nom d'utilisateur dans la liste des utilisateurs du canal.

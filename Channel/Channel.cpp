@@ -47,7 +47,11 @@ void	Channel::setUser(User& user)
 
 void	Channel::setOp(const std::string& nickname)
 {
-	_ops.push_back(nickname);
+	// Les opérateurs du canal sont généralement désignés par un symbole "@" 
+	// devant leur nom d'utilisateur dans la liste des utilisateurs du canal.
+	std::string opNickname = "@" + nickname;
+	getUser(nickname).setNickName(opNickname);
+	_ops.push_back(getUser(opNickname));
 }
 
 void	Channel::setNb(const int& nb)
@@ -140,6 +144,14 @@ void	Channel::removeUser(User& user)
         _users.erase(it);
 		_nb--;
 	}
+}
+
+void	Channel::removeOp(const std::string& opNickname)
+{
+	// remove the '@' at the beggining of the nickname
+	getUser(opNickname).setNickName(opNickname.substr(1));
+	// remove op from vector
+	_ops.erase(opNickname);
 }
 
 void Channel::printUsers( void) const

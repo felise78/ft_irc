@@ -148,7 +148,7 @@ void	CommandHandler::handleJOIN() {
 
 	// format : /join #channel
 
-	std::string channel;
+	std::string channel; // sera args[0]
 
 	if (server.getChannel(channel))
 	{
@@ -186,16 +186,16 @@ void	CommandHandler::handleINVITE() {
 
 void	CommandHandler::handleTOPIC()	{
 
-// 	std::cout << YELLOW << "TOPIC command received.." << RESET << std::endl;
+	std::cout << YELLOW << "TOPIC command received.." << RESET << std::endl;
 
 // 	// format de la commande : /TOPIC #channel 
 
-	std::string channel;
-	std::string topic;
+	std::string channel; // sera args[0]
+	std::string topic;	 // sera command
 
 	// ici pas besoin de verifier si user is op, tout le monde peut imprimer le sujet du channel
 
-// 	std::cout << channel.getTheme() << std::endl;
+ 	std::cout << channel.getTheme() << std::endl;
 
 	// if param apres le nom du channel
 	if (user.getCanModifyTopic() == true)
@@ -206,14 +206,14 @@ void	CommandHandler::handleTOPIC()	{
 
 void	CommandHandler::handleKICK()
 {
-// 	std::cout << YELLOW << "KICK command received.." << RESET << std::endl;
+ 	std::cout << YELLOW << "KICK command received.." << RESET << std::endl;
 
 	std::string channel;
 	std::string nickname;
 
 	// format de la commande : /KICK #channel nickname
 
-	if (user.getChannel(channel).getOp(user) == false) // verifying that the user is op in the specified channel
+	if (user.getChannel(channel).getOp(user) == NULL) // verifying that the user is op in the specified channel
 		return;
 	
 	if (user.getChannel(channel).getUser(nickname))
@@ -228,7 +228,7 @@ void	CommandHandler::handleMODE()
 {
 	std::cout << YELLOW << "MODE command received.." << RESET << std::endl;
 
-	if (user.getChannel(channel).getOp(user) == false) // verifying that the user is op in the specified channel
+	if (user.getChannel(channel).getOp(user) == NULL) // verifying that the user is op in the specified channel
 		return;
 	
 	//format de la commande :  /mode #channel flag
@@ -267,7 +267,11 @@ void	CommandHandler::handleMODE()
 		// definir un mot de passe				// /mode #channel +k password
 	}
 	else if(flag == "-o")
-		;										// /mode #channel -o user
+	{
+		// format : /mode #channel -o nickname
+
+		
+	}							
 	else if(flag == "+o")
 		;										// /mode #channel +o user
 	else if(flag == "-l")
