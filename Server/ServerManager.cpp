@@ -139,7 +139,7 @@ void	ServerManager::_handle(int fd) {
 	User &user = usersMap[fd];
 
 	// UserRequest	userRequest(user.userMessageBuffer);
-	UserRequestParsing	userRequest(user);
+	UserRequestParsing	userRequest(*this, user);
 	// userRequest.printCommands();
 	/* ***** */
 
@@ -325,7 +325,7 @@ bool	ServerManager::isClient(int fd) {
 
 void	ServerManager::setChannel(Channel& channel)
 {
-	if (channelMap[channel.getName()] != channelMap.end())
+	if (channelMap.find(channel.getName()) != channelMap.end())
 		return;
 	channelMap[channel.getName()] = &channel;
 }

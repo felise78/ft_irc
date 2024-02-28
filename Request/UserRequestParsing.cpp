@@ -1,7 +1,7 @@
 #include "UserRequestParsing.hpp"
 
-UserRequestParsing::UserRequestParsing(User & user) 
-	: _user(user) {
+UserRequestParsing::UserRequestParsing(ServerManager& srv, User & user) 
+	: _server(srv), _user(user) {
 
 	/* DEBUG 
 	std::cout << CYAN << "\tuserMessageBuffer: " << RESET << std::endl;
@@ -18,7 +18,7 @@ UserRequestParsing::UserRequestParsing(User & user)
 	printCommands(); // DEBUG
 
 	// instantiating a CommandHandler object to handle the commands from the client
-	CommandHandler		commandHandler(_user, _commandsFromClient);
+	CommandHandler		commandHandler(_server, _user, _commandsFromClient);
 }
 
 UserRequestParsing::~UserRequestParsing() {

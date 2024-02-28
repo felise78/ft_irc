@@ -28,11 +28,15 @@ $(NAME): $(OBJS)
 # cleaning the objects right after make
 	make clean
 
+bot:
+	$(MAKE) -C Bot
+	mv Bot/bot .
+
 clean:
 	rm -f $(OBJS)
 
 fclean: clean
-	rm -f $(NAME)
+	rm -f $(NAME) bot
 
 re: fclean all
 

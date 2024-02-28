@@ -1,8 +1,8 @@
 #include "CommandHandler.hpp"
 #include "../User/User.hpp"
 
-CommandHandler::CommandHandler(User &usr, map<string, string> &commands) :
-	user(usr), commandsFromClient(commands) { 
+CommandHandler::CommandHandler(ServerManager& srv, User &usr, map<string, string> &commands) :
+	server(srv), user(usr), commandsFromClient(commands) { 
 
 	// Filling in the `mapEnumToString` map to convert enum to string, this will help to identify the command and execute when needed
 	mapEnumToString[NONE] = "NONE";
@@ -35,6 +35,12 @@ CommandHandler::CommandHandler(User &usr, map<string, string> &commands) :
 	cmdToHandler["PASS"] = &CommandHandler::handlePASS;
 	cmdToHandler["NICK"] = &CommandHandler::handleNICK;
 	cmdToHandler["USER"] = &CommandHandler::handleUSER;
+	cmdToHandler["JOIN"] = &CommandHandler::handleJOIN;
+	cmdToHandler["PRIVMSG"] = &CommandHandler::handlePRIVMSG;
+	cmdToHandler["TOPIC"] = &CommandHandler::handleTOPIC;
+	cmdToHandler["INVITE"] = &CommandHandler::handleINVITE;
+	cmdToHandler["KICK"] = &CommandHandler::handleKICK;
+	cmdToHandler["MODE"] = &CommandHandler::handleMODE;
 	// .. and so on
 
 
@@ -146,21 +152,28 @@ void	CommandHandler::handleJOIN() {
 
 	std::cout << YELLOW << "JOIN command received.." << RESET << std::endl;
 
-	// format : /join #channel
-
-	std::string channel; // sera args[0]
-
-	if (server.getChannel(channel))
-	{
-		user.setChannel(server.getChannel(channel));
-		server.getChannel(channel).setUser(*this);
-	}
-	else
+	// format : /join #channel (password)
+	const std::string channel;
+	const std::string password;
+	
+	if (server.channelMap.find(channel) == server.channelMap.end())
 	{
 		Channel new_channel(channel);
 		server.setChannel(new_channel);
 		user.setChannel(new_channel);
-		user.getChannel(channel).setUser(*this);
+		user.getChannel(channel).setUser(user);
+		if (password.empty() == false)
+			user.getChannel(channel).setKey(password);
+	}
+	else
+	{
+		if (server.channelMap[channel]->getProtected() == true)
+		{
+			if (server.channelMap[channel]->getKey() != password)
+				return;
+		}
+		user.setChannel(server.getChannel(channel));
+		server.getChannel(channel).setUser(user);
 	}
 
 }
@@ -188,20 +201,35 @@ void	CommandHandler::handleTOPIC()	{
 
 	std::cout << YELLOW << "TOPIC command received.." << RESET << std::endl;
 
-// 	// format de la commande : /TOPIC #channel 
+ 	// format : /TOPIC #channel 
 
-	std::string channel; // sera args[0]
-	std::string topic;	 // sera command
+	std::string channel; 
+	std::string topic;	
 
-	// ici pas besoin de verifier si user is op, tout le monde peut imprimer le sujet du channel
-
- 	std::cout << channel.getTheme() << std::endl;
-
-	// if param apres le nom du channel
-	if (user.getCanModifyTopic() == true)
+	// without params after channel, simply print the topic of the channel
+	if (topic.empty() == true)
 	{
-		channel.setTheme(new_theme);
+		std::cout << user.getChannel(channel).getTheme() << std::endl;
+		return;
 	}
+	// else s' il y a un param apres le nom du channel
+	// check si le channel est restricted dans la modif du topic
+	if (user.getChannel(channel).getTopicRestricted() == true)
+	{
+		// check du coup if user is op in this channel
+		vector<string>::iterator it;
+		vector<string>:: iterator last = user.getChannel(channel)._ops.end();
+		for(it = user.getChannel(channel)._ops.begin(); it != last; ++it)
+		{
+			if (*it == user.getNickName())
+				break;
+		}
+		// not found / return
+		if (it == last)
+			return;
+	}
+	// si pas de restrictions ou user was op then modify topic
+	user.getChannel(channel).setTheme(topic);
 }
 
 void	CommandHandler::handleKICK()
@@ -209,16 +237,16 @@ void	CommandHandler::handleKICK()
  	std::cout << YELLOW << "KICK command received.." << RESET << std::endl;
 
 	// format de la commande : /KICK #channel nickname
-
-	std::string channel = args[0];
-	std::string nickname = args[1];
-
-	if (user.getChannel(channel) == NULL)
+	vector<string>::iterator it;
+	vector<string>:: iterator last = user.getChannel(channel)._ops.end();
+	for(it = user.getChannel(channel)._ops.begin(); it != last; ++it)
+	{
+		if (*it == nickname)
+			break;
+	}
+	if (it == last)
 		return;
-	if (user.getChannel(channel).getOp(user) == NULL) // verifying that the user is op in the specified channel
-		return;
-	
-	if (user.getChannel(channel).getUser(nickname))
+	if (user._channels.find(nickname) != user._channels.end())
 	{
 		user.getChannel(channel).getUser(nickname).removeChannel(channel);
 		user.getChannel(channel).removeUser(nickname);
@@ -230,14 +258,10 @@ void	CommandHandler::handleMODE()
 {
 	std::cout << YELLOW << "MODE command received.." << RESET << std::endl;
 
-	if (user.getChannel(channel) == NULL)
-		return;
-	if (user.getChannel(channel).getOp(user) == NULL) // verifying that the user is op in the specified channel
-		return;
 	
-	//format de la commande :  /mode #channel flag
-	std::string channel = args[0];
-	std::string flag = args[1]; 
+	// format :  /mode #channel flag
+	std::string flag; 
+
 
 	if(flag == "-i")								
 	{
