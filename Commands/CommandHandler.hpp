@@ -18,27 +18,27 @@ typedef enum requestCMD {
 
 	NONE,
 	CAP,
-	INFO,
+	INFO, //
 	INVITE,
 	JOIN,
 	KICK,
-	LIST,
+	LIST, //
 	MODE,
-	NAMES,
-	NICK,
-	NOTICE,
+	NAMES, //
+	NICK, 
+	NOTICE, //
 	OPER,
 	PART,
 	PASS,
 	PING,
 	PONG,
 	PRIVMSG,
-	QUIT,
+	QUIT, // 
 	TOPIC,
 	USER,
-	VERSION,
-	WHO,
-	WHOIS
+	VERSION,//
+	WHO,//
+	WHOIS//
 
 }	e_cmd;
 
