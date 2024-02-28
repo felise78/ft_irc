@@ -7,6 +7,7 @@
 using namespace std;
 
 class User;
+class ServerManager;
 
 /*
 ** The following enumeration represents available commands 
@@ -51,7 +52,7 @@ class CommandHandler {
 		map<e_cmd, string>				mapEnumToString; // map to convert CMD enum to string
 		map<string, void (CommandHandler::*)() >	cmdToHandler; // map to convert CMD to handler method
 		Channel*							_channel; // pointer to channel, if channel concerned. pointer so it can be NULL.
-		CommandHandler(User &usr, map<string, string> &commands);
+		CommandHandler(ServerManager& srv, User &usr, map<string, string> &commands);
 		~CommandHandler();
 
 		// This method will return enum representation of the string command..

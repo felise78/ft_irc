@@ -15,7 +15,6 @@
 		std::string 					_userName; // ..parsed in `UserRequestParsing` class..
 		std::string						_realName; // ..parsed in `UserRequestParsing` class..
 		std::string 					_password; // ..parsed in `UserRequestParsing` class..
-		std::map<std::string, Channel*>	_channels;
 		// ..to use for composing the first response message to the client (RPL_WELCOME, RPL_YOURHOST, RPL_CREATED, RPL_MYINFO..)
 
 		public :
@@ -23,6 +22,7 @@
 		~User() {};
 		std::string						userMessageBuffer; // il y aura un type message ?
 		std::string						responseBuffer;
+		std::map<std::string, Channel*>	_channels;
 		bool							_authenticated;
 		bool							_handshaked;
 		// Setters //
@@ -48,7 +48,7 @@
 		bool	handshaked();
 
 		void	printChannels( void ) const;   // for debug
-		void	removeChannel(Channel& channel);
+		void	removeChannel(const std::string& channelName);
 		
 	};
 

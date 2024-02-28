@@ -51,7 +51,7 @@ void 	User::setPassword(const std::string& password)
 
 void	User::setChannel(Channel& channel)
 {
-	if (_channels.find(channel) != _channels.end()) // si le channel est deja dans User
+	if (_channels.find(channel.getName()) != _channels.end()) // si le channel est deja dans User
 		return;
 	_channels[channel.getName()] = &channel;
 }
@@ -104,13 +104,13 @@ const std::map<std::string, Channel*>& User::getChannels( void ) const
 
 // fonction membres 
 
-void	User::removeChannel(Channel& channel)
+void	User::removeChannel(const std::string& channelName)
 {
 	std::map<std::string, Channel*>::iterator it;
-	it = _channels.find(channel.getName());
+	it = _channels.find(channelName);
     if (it != _channels.end())
 	{
-		channel.removeUser(*this);
+		_channels[channelName]->removeUser(_nickName);
         _channels.erase(it);
 	}
 }
