@@ -1,7 +1,7 @@
 #include "Request.hpp"
 
 /*CONSTRUCTORS/DESTRUCTORS*/
-Request::Request(std::string buffer, User& user) : _input_buffer(buffer), _user(user), _request_valid(false)
+Request::Request(std::string buffer) : _input_buffer(buffer), _request_valid(false)
 {
 	if (DEBUG)
 		std::cout << "Request constructor called" << std::endl;
@@ -38,66 +38,13 @@ void	Request::parse_args()
 		_input_buffer.erase(i);
 		i = _input_buffer.find_last_of('\n', '\r');
 	}
-	std::stringstream	ss(_input_buffer);
-	std::string			newString;
-	std::vector<std::string>	split_buffer; //splitting all args by space
-	while (std::getline(ss, newString, ' '))
+	size_t i = _input_buffer.find_first_of(' ');
+	if (i != std::string::npos)
 	{
-		split_buffer.push_back(newString);
+		_input_map.insert(std::make_pair("command", _input_buffer.substr(0, i)));
+		_input_map.insert(std::make_pair("params", _input_buffer.substr(i + 1)));
 	}
-	set_to_map(split_buffer);
-}
-
-void  Request::set_to_map(std::vector<std::string>& split_buffer)
-{
-	typedef std::vector<std::string>::iterator vector_it;
-	typedef std::multimap<std::string, std::string>::iterator map_it;
-	vector_it it = split_buffer.begin();
-	check_command_valid(*it); //all commands capitalised here
-	_input_map.insert(std::make_pair("command", *it)); //first arg is always command, ignore prefix case?
-	it++;
-	while (_request_valid && it != split_buffer.end())
-	{
-		if (((*it)[0] == '#') || ((*it)[0] == '&'))
-		{
-			_input_map.insert(std::make_pair("channel", *it)); //can be multiple channels
-			it++;
-		}
-		else if ((*it)[0] == ':')
-		{
-			std::string param; 
-			while (it != split_buffer.end())
-			{
-				param += *it;
-				param += " ";
-				it++;
-			}
-			param.erase(0,1); //removes the : at the beginning
-			_input_map.insert(std::make_pair("message", param)); //if an arg starts with :, everything that follows is message
-		}
-		else if ((*it)[0] == '+' || (*it)[0] == '-')
-		{
-			_input_map.insert(std::make_pair("flag", *it)); //flags for MODES command
-			it++;
-		}
-		else
-		{
-			map_it it2 = _input_map.find("command");
-			map_it flag_it = _input_map.find("flag");
-			if (it2 == _input_map.end())
-				throw std::runtime_error("no command found");
-			else if (it2->second == "NICK" || it2->second == "PASS"
-				|| it2->second == "USER" 
-				|| (it2->second == "MODE" && flag_it != _input_map.end() && flag_it->second == "+k"))
-				_input_map.insert(std::make_pair("arg", *it)); // elements of map with "arg" as key are args for PASS, NICK and USER commands, or password for mode +k parameter
-			else
-				_input_map.insert(std::make_pair("user", *it)); // user to whom command is destined
-			it++;
-		}
-	}
-	split_commas(_input_map); // if multiple channels or users in command, they are separated by ,
-	remove_empty_elements(); //if multiple spaces between args
-	(void) _user; //while unused, needed for compilation
+	check_command_valid(_input_map["command"]);
 	if (DEBUG)
 	{
 		print_map();
@@ -106,7 +53,7 @@ void  Request::set_to_map(std::vector<std::string>& split_buffer)
 }
 
 /* UTILS */
-void	Request::split_commas(std::multimap<std::string, std::string>& _input_map)
+void	Request::split_commas(std::map<std::string, std::string>& _input_map)
 {
 	typedef std::multimap<std::string, std::string>::iterator map_it;
 
@@ -144,20 +91,9 @@ void	Request::check_command_valid(std::string& command)
 		}
 		i = static_cast<t_commands>(static_cast<int>(i) + 1);
 	}
+	command = "NONE";
 	if (DEBUG)
 		std::cout << "_request_valid is set as " << std::boolalpha << _request_valid << std::endl;
-}
-
-void	Request::remove_empty_elements()
-{
-	typedef std::multimap<std::string, std::string>::iterator map_it;
-	for (map_it it = _input_map.begin(); it != _input_map.end();)
-	{
-		if ((it->second).empty())
-			it = _input_map.erase(it);
-		else
-			it++;
-	}
 }
 
 /*GETTERS*/
@@ -176,7 +112,7 @@ std::string const&	Request::getCommand() const
 		throw std::runtime_error("no command found");
 }
 
-std::multimap<std::string, std::string>	const& Request::getRequestMap() const
+std::map<std::string, std::string>	const& Request::getRequestMap() const
 {
 	return (_input_map);
 }
@@ -198,18 +134,16 @@ void	Request::print_vector(std::vector<std::string> const& split_buffer)
 		std::cout << *it << std::endl;
 }
 
-
 // int	main(void)
 // {
 // 	try {
-// 		User	user;
-// 		Request test("KICK #general,#channel1 johndoe,johndoe1,johndoe2 :johndoes are idiots", user);
-// 		Request test2("JOIN #t1,#t2\r\n", user);
-// 		Request test3("NICK       nickname", user);
-// 		Request test4("mode #general +t", user);
-// 		Request rubbish("Not a command", user);
-// 		Request nospacing("MODE   +k      something", user);
-// 		Request empty("", user);
+// 		Request test("KICK #general,#channel1 johndoe,johndoe1,johndoe2 :johndoes are idiots");
+// 		Request test2("JOIN #t1,#t2\r\n");
+// 		Request test3("NICK       nickname");
+// 		Request test4("mode #general +t");
+// 		Request rubbish("Not a command");
+// 		Request nospacing("MODE   +k      something");
+// 		Request empty("");
 // 	}
 // 	catch (std::exception const& e)
 // 	{

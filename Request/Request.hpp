@@ -32,26 +32,25 @@ class Request
 {
 	private:
 		std::string                         	_input_buffer;
-		std::multimap<std::string, std::string>	_input_map; //the multimap allows for different values to have the same key.
+		std::map<std::string, std::string>		_input_map; //the multimap allows for different values to have the same key.
 															// This is useful because there can be multiple channels/users/ involved
-		User&									_user; // Request sender 
 		bool									_request_valid;
 		std::map<t_commands, std::string>		_commands_map;
 		//UTILS
-		void	split_commas(std::multimap<std::string, std::string>& _input_map);
+		void	split_commas(std::map<std::string, std::string>& _input_map);
 		void	check_command_valid(std::string& command);
 		void	remove_empty_elements();
 
 	
 	public:
-		Request(std::string buffer, User& user);
+		Request(std::string buffer);
 		~Request();
 		//SETTERS
 		void	parse_args();
 		void 	set_to_map(std::vector<std::string>& split_buffer);
 		//GETTERS
 		std::string const&								getCommand() const; //command
-		std::multimap<std::string, std::string>	const&	getRequestMap() const;
+		std::map<std::string, std::string>	const&		getRequestMap() const;
 		bool											getRequestValid() const;
 		//DEBUG
 		void	print_map() const;
