@@ -51,19 +51,9 @@ void 	User::setPassword(const std::string& password)
 
 void	User::setChannel(Channel& channel)
 {
-	//_channels.insert(std::make_pair(channel.getName(), channel));
+	if (_channels.find(channel.getName()) != _channels.end()) // si le channel est deja dans User
+		return;
 	_channels[channel.getName()] = &channel;
-	// checker si le channel existe deja et voir quel comportement je veux
-}
-
-void	User::setIsOp( const bool& isOp )
-{
-	_isOp = isOp;
-}
-
-void	User::setCanModifyTopic( const bool& topic )
-{
-	_canModifyTopic = topic;
 }
 
 // ---------------------------------------- GETTERS ----------------------------------------- // 
@@ -112,25 +102,15 @@ const std::map<std::string, Channel*>& User::getChannels( void ) const
 	return _channels;
 } 
 
-const bool& User::getIsOp( void ) const
-{
-	return _isOp;
-}
-
-const bool&	User::getCanModifyTopic( void ) const
-{
-	return _canModifyTopic;
-}
-
 // fonction membres 
 
-void	User::removeChannel(Channel& channel)
+void	User::removeChannel(const std::string& channelName)
 {
 	std::map<std::string, Channel*>::iterator it;
-	it = _channels.find(channel.getName());
+	it = _channels.find(channelName);
     if (it != _channels.end())
 	{
-		channel.removeUser(*this);
+		_channels[channelName]->removeUser(_nickName);
         _channels.erase(it);
 	}
 }

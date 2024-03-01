@@ -18,11 +18,12 @@ class UserRequestParsing {
 
 	public:
 
+		ServerManager						&_server;
 		User 								&_user;
 
 		std::map<std::string, std::string>	_commandsFromClient; // the key is the command and the value is the rest of the message line
 
-		UserRequestParsing(User & user);
+		UserRequestParsing(ServerManager& srv, User & user);
 		~UserRequestParsing();
 
 		// parsing helpers	
