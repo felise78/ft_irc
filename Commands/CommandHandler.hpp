@@ -5,6 +5,7 @@
 #include "../Request/Request.hpp"
 #include "../Channel/Channel.hpp"
 #include "../Server/ServerManager.hpp"
+#include "ModeHandler.hpp"
 
 using namespace std;
 
