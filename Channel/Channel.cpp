@@ -55,8 +55,8 @@ void	Channel::setUser(User& user)
 void	Channel::setOp(const std::string& nickname)
 {
 	// protection si le nickname n'existe pas dans le channel
-	if (getUser(nickname) == NULL)
-		return; // throw une erreur ?
+	if (_users.find(nickname) == _users.end())
+		return; 
 
 	// Les opérateurs du canal sont généralement désignés par un symbole "@" 
 	// devant leur nom d'utilisateur dans la liste des utilisateurs du canal.
@@ -109,10 +109,8 @@ const std::string&	Channel::getKey( void ) const
 
 User& Channel::getUser( const std::string & nickname ) const
 {
-	if (_users[nickname] == _users.end())
-		return NULL;
-	else
-		return _users[nickname];
+	map<string, User *>::const_iterator it = _users.find(nickname);
+	return *(it->second);
 }
 
 const std::string& Channel::getOp( const std::string & nickname ) const
@@ -160,7 +158,6 @@ void	Channel::removeUser(const std::string nickname)
 	it = _users.find(nickname);
     if (it != _users.end())
 	{
-		_users[nickname]->removeChannel(_name);
         _users.erase(it);
 		_nb--;
 	}
@@ -188,4 +185,13 @@ void Channel::printUsers( void) const
     std::cout << "Users in this channel:" << std::endl;
     for ( it = _users.begin(); it != _users.end(); ++it)
         std::cout << it->second->getNickName() << std::endl;
+}
+
+void Channel::printOps( void) const
+{
+	std::vector<std::string>::const_iterator it;
+
+    std::cout << "Ops in this channel:" << std::endl;
+    for ( it = _ops.begin(); it != _ops.end(); ++it)
+        std::cout << *it << std::endl;
 }

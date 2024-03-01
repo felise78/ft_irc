@@ -20,7 +20,7 @@
 		public :
 		User() : _port(0), _socket(0), _hostName(""), _nickName(""), _userName(""), _password(""), _authenticated(false), _handshaked(false) {};
 		~User() {};
-		std::string						userMessageBuffer; // il y aura un type message ?
+		std::string						userMessageBuffer;
 		std::string						responseBuffer;
 		std::map<std::string, Channel*>	_channels;
 		bool							_authenticated;

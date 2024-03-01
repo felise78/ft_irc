@@ -162,6 +162,10 @@ void	CommandHandler::handleJOIN() {
 		server.setChannel(new_channel);
 		user.setChannel(new_channel);
 		user.getChannel(channel).setUser(user);
+		
+		// if we still decide that the user that creates the channel is the op : 
+		user.getChannel(channel).setOp(user.getNickName());
+
 		if (password.empty() == false)
 			user.getChannel(channel).setKey(password);
 	}
@@ -172,8 +176,13 @@ void	CommandHandler::handleJOIN() {
 			if (server.channelMap[channel]->getKey() != password)
 				return;
 		}
-		user.setChannel(server.getChannel(channel));
-		server.getChannel(channel).setUser(user);
+		if (user._channels.find(channel) == user._channels.end()) // protection pour que le user soit pas deux fois dans le channel
+		{
+			user.setChannel(server.getChannel(channel));
+			server.getChannel(channel).setUser(user);
+		}
+		else 
+			return ; // une erreur ?
 	}
 
 }
@@ -185,6 +194,9 @@ void	CommandHandler::handlePRIVMSG() {
 	// format : /msg nickname <message>
 	// I have to verify that the other user-nickname is in the channel too
 
+	if (server.usersMap.find(nickname) == server.usersMap.end())
+		return;
+	
 }
 
 void	CommandHandler::handleINVITE() {
@@ -193,8 +205,29 @@ void	CommandHandler::handleINVITE() {
 
 	// format : /INVITE nickname #channel
 	
-	// envoie une notification au user/nickname
-	// il doit toujours join
+	std::string channel;
+	std::string nickname;
+
+	// normalement envoie une notification au nickname et celui ci doit toujours join
+	// mais peut-etre juste ajouter direct le nickname au channel ?
+
+	vector<string>::iterator it;
+	vector<string>:: iterator last = user.getChannel(channel)._ops.end();
+	for(it = user.getChannel(channel)._ops.begin(); it != last; ++it)
+	{
+		if (*it == user.getNickName())
+			break;
+	}
+	if (it == last)
+		return;
+	if(server._channels.find(channel) == server._channels.end())
+		return;
+	if(server.usersMap.find(nickname) == server.usersMap.end())
+		return;
+	// si le channel n'existe pas , le creer. // si le channel a un mot de passe ... ptet c'est 
+	// mieux de faire comme dans IRC alors / envoyer une notif et le user decide de join ou pas ?
+	// 
+
 }
 
 void	CommandHandler::handleTOPIC()	{
@@ -224,7 +257,6 @@ void	CommandHandler::handleTOPIC()	{
 			if (*it == user.getNickName())
 				break;
 		}
-		// not found / return
 		if (it == last)
 			return;
 	}
@@ -237,16 +269,18 @@ void	CommandHandler::handleKICK()
  	std::cout << YELLOW << "KICK command received.." << RESET << std::endl;
 
 	// format de la commande : /KICK #channel nickname
+	std::string channel;
+	std::string nickname;
 	vector<string>::iterator it;
 	vector<string>:: iterator last = user.getChannel(channel)._ops.end();
 	for(it = user.getChannel(channel)._ops.begin(); it != last; ++it)
 	{
-		if (*it == nickname)
+		if (*it == user.getNickName())
 			break;
 	}
 	if (it == last)
 		return;
-	if (user._channels.find(nickname) != user._channels.end())
+	if (user._channels.find(channel) != user._channels.end())
 	{
 		user.getChannel(channel).getUser(nickname).removeChannel(channel);
 		user.getChannel(channel).removeUser(nickname);
@@ -261,6 +295,7 @@ void	CommandHandler::handleMODE()
 	
 	// format :  /mode #channel flag
 	std::string flag; 
+	std::string nickname;
 
 
 	if(flag == "-i")								
@@ -296,18 +331,24 @@ void	CommandHandler::handleMODE()
 	}
 	else if(flag == "-o")
 	{
-		// format : /mode #channel -o nickname    // ici nickname == args[2]
-		user.getChannel(channel).removeOp(args[2]);
+		// format : /mode #channel -o nickname   
+		user._channel.removeOp(nickname);
 	}							
 	else if(flag == "+o")
 	{
-		// format : /mode #channel +o nickname    // ici nickname == args[2]
-		user.getChannel(channel).setOp(args[2])
+		// format : /mode #channel +o nickname  
+		user._channel.setOp(nickname)
 	}										
 	else if(flag == "-l")
-		;										// /mode #channel -l
+	{	
+		// format : /mode #channel -l;
+
+	}
 	else if(flag == "+l")
-		;										// /mode #channel +l int
+	{
+		// format : /mode #channel +l int
+		;		
+	}								
 	// else
 	// 	; // error unknown flag or parsed before ?
 }
