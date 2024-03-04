@@ -69,12 +69,11 @@ e_cmd	CommandHandler::getCMD(const std::string & str) {
 	return NONE;
 }
 
-
 /*
 ** This function verifies if user is authenticated by checking if the user has sent NICK, USER and PASS 
 ** set in `User` class. If so, the user is authenticated and can send other Commands to the server.
 **
-** This lohic might be changed .. TO DISCUSS !!
+** This logic might be changed .. TO DISCUSS !!
 */
 void	CommandHandler::authenticateUser() {
 
@@ -82,13 +81,13 @@ void	CommandHandler::authenticateUser() {
 	if (commandsFromClient.find("CAP") != commandsFromClient.end()) {
 		handleCAP(); // this one might not be needed
 	}
-	if (commandsFromClient.find("NICK") != commandsFromClient.end()) {
+	if (_commands_map.find("command") == "NICK") {
 		handleNICK();
 	}
-	if (commandsFromClient.find("PASS") != commandsFromClient.end()) {
+	if (_commands_map.find("command") == "PASS") {
 		handlePASS();
 	}
-	if (commandsFromClient.find("USER") != commandsFromClient.end()) {
+	if (_commands_map.find("command") == "USER") {
 		handleUSER();
 	}
 
@@ -103,19 +102,14 @@ void	CommandHandler::executeCommand() {
 
 	map<string, string>::iterator it = commandsFromClient.begin();
 
-	for (; it != commandsFromClient.end(); it++) {
+	string cmdStr = _commands_map.find("command");
+	/* DEBUG */
+	std::cout << YELLOW << "Executing command: " << RESET << "[" << cmdStr << "]" << std::endl;
+	/* ***** */
 
-		e_cmd cmd = getCMD(it->first);
-		string cmdStr = mapEnumToString[cmd]; // if the command is not found, the string will be "NONE" which will map to the `handleNONE` method
-
-		/* DEBUG */
-		std::cout << YELLOW << "Executing command: " << RESET << "[" << cmdStr << "]" << std::endl;
-		/* ***** */
-
-		// The synax is important here !! (`cmdToHandler[cmdStr]()` - won't work)
-		// first we get the pointer to the handler method and then we call it on `this` object
-		(this->*cmdToHandler[cmdStr])();
-	}
+	// The synax is important here !! (`cmdToHandler[cmdStr]()` - won't work)
+	// first we get the pointer to the handler method and then we call it on `this` object
+	(this->*cmdToHandler[cmdStr])();
 }
 
 /*
@@ -149,7 +143,7 @@ void	CommandHandler::handleUSER() {
 }
 
 void	CommandHandler::handleJOIN() {
-
+//need to handle the case where the channel name is wrong, eg two ##?
 	std::cout << YELLOW << "JOIN command received.." << RESET << std::endl;
 
 	// format : /join #channel (password)
@@ -296,9 +290,39 @@ void	CommandHandler::handleKICK()
 void	CommandHandler::handleMODE()
 {
 	std::cout << YELLOW << "MODE command received.." << RESET << std::endl;
-
 	
-	// format :  /mode #channel flag
+	stringstream params = commandsFromClient["params"];
+	vector<string> args;
+	string			tmp;
+	while (getline(params, tmp, ' '))
+	{
+		if (!tmp.empty())
+			args.push_back(tmp);
+	}
+	typedef vector<string>::iterator stringVecIt;
+	stringVecIt it = args.begin();
+	int	f, c = 0; // checking for flags and channels 
+	Channel& channel; 
+	for (; it != args.end(); i++)
+	{
+		if ((*it)[0] == '#' || (*it)[0] == '&')
+		{
+			// check if channel exists, else ERR_NOSUCHCHANNEL
+			c++;
+
+			if (server.channelMap.find(*it) != server.channelMap.end())
+				channel = server.channelMap // set channel to channel named in command 
+		}
+		if ((*it)[0] == '+' || (*it)[0] == '-')
+		{
+			// check if flag valid else ERR_UMODEUNKNOWNFLAG
+			f++;
+		}
+	}
+	if (f != 1 || c != 1) {}// - wrong no of flags or channels 461 ERR_NEEDMOREPARAMS
+
+	// if (requesting user is not op of channel, return ERR_CHANOPRIVSNEEDED)
+	if (user.getNickName())
 	std::string flag; 
 	std::string nickname;
 
@@ -362,4 +386,24 @@ void	CommandHandler::handleMODE()
 	}								
 	// else
 	// 	; // error unknown flag or parsed before ?
+}
+
+void	CommandHandler::parse_modes()
+{
+	stringstream	params = commandsFromClient["params"];
+	string			arg;
+	vector<string>	channels;
+	vector<string>	flags;
+	vector<string>	
+	while(getline(params, arg, ' '))
+	{
+		if ((!arg.empty() && arg[0] == '#') || !arg.empty() && arg[0] == '&')
+		{
+			for (size_t i = arg.find(','); i != string::npos; i = arg.find(','))
+			{
+				
+			}
+			
+		}
+	}
 }
