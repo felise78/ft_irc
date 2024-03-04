@@ -2,7 +2,9 @@
 #define SERVERMANAGER_HPP
 
 #include "Server.hpp"
+#include "../Commands/CommandHandler.hpp"
 #include "../Request/UserRequestParsing.hpp"
+#include "../Request/Request.hpp"
 #include "UserResponse.hpp"
 #include "../User/User.hpp"
 #include <sys/types.h>  // for u_long

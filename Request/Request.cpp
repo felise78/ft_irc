@@ -5,17 +5,6 @@ Request::Request(std::string buffer) : _input_buffer(buffer), _request_valid(fal
 {
 	if (DEBUG)
 		std::cout << "Request constructor called" << std::endl;
-	_commands_map[KICK] = "KICK";
-	_commands_map[INVITE] = "INVITE";
-	_commands_map[TOPIC] = "TOPIC";
-	_commands_map[MODE] = "MODE";
-	_commands_map[NICK] = "NICK";
-	_commands_map[USER] = "USER";
-	_commands_map[PASS] = "PASS";
-	_commands_map[OPER] = "OPER";
-	_commands_map[JOIN] = "JOIN";
-	_commands_map[PRIVMSG] = "PRIVMSG";
-	_commands_map[PART] = "PART";
 	parse_args();
 }
 
@@ -58,12 +47,26 @@ void	Request::check_command_valid(std::string& command)
 {
 	for (size_t i = 0; i < command.length(); i++)
 		command[i] = toupper(command[i]);
+	std::vector<std::string> allCommands;
+    allCommands.push_back("KICK");
+    allCommands.push_back("INVITE");
+    allCommands.push_back("TOPIC");
+    allCommands.push_back("CAP");
+    allCommands.push_back("MODE");
+    allCommands.push_back("NICK");
+    allCommands.push_back("USER");
+    allCommands.push_back("PASS");
+    allCommands.push_back("OPER");
+    allCommands.push_back("JOIN");
+    allCommands.push_back("PRIVMSG");
+    allCommands.push_back("PART");
+	allCommands.push_back("PING");
 	if (DEBUG)
 		std::cout << command << std::endl;
-	std::map<e_cmd, std::string>::iterator it = _commands_map.begin();
-	for (; it != _commands_map.end(); it++)
+	vector<string>::iterator it = allCommands.begin();
+	for (; it != allCommands.end(); it++)
 	{
-		if (command == it->second)
+		if (command == *it)
 		{
 			_request_valid = true;
 			if (DEBUG)
@@ -71,7 +74,7 @@ void	Request::check_command_valid(std::string& command)
 			return ;
 		}
 	}
-	command = "NONE";
+	// command = "NONE";
 	if (DEBUG)
 		std::cout << "_request_valid is set as " << std::boolalpha << _request_valid << std::endl;
 }
@@ -92,7 +95,7 @@ std::string const&	Request::getCommand() const
 		throw std::runtime_error("no command found");
 }
 
-std::map<std::string, std::string>	const& Request::getRequestMap() const
+std::map<std::string, std::string>& Request::getRequestMap()
 {
 	return (_input_map);
 }

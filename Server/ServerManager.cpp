@@ -139,7 +139,17 @@ void	ServerManager::_handle(int fd) {
 	User &user = usersMap[fd];
 
 	// UserRequest	userRequest(user.userMessageBuffer);
-	UserRequestParsing	userRequest(*this, user);
+	if (user.authenticated())
+	{	Request	userRequest(user.userMessageBuffer);
+		map<string, string> input_map = userRequest.getRequestMap();
+		map<string, string>::iterator it = input_map.begin();
+		for (; it != input_map.end(); it++)
+		{
+			std::cout << MAGENTA << it->first << ": " << it->second << RESET << std::endl;
+		}
+		CommandHandler cmdHandler(*this, user, input_map);}
+	else 
+		UserRequestParsing	userRequest(*this, user);
 	// userRequest.printCommands();
 	/* ***** */
 

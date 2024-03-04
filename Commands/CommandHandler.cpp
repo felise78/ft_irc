@@ -81,7 +81,7 @@ void	CommandHandler::authenticateUser() {
 	// if (commandsFromClient.find("CAP") != commandsFromClient.end()) {
 	// 	handleCAP(); // this one might not be needed
 	// }
-	if (commandsFromClient.find("NICK") != commandsFromClient.end()){
+	if (commandsFromClient.find("NICK") != commandsFromClient.end()) {
 		handleNICK();
 	}
 	if (commandsFromClient.find("PASS") != commandsFromClient.end()) {

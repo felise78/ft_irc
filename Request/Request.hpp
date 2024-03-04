@@ -33,10 +33,9 @@ class Request
 {
 	private:
 		std::string                         	_input_buffer;
-		std::map<std::string, std::string>		_input_map; //the multimap allows for different values to have the same key.
+		std::map<std::string, std::string>		_input_map;
 															// This is useful because there can be multiple channels/users/ involved
 		bool									_request_valid;
-		std::map<e_cmd, std::string>			_commands_map;
 		//UTILS
 		void	check_command_valid(std::string& command);
 		void	remove_empty_elements();
@@ -50,7 +49,7 @@ class Request
 		void 	set_to_map(std::vector<std::string>& split_buffer);
 		//GETTERS
 		std::string const&								getCommand() const; //command
-		std::map<std::string, std::string>	const&		getRequestMap() const;
+		std::map<std::string, std::string>&				getRequestMap();
 		bool											getRequestValid() const;
 		//DEBUG
 		void	print_map() const;
