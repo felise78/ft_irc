@@ -29,6 +29,7 @@ void	UserRequestParsing::basicParsing(const std::string& buffer) {
 	std::istringstream	ss(buffer);
 	std::string			line;
 
+	std::cout << CYAN << buffer << RESET << std::endl;
 	while (std::getline(ss, line, '\n')) {
 
 		line = trim(line);
