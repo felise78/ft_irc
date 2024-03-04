@@ -136,16 +136,25 @@ void	CommandHandler::handleNICK() {
 	std::string nickname;
 
 	// parsing nickname;
-	if (nickname.lenght() > 9)
-		return (server.error = 432); // erroneus nickname
-	string::iterator it = nickname.begin();
-	for(it; it != nickname.end(); ++it)
+	if (nickname.length() > 9)
+	{
+		server.error = 432; // erroneus nickname
+		return; 
+	}
+	string::iterator it;
+	for(it = nickname.begin() ; it != nickname.end(); ++it)
 	{
 		if (std::isalnum(*it) == false)
-			return (server.error = 432);
+		{
+			server.error = 432;
+			return;
+		}
 	}
-	if (server.usersMap[server.getFdbyNickName(nickname)] != -1)
-		return (server.error = 433); // nickname in use
+	if (server.getFdbyNickName(nickname) != -1)
+	{
+		server.error = 433; // nickname in use
+		return; 
+	}
 
 	user.setNickName(commandsFromClient["NICK"]);
 }
@@ -296,12 +305,12 @@ void	CommandHandler::handleKICK()
 		server.error = 482; // chan op privilege is needed
 		return;
 	}
-	if (server.usersMap.find(server.getFdbyNickName(ncikname)) == server.usersMap.end())
+	if (server.usersMap.find(server.getFdbyNickName(nickname)) == server.usersMap.end())
 	{
 		server.error = 401; // no such nickname
 		return;
 	}
-	if (server.channelMap[channel]._users.find(nickname) == server.channelMap[channel]._users.end())
+	if (server.channelMap[channel]->_users.find(nickname) == server.channelMap[channel]->_users.end())
 	{
 		server.error = 441; // user not in channel
 		return;

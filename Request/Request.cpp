@@ -83,7 +83,7 @@ void	Request::parse_params()
 
 	std::string::iterator it = _input_map["params"].begin();
 
-	for (it; it != _input_map["params"].end(); ++it)
+	for ( ; it != _input_map["params"].end(); ++it)
 	{
 		if (*it == '#' && hash == false)
 			hash = true;
