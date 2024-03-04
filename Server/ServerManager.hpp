@@ -89,6 +89,7 @@ class ServerManager {
 		std::map<int, User>			usersMap; // int is fd 
 		// Add Channel map here of all created channels
 		std::map<std::string, Channel *>	channelMap;
+		int									error;
 
 		ServerManager();
 		~ServerManager();

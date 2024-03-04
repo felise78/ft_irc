@@ -80,16 +80,17 @@ void	Request::check_command_valid(std::string& command)
 		command[i] = toupper(command[i]);
 	if (DEBUG)
 		std::cout << command << std::endl;
-	for (t_commands i = KICK; i <= PART;)
+	std::map<e_cmd, std::string>::iterator it = _commands_map.begin();
+	for (; it != _commands_map.end(); it++)
 	{
-		if (command == _commands_map[i])
+		if (command == it->second)
 		{
 			_request_valid = true;
 			if (DEBUG)
 				std::cout << "_request_valid is set as " << std::boolalpha << _request_valid << std::endl;
 			return ;
 		}
-		i = static_cast<t_commands>(static_cast<int>(i) + 1);
+		i = static_cast<e_cmd>(static_cast<int>(i) + 1);
 	}
 	command = "NONE";
 	if (DEBUG)

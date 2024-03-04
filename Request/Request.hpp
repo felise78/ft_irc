@@ -7,26 +7,27 @@
 #include <sstream>
 #include <vector>
 #include <cctype>
+#include "../Commands/CommandHandler.hpp"
 #include "../User/User.hpp"
 
 #ifndef DEBUG
 	#define DEBUG 0
 #endif
 
-typedef enum	e_commands
-{
-	KICK,
-	INVITE,
-	TOPIC,
-	MODE,
-	NICK,
-	USER,
-	PASS,
-	OPER,
-	JOIN,
-	PRIVMSG,
-	PART
-}	t_commands;
+// typedef enum	e_commands
+// {
+// 	KICK,
+// 	INVITE,
+// 	TOPIC,
+// 	MODE,
+// 	NICK,
+// 	USER,
+// 	PASS,
+// 	OPER,
+// 	JOIN,
+// 	PRIVMSG,
+// 	PART
+// }	t_commands;
 
 class Request
 {
@@ -35,7 +36,7 @@ class Request
 		std::map<std::string, std::string>		_input_map; //the multimap allows for different values to have the same key.
 															// This is useful because there can be multiple channels/users/ involved
 		bool									_request_valid;
-		std::map<t_commands, std::string>		_commands_map;
+		std::map<e_cmd, std::string>			_commands_map;
 		//UTILS
 		void	split_commas(std::map<std::string, std::string>& _input_map);
 		void	check_command_valid(std::string& command);
