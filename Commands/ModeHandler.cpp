@@ -19,7 +19,8 @@ ModeHandler::~ModeHandler()
 
 int	ModeHandler::parse_errors()
 {
-	stringstream params = commandsFromClient["params"];
+	stringstream params;
+	params.str(_commandsFromClient["params"]);
 	vector<string> args;
 	string			tmp;
 	while (getline(params, tmp, ' '))
@@ -31,14 +32,14 @@ int	ModeHandler::parse_errors()
 	typedef map<string, Channel*>::iterator channelIt;
 
 	stringVecIt it = args.begin();
-	for (; it != args.end(); i++)
+	for (; it != args.end(); it++)
 	{
 		if ((*it)[0] == '#' || (*it)[0] == '&')
 		{
 			n_channels++;
-			channelIt	it2 = server.channelMap.find(*it);
-			if (it2 != server.channelMap.end())
-				_channel = it2;
+			channelIt	it2 = (_server.channelMap).find(*it);
+			if (it2 != (_server.channelMap).end())
+				_channel = it2->second;
 			else
 			{
 				// send_error_msg to client, ERR_NOSUCHCHANNEL
@@ -48,7 +49,7 @@ int	ModeHandler::parse_errors()
 		else if ((*it)[0] == '+' || (*it)[0] == '-')
 		{
 			_flag = *it;
-			for (int i = 1; i < _flag.size(); i++)
+			for (size_t i = 1; i < _flag.size(); i++)
 			{
 				const string modes = "itkol";
 				if (modes.find(_flag[i]) == string::npos)
@@ -74,7 +75,7 @@ int	ModeHandler::parse_errors()
 		// 461 ERR_NEEDMOREPARAMS,
 		return 1;
 	}
-	if (_channel.isOp(_user.getNickName()))
+	if (_channel->isOp(_user.getNickName()))
 		return 0;
 	else
 	{
@@ -91,7 +92,7 @@ void	ModeHandler::exec_mode()
 		set_flag = true;
 	if (!(_flag.empty()) && _flag[0] == '-')
 		set_flag = false;
-	for (int i = 1; i < _flag.size(); i++)
+	for (size_t i = 1; i < _flag.size(); i++)
 	{
 		if (_flag[i] == 'i')
 			_channel->setInvit(set_flag);
@@ -113,7 +114,7 @@ void	ModeHandler::exec_mode()
 		if (_flag[i] == 'l')
 		{
 			if (set_flag)
-				_channel->setLimit(stoi(_extra_args[0]));
+				_channel->setLimit(atoi(_extra_args[0].c_str()));
 			else
 				_channel->removeLimit();
 		}

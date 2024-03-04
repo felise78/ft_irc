@@ -9,10 +9,10 @@
 
 // /* ***** */
 
-#define RPL_WELCOME(nick, user, host) ":localhost 001 " nick" :Welcome to the Internet Relay Network " nick"! " user"@" host"\r\n"
-#define RPL_YOURHOST(nick) ":localhost 002 "nick" :Your host is ircserv, running version ircserv.1\r\n"
-#define RPL_CREATED(nick, date) ":localhost 003 " nick" :This server was created " date"\r\n"
-#define RPL_MYINFO(nick) ":localhost 004 " nick" : ircserv.1 itkol\r\n"
+#define RPL_WELCOME(nick, host) (":localhost 001 " + nick + " :Welcome to the Internet Relay Network " + nick + "! " + nick + "@" + host + "\r\n")
+#define RPL_YOURHOST(nick) (":localhost 002 " + nick + " :Your host is ircserv, running version ircserv.1\r\n")
+#define RPL_CREATED(nick, date) (":localhost 003 " + nick + " :This server was created " + date + "\r\n")
+#define RPL_MYINFO(nick) (":localhost 004 " + nick + " : ircserv.1 modes itkol\r\n")
 
 #include <string>
 #include <sstream>

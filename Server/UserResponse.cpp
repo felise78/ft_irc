@@ -24,16 +24,14 @@ void UserResponse::handshakeResponse() {
 	std::string serverName = _server.getServerName();
 	std::string serverVersion = "_server.getServerVersion()";
 	std::string serverCreated = "_server.getCreationDate()";
-	std::string userModes = "<usr_modes>";
-	std::string channModes = "<chann_modes>";
 	std::string hostName = _user.getHostName();
 	std::string nickName = _user.getNickName();
 	std::string userName = _user.getUserName();
 
 	std::stringstream reply_buffer;
-
-	reply_buffer << RPL_WELCOME(nickName, nickName, "localhost") << RPL_YOURHOST(nickName.c_str())
-	<< RPL_CREATED(nickName.c_str(), serverCreated.c_str()) << RPL_MYINFO(nickName.c_str());
+	string host = "localhost";
+	reply_buffer << RPL_WELCOME(nickName, host) << RPL_YOURHOST(nickName)
+	<< RPL_CREATED(nickName, serverCreated) << RPL_MYINFO(nickName);
 	_user.responseBuffer = reply_buffer.str();
 	std::cout << _user.responseBuffer;
 	_user.setHandshaked(true);

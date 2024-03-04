@@ -53,26 +53,6 @@ void	Request::parse_args()
 }
 
 /* UTILS */
-void	Request::split_commas(std::map<std::string, std::string>& _input_map)
-{
-	typedef std::multimap<std::string, std::string>::iterator map_it;
-
-	for (map_it it2 = _input_map.begin(); it2 != _input_map.end();)
-	{
-		if (it2->second.find(',') != std::string::npos)
-		{
-			std::stringstream	ss(it2->second);
-			std::string			newString;
-			while (std::getline(ss, newString, ','))
-			{
-				_input_map.insert(std::make_pair(it2->first, newString));
-			}
-			it2 = _input_map.erase(it2);
-		}
-		else
-			it2++;
-	}
-}
 
 void	Request::check_command_valid(std::string& command)
 {
@@ -90,7 +70,6 @@ void	Request::check_command_valid(std::string& command)
 				std::cout << "_request_valid is set as " << std::boolalpha << _request_valid << std::endl;
 			return ;
 		}
-		i = static_cast<e_cmd>(static_cast<int>(i) + 1);
 	}
 	command = "NONE";
 	if (DEBUG)
