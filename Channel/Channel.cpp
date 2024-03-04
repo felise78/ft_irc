@@ -73,6 +73,7 @@ void	Channel::setNb(const int& nb)
 void	Channel::setLimit(const int & limit)
 {
 	_limit = limit;
+	_limited = true;
 }
 
 void	Channel::setInvit(const bool & invit)
@@ -189,6 +190,11 @@ void	Channel::removeOp(const std::string& opNickname)
     }
 	
 	
+}
+
+void	Channel::removeLimit()
+{
+	_limited = false;
 }
 
 void Channel::printUsers( void) const
