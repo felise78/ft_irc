@@ -2,7 +2,6 @@
 #define COMMANDHANDLER_HPP
 
 // #include "../Request/UserRequestParsing.hpp"
-#include "../Request/Request.hpp"
 #include "../Channel/Channel.hpp"
 #include "../Server/ServerManager.hpp"
 #include "ModeHandler.hpp"
@@ -44,7 +43,6 @@ typedef enum requestCMD {
 	WHOIS//
 
 }	e_cmd;
-
 
 class CommandHandler {
 

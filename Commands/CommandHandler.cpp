@@ -81,13 +81,13 @@ void	CommandHandler::authenticateUser() {
 	if (commandsFromClient.find("CAP") != commandsFromClient.end()) {
 		handleCAP(); // this one might not be needed
 	}
-	if (_commands_map.find("command") == "NICK") {
+	if (commandsFromClient["command"] == "NICK") {
 		handleNICK();
 	}
-	if (_commands_map.find("command") == "PASS") {
+	if (commandsFromClient["command"] == "PASS") {
 		handlePASS();
 	}
-	if (_commands_map.find("command") == "USER") {
+	if (commandsFromClient["command"] == "USER") {
 		handleUSER();
 	}
 
@@ -100,9 +100,9 @@ void	CommandHandler::authenticateUser() {
 
 void	CommandHandler::executeCommand() {
 
-	map<string, string>::iterator it = commandsFromClient.begin();
+	// map<string, string>::iterator it = commandsFromClient.begin();
 
-	string cmdStr = _commands_map.find("command");
+	string cmdStr = commandsFromClient["command"];
 	/* DEBUG */
 	std::cout << YELLOW << "Executing command: " << RESET << "[" << cmdStr << "]" << std::endl;
 	/* ***** */

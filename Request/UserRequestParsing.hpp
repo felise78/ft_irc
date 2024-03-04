@@ -13,6 +13,7 @@
 #include "../Commands/CommandHandler.hpp"
 
 class User;
+class ServerManager;
 
 class UserRequestParsing {
 

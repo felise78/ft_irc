@@ -17,6 +17,7 @@ SRCS = main.cpp \
 	CommandHandler.cpp \
 	UserResponse.cpp \
 	Channel.cpp \
+	Request.cpp \
 	User.cpp
 
 OBJS = $(SRCS:.cpp=.o)
