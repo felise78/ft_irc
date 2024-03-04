@@ -166,7 +166,6 @@ bool	Channel::isOp(const std::string& nickname)
 
 void	Channel::removeUser(const std::string& nickname)
 {
-
 	std::map<std::string, User*>::iterator it;
 	it = _users.find(nickname);
     if (it != _users.end())
@@ -187,8 +186,6 @@ void	Channel::removeOp(const std::string& opNickname)
             break; 
         }
     }
-	
-	
 }
 
 void Channel::printUsers( void) const

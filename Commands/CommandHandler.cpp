@@ -155,8 +155,6 @@ void	CommandHandler::handleJOIN() {
 	// format : /join #channel (password)
 	const std::string channel;
 	const std::string password;
-
-	// checker aussi si le channel est en mode invite only
 	
 	if (server.channelMap.find(channel) == server.channelMap.end())
 	{
@@ -199,10 +197,11 @@ void	CommandHandler::handlePRIVMSG() {
 
 	std::string nickname; // just for compile 
 
-	// I have to verify that the other user-nickname is in the channel too
-
+	// check if the nickname exists in the server
 	if(server.getFdbyNickName(nickname) == -1)
 		return;
+	// send the private message
+	
 }
 
 void	CommandHandler::handleINVITE() {
@@ -214,17 +213,34 @@ void	CommandHandler::handleINVITE() {
 	std::string channel;
 	std::string nickname;
 
-	// normalement envoie une notification au nickname et celui ci doit toujours join
-	// mais peut-etre juste ajouter direct le nickname au channel ?
+	int nick_fd = server.getFdbyNickName(nickname);
 
-	if(user.getChannel(channel).isOp(user.getNickName()) == false)
+	// check si le user existe dans la usermap du server
+	if(nick_fd == -1)
 		return;
+	// si le channel n'existe pas , le creer.
 	if(server.channelMap.find(channel) == server.channelMap.end())
-		return;
-	// check si le user est dans la usermap du server
-	if(server.getFdbyNickName(nickname) == -1)
-		return;
-	// si le channel n'existe pas , le creer. // si le channel a un mot de passe ...
+	{
+		Channel new_channel(channel);
+		server.setChannel(new_channel);
+		user.setChannel(new_channel);
+		user.getChannel(channel).setUser(user);
+		
+		// the user that creates the channel is the op : 
+		user.getChannel(channel).setOp(user.getNickName());
+
+		// invite the nickname
+		server.usersMap[nick_fd].setChannel(new_channel);
+		new_channel.setUser(server.usersMap[nick_fd]);
+	}
+	else 
+	{
+		// il faut que le user qui lance l'invite fasse partie du channel ou il invite
+		if (user._channels.find(channel) == user._channels.end())
+			return;
+		server.usersMap[nick_fd].setChannel(server.getChannel(channel));
+		server.getChannel(channel).setUser(server.usersMap[nick_fd]);
+	}
 }
 
 void	CommandHandler::handleTOPIC()	{
@@ -322,16 +338,8 @@ void	CommandHandler::handleMODE()
 	{
 		// format : /mode #channel -o nickname 
 
-		vector<string>::iterator it;
-		vector<string>:: iterator last = _channel->_ops.end();
-		for(it = _channel->_ops.begin(); it != last; ++it)
-		{
-			if (*it == user.getNickName())
-				break;
-		}
-		if (it == last)
-			return;
-		_channel->removeOp(nickname);
+		if (_channel->isOp(nickname) == true)
+			_channel->removeOp(nickname);
 	}							
 	else if(flag == "+o")
 	{
@@ -339,14 +347,7 @@ void	CommandHandler::handleMODE()
 
 		if (_channel->_users.find(nickname) == _channel->_users.end())
 			return;
-		vector<string>::iterator it;
-		vector<string>:: iterator last = _channel->_ops.end();
-		for(it = _channel->_ops.begin(); it != last; ++it)
-		{
-			if (*it == user.getNickName())
-				break;
-		}
-		if (it == last)
+		if (_channel->isOp(nickname) == false)
 			_channel->setOp(nickname);
 	}										
 	else if(flag == "-l")
