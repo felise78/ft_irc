@@ -38,7 +38,6 @@ class Request
 		bool									_request_valid;
 		std::map<e_cmd, std::string>			_commands_map;
 		//UTILS
-		void	split_commas(std::map<std::string, std::string>& _input_map);
 		void	check_command_valid(std::string& command);
 		void	remove_empty_elements();
 
