@@ -133,6 +133,20 @@ void	CommandHandler::handlePASS() {
 void	CommandHandler::handleNICK() {
 	std::cout << YELLOW << "NICK command received.." << RESET << std::endl;
 
+	std::string nickname;
+
+	// parsing nickname;
+	if (nickname.lenght() > 9)
+		return (server.error = 432); // erroneus nickname
+	string::iterator it = nickname.begin();
+	for(it; it != nickname.end(); ++it)
+	{
+		if (std::isalnum(*it) == false)
+			return (server.error = 432);
+	}
+	if (server.usersMap[server.getFdbyNickName(nickname)] != -1)
+		return (server.error = 433); // nickname in use
+
 	user.setNickName(commandsFromClient["NICK"]);
 }
 
@@ -268,23 +282,33 @@ void	CommandHandler::handleKICK()
  	std::cout << YELLOW << "KICK command received.." << RESET << std::endl;
 
 	// format de la commande : /KICK #channel nickname
+
 	std::string channel;
 	std::string nickname;
-	vector<string>::iterator it;
-	vector<string>:: iterator last = user.getChannel(channel)._ops.end();
-	for(it = user.getChannel(channel)._ops.begin(); it != last; ++it)
+	
+	if (server.channelMap.find(channel) == server.channelMap.end())
 	{
-		if (*it == user.getNickName())
-			break;
-	}
-	if (it == last)
+		server.error = 403; // no such channel
 		return;
-	if (user._channels.find(channel) != user._channels.end())
-	{
-		user.getChannel(channel).getUser(nickname).removeChannel(channel);
-		user.getChannel(channel).removeUser(nickname);
-		server.getChannel(channel).removeUser(nickname); // dunnow if necessarry to remove it in both
 	}
+	if (user.getChannel(channel).isOp(user.getNickName()) == false)
+	{
+		server.error = 482; // chan op privilege is needed
+		return;
+	}
+	if (server.usersMap.find(server.getFdbyNickName(ncikname)) == server.usersMap.end())
+	{
+		server.error = 401; // no such nickname
+		return;
+	}
+	if (server.channelMap[channel]._users.find(nickname) == server.channelMap[channel]._users.end())
+	{
+		server.error = 441; // user not in channel
+		return;
+	}
+	user.getChannel(channel).getUser(nickname).removeChannel(channel);
+	user.getChannel(channel).removeUser(nickname);
+	server.getChannel(channel).removeUser(nickname); // dunnow if necessarry to remove it in both
 }
 
 void	CommandHandler::handleMODE()

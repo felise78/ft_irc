@@ -43,6 +43,7 @@ void	Request::parse_args()
 	{
 		_input_map.insert(std::make_pair("command", _input_buffer.substr(0, i)));
 		_input_map.insert(std::make_pair("params", _input_buffer.substr(i + 1)));
+		parse_params();
 	}
 	check_command_valid(_input_map["command"]);
 	if (DEBUG)
@@ -95,6 +96,21 @@ void	Request::check_command_valid(std::string& command)
 	command = "NONE";
 	if (DEBUG)
 		std::cout << "_request_valid is set as " << std::boolalpha << _request_valid << std::endl;
+}
+
+void	Request::parse_params()
+{
+	bool hash = false;
+
+	std::string::iterator it = _input_map["params"].begin();
+
+	for (it; it != _input_map["params"].end(); ++it)
+	{
+		if (*it == '#' && hash == false)
+			hash = true;
+		else if (*it == '#' && hash == true)
+			return;
+	}
 }
 
 /*GETTERS*/

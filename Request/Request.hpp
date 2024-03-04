@@ -48,6 +48,7 @@ class Request
 		~Request();
 		//SETTERS
 		void	parse_args();
+		void	parse_params();
 		void 	set_to_map(std::vector<std::string>& split_buffer);
 		//GETTERS
 		std::string const&								getCommand() const; //command
