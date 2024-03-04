@@ -163,7 +163,22 @@ void IrcBot::handleResponse() {
 		sendIrcMessage("PONG " + response.substr(5));
 	}
 	else if (response.find("DO_THE_THING") != std::string::npos) {
+
+		// handleGPT();
+
 	}
+}
+
+void IrcBot::handleGPT() {
+
+	std::ofstream host_to_container("./GPT/host_to_container.fifo");
+	host_to_container << _serverRequestBuffer;
+	host_to_container.close();
+
+	std::ifstream container_to_host("./GPT/container_to_host.fifo");
+	std::getline(container_to_host, _responseGPT);
+	container_to_host.close();
+
 }
 
 void IrcBot::signalHandler(int signal) {

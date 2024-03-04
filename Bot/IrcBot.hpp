@@ -2,6 +2,7 @@
 #define IRCBOT_HPP
 
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <exception>
 #include <cstring> // For memset()
@@ -34,6 +35,7 @@ private:
 	std::string	_serverPass;
     std::string	_botName;
 	std::string	_serverRequestBuffer; // Buffer for server requests
+	std::string	_responseGPT; // Buffer for GPT response
 
 public:
 
@@ -50,6 +52,7 @@ public:
 
     void		handleServerRequest();	
 	void		handleResponse();
+	void		handleGPT();
 
 	static void	signalHandler(int signal);
 
