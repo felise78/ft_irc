@@ -151,7 +151,20 @@ const bool& Channel::getProtected() const
 
 // ------------------- MEMBER FUNCTIONS ---------------------- // 
 
-void	Channel::removeUser(const std::string nickname)
+bool	Channel::isOp(const std::string& nickname)
+{
+	vector<string>::iterator it;
+	vector<string>:: iterator last = _ops.end();
+
+	for(it = _ops.begin(); it != last; ++it)
+	{
+		if (*it == nickname)
+			return true;
+	}
+	return false;
+}
+
+void	Channel::removeUser(const std::string& nickname)
 {
 
 	std::map<std::string, User*>::iterator it;

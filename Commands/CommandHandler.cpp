@@ -155,6 +155,8 @@ void	CommandHandler::handleJOIN() {
 	// format : /join #channel (password)
 	const std::string channel;
 	const std::string password;
+
+	// checker aussi si le channel est en mode invite only
 	
 	if (server.channelMap.find(channel) == server.channelMap.end())
 	{
@@ -171,12 +173,14 @@ void	CommandHandler::handleJOIN() {
 	}
 	else
 	{
+		if (server.channelMap[channel]->getInvit() == true)
+			return;
 		if (server.channelMap[channel]->getProtected() == true)
 		{
 			if (server.channelMap[channel]->getKey() != password)
 				return;
 		}
-		if (user._channels.find(channel) == user._channels.end()) // protection pour que le user soit pas deux fois dans le channel
+		if (user._channels.find(channel) == user._channels.end())
 		{
 			user.setChannel(server.getChannel(channel));
 			server.getChannel(channel).setUser(user);
@@ -192,11 +196,13 @@ void	CommandHandler::handlePRIVMSG() {
 	std::cout << YELLOW << "PRIVMSG command received.." << RESET << std::endl;
 
 	// format : /msg nickname <message>
+
+	std::string nickname; // just for compile 
+
 	// I have to verify that the other user-nickname is in the channel too
 
-	if (server.usersMap.find(nickname) == server.usersMap.end())
+	if(server.getFdbyNickName(nickname) == -1)
 		return;
-	
 }
 
 void	CommandHandler::handleINVITE() {
@@ -211,23 +217,14 @@ void	CommandHandler::handleINVITE() {
 	// normalement envoie une notification au nickname et celui ci doit toujours join
 	// mais peut-etre juste ajouter direct le nickname au channel ?
 
-	vector<string>::iterator it;
-	vector<string>:: iterator last = user.getChannel(channel)._ops.end();
-	for(it = user.getChannel(channel)._ops.begin(); it != last; ++it)
-	{
-		if (*it == user.getNickName())
-			break;
-	}
-	if (it == last)
+	if(user.getChannel(channel).isOp(user.getNickName()) == false)
 		return;
-	if(server._channels.find(channel) == server._channels.end())
+	if(server.channelMap.find(channel) == server.channelMap.end())
 		return;
-	if(server.usersMap.find(nickname) == server.usersMap.end())
+	// check si le user est dans la usermap du server
+	if(server.getFdbyNickName(nickname) == -1)
 		return;
-	// si le channel n'existe pas , le creer. // si le channel a un mot de passe ... ptet c'est 
-	// mieux de faire comme dans IRC alors / envoyer une notif et le user decide de join ou pas ?
-	// 
-
+	// si le channel n'existe pas , le creer. // si le channel a un mot de passe ...
 }
 
 void	CommandHandler::handleTOPIC()	{
@@ -249,15 +246,7 @@ void	CommandHandler::handleTOPIC()	{
 	// check si le channel est restricted dans la modif du topic
 	if (user.getChannel(channel).getTopicRestricted() == true)
 	{
-		// check du coup if user is op in this channel
-		vector<string>::iterator it;
-		vector<string>:: iterator last = user.getChannel(channel)._ops.end();
-		for(it = user.getChannel(channel)._ops.begin(); it != last; ++it)
-		{
-			if (*it == user.getNickName())
-				break;
-		}
-		if (it == last)
+		if(user.getChannel(channel).isOp(user.getNickName()) == false)
 			return;
 	}
 	// si pas de restrictions ou user was op then modify topic
@@ -331,13 +320,34 @@ void	CommandHandler::handleMODE()
 	}
 	else if(flag == "-o")
 	{
-		// format : /mode #channel -o nickname   
-		user._channel.removeOp(nickname);
+		// format : /mode #channel -o nickname 
+
+		vector<string>::iterator it;
+		vector<string>:: iterator last = _channel->_ops.end();
+		for(it = _channel->_ops.begin(); it != last; ++it)
+		{
+			if (*it == user.getNickName())
+				break;
+		}
+		if (it == last)
+			return;
+		_channel->removeOp(nickname);
 	}							
 	else if(flag == "+o")
 	{
-		// format : /mode #channel +o nickname  
-		user._channel.setOp(nickname)
+		// format : /mode #channel +o nickname 
+
+		if (_channel->_users.find(nickname) == _channel->_users.end())
+			return;
+		vector<string>::iterator it;
+		vector<string>:: iterator last = _channel->_ops.end();
+		for(it = _channel->_ops.begin(); it != last; ++it)
+		{
+			if (*it == user.getNickName())
+				break;
+		}
+		if (it == last)
+			_channel->setOp(nickname);
 	}										
 	else if(flag == "-l")
 	{	

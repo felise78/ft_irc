@@ -9,7 +9,7 @@
 
 		private :
 		int								_port;
-		int								_socket;
+		int								_socket;	// fd
 		std::string						_hostName; // ..parsed in `UserRequestParsing` class..
 		std::string 					_nickName;	// ..parsed in `UserRequestParsing` class..
 		std::string 					_userName; // ..parsed in `UserRequestParsing` class..

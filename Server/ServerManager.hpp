@@ -86,7 +86,7 @@ class ServerManager {
 
 	public:
 		// `UserMap` key is the User's socket FD and the value is the User object
-		std::map<int, User>			usersMap;
+		std::map<int, User>			usersMap; // int is fd 
 		// Add Channel map here of all created channels
 		std::map<std::string, Channel *>	channelMap;
 
@@ -104,6 +104,7 @@ class ServerManager {
 		bool						isClient(int fd);
 		void						setChannel(Channel& channel);
 		Channel& 					getChannel( const std::string& name ) const;
+		int 					getFdbyNickName( const std::string& nickname ) const;
 
 };
 
