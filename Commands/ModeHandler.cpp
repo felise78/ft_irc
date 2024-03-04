@@ -1,15 +1,14 @@
 #include "ModeHandler.hpp"
 
 /* CONSTRUCTOR/DESTRUCTOR */
-ModeHandler::ModeHandler(map<string, string>& commands, ServerManager& srv) : _commandsFromClient(commands), _server(srv), n_flags(0), n_channels(0), _channel(NULL), _i(false), _t(false), _k(false), _o(false), _l(false)
+ModeHandler::ModeHandler(map<string, string>& commands, ServerManager& srv, User& user) : _commandsFromClient(commands), _server(srv), _user(user), n_flags(0), n_channels(0), _channel(NULL)
 {
 	if (DEBUG)
 		cout << "ModeHandler constructor called" << endl;
 
 	if (parse_errors()) //within parse_errors, need to call a method in ServerManager to send_error_msg to client. 
 		return ;
-	exec_mode();
-	
+	exec_mode();	
 }
 
 ModeHandler::~ModeHandler()
@@ -46,23 +45,78 @@ int	ModeHandler::parse_errors()
 				return 1;
 			}
 		}
-		if ((*it)[0] == '+' || (*it)[0] == '-')
+		else if ((*it)[0] == '+' || (*it)[0] == '-')
 		{
-			
-			// check if flag valid else ERR_UMODEUNKNOWNFLAG, return 1
+			_flag = *it;
+			for (int i = 1; i < _flag.size(); i++)
+			{
+				const string modes = "itkol";
+				if (modes.find(_flag[i]) == string::npos)
+				{
+					// ERR_UMODEUNKNOWNFLAG;
+					return 1;
+				}
+			}
 			n_flags++;
 		}
+		else
+		{
+			_extra_args.push_back(*it);
+		}
 	}
-	if (n_flags != 1 || n_channels != 1) {}// - wrong no of flags or channels 461 ERR_NEEDMOREPARAMS, return 1
-
-	// if (requesting user is not op of channel, return ERR_CHANOPRIVSNEEDED, return 1)
-	if (user.getNickName())
-
-	return (0);
+	if (n_flags != 1 || n_channels != 1)
+	{
+		// 461 ERR_NEEDMOREPARAMS,
+		return 1;
+	}
+	if (_extra_args.size() > 1)
+	{
+		// 461 ERR_NEEDMOREPARAMS,
+		return 1;
+	}
+	if (_channel.isOp(_user.getNickName()))
+		return 0;
+	else
+	{
+		// message ERR_CHANOPRIVSNEEDED
+		return 1;
+	}
 }
 
 void	ModeHandler::exec_mode()
 {
+	bool	set_flag;
 
+	if (!(_flag.empty()) && _flag[0] == '+')
+		set_flag = true;
+	if (!(_flag.empty()) && _flag[0] == '-')
+		set_flag = false;
+	for (int i = 1; i < _flag.size(); i++)
+	{
+		if (_flag[i] == 'i')
+			_channel->setInvit(set_flag);
+		if (_flag[i] == 't')
+			_channel->setTopicRestricted(set_flag);
+		if (_flag[i] == 'k')
+		{
+			_channel->setProtected(set_flag);
+			if (!_extra_args.empty())
+				_channel->setKey(_extra_args[0]);
+		}
+		if (_flag[i] == 'o')
+		{
+			if (set_flag)
+				_channel->setOp(_extra_args[0]);
+			else
+				_channel->removeOp(_extra_args[0]);
+		}
+		if (_flag[i] == 'l')
+		{
+			if (set_flag)
+				_channel->setLimit(stoi(_extra_args[0]));
+			else
+				_channel->removeLimit();
+		}
+	}
 }
 
