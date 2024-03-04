@@ -133,7 +133,7 @@ void	CommandHandler::handlePASS() {
 void	CommandHandler::handleNICK() {
 	std::cout << YELLOW << "NICK command received.." << RESET << std::endl;
 
-	std::string nickname;
+	const std::string nickname;
 
 	// parsing nickname;
 	if (nickname.length() > 9)
@@ -141,12 +141,12 @@ void	CommandHandler::handleNICK() {
 		server.error = 432; // erroneus nickname
 		return; 
 	}
-	string::iterator it;
+	string::const_iterator it;
 	for(it = nickname.begin() ; it != nickname.end(); ++it)
 	{
 		if (std::isalnum(*it) == false)
 		{
-			server.error = 432;
+			server.error = 432; // erroneus nickname
 			return;
 		}
 	}
