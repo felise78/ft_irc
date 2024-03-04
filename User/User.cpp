@@ -94,13 +94,9 @@ const std::string& User::getPassword( void ) const
 
 Channel& User::getChannel( const std::string& name ) const
 {
-	return *_channels.at(name);
+	std::map<std::string, Channel *>::const_iterator it = _channels.find(name);
+	return *(it->second);
 }
-
-const std::map<std::string, Channel*>& User::getChannels( void ) const
-{
-	return _channels;
-} 
 
 // fonction membres 
 
@@ -109,10 +105,7 @@ void	User::removeChannel(const std::string& channelName)
 	std::map<std::string, Channel*>::iterator it;
 	it = _channels.find(channelName);
     if (it != _channels.end())
-	{
-		_channels[channelName]->removeUser(_nickName);
         _channels.erase(it);
-	}
 }
 
 void User::printChannels( void ) const

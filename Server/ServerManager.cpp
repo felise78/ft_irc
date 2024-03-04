@@ -334,3 +334,15 @@ Channel& ServerManager::getChannel( const std::string& name ) const
 {
 	return *channelMap.at(name);
 }
+
+int ServerManager::getFdbyNickName( const std::string& nickname ) const
+{
+	std::map<int, User>::const_iterator it;
+
+	for (it = usersMap.begin(); it != usersMap.end(); ++it)
+	{
+		if (it->second.getNickName() == nickname)
+			return it->second.getSocket();
+	}
+	return -1;
+}

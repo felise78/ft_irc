@@ -42,7 +42,6 @@
 			const std::string& 	getTheme( void ) const;
 			const std::string&	getKey( void ) const;
 			User& getUser( const std::string & nickname ) const;
-			const std::map<std::string, User*>& getUsers( void ) const;
 			const std::string& getOp( const std::string & nickname ) const;
 			const int& getNb( void ) const;
 			const int& getLimit( void ) const;
@@ -50,9 +49,11 @@
 			const bool& getTopicRestricted() const;
 			const bool& getProtected() const;
 
-			void	removeUser(const std::string nickname);
+			bool	isOp(const std::string& nickname);
+			void	removeUser(const std::string& nickname);
 			void	removeOp(const std::string& opNickname);
 			void	printUsers( void ) const; // for debug
+			void	printOps( void) const; // for debug
 	};
 
 #endif

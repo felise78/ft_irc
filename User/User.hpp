@@ -9,7 +9,7 @@
 
 		private :
 		int								_port;
-		int								_socket;
+		int								_socket;	// fd
 		std::string						_hostName; // ..parsed in `UserRequestParsing` class..
 		std::string 					_nickName;	// ..parsed in `UserRequestParsing` class..
 		std::string 					_userName; // ..parsed in `UserRequestParsing` class..
@@ -20,7 +20,7 @@
 		public :
 		User() : _port(0), _socket(0), _hostName(""), _nickName(""), _userName(""), _password(""), _authenticated(false), _handshaked(false) {};
 		~User() {};
-		std::string						userMessageBuffer; // il y aura un type message ?
+		std::string						userMessageBuffer;
 		std::string						responseBuffer;
 		std::map<std::string, Channel*>	_channels;
 		bool							_authenticated;
@@ -43,7 +43,6 @@
 		const std::string& getHostName( void ) const;
 		const std::string& getPassword( void ) const;
 		Channel& getChannel( const std::string& name ) const;
-		const std::map<std::string, Channel*>& getChannels( void ) const;
 		bool	authenticated();
 		bool	handshaked();
 
