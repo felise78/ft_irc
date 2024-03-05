@@ -11,6 +11,7 @@
 #include <unistd.h> // For close()
 #include <signal.h> // For signal handling
 #include <stdlib.h> // For exit()
+#include <fcntl.h> // For fcntl()
 
 // SOME COLORS FOR MAKING THE LIFE BRIGTHER !!!
 #define RED		"\033[1;31m"
@@ -38,6 +39,8 @@ private:
 	std::string	_responseGPT; // Buffer for GPT response
 
 public:
+
+	bool		_authenticated; // ..to use for new User verification (NICK, USER, PASS)
 
     IrcBot(const std::string& serverName, int port, const std::string& pass, const std::string& botName);
     ~IrcBot();

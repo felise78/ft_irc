@@ -117,6 +117,12 @@ void	CommandHandler::authenticateUser() {
 		user.setAuthenticated(true);
 		std::cout << "user authenticated " << std::endl;
 		// && !user.getPassword().empty() removed PASSWORD condition for now
+
+		// Identifying if te user is a BOT ?!
+		if (user.getNickName() == "NeoBot") { // (or any other condition/name to identify the bot)
+			std::cout << CYAN << ".. this user is a BOT.. aha !!!" << std::endl;
+			user.setAsBot();
+		}
 	}
 }
 

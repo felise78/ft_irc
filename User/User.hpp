@@ -18,13 +18,14 @@
 		// ..to use for composing the first response message to the client (RPL_WELCOME, RPL_YOURHOST, RPL_CREATED, RPL_MYINFO..)
 
 		public :
-		User() : _port(0), _socket(0), _hostName(""), _nickName(""), _userName(""), _password(""), _authenticated(false), _handshaked(false) {};
-		~User() {};
+		User();
+		~User();
 		std::string						userMessageBuffer;
 		std::string						responseBuffer;
 		std::map<std::string, Channel*>	_channels;
 		bool							_authenticated;
 		bool							_handshaked;
+		bool							isBot;
 		// Setters //
 		void	setPort(const int& port);
 		void	setSocket(const int& socket);
@@ -35,6 +36,7 @@
 		void	setChannel(Channel& channel);
 		void	setAuthenticated(bool authenticated);
 		void	setHandshaked(bool handshaked);
+		void	setAsBot();
 		// Getters //
 		const int& getPort( void ) const;
 		const int& getSocket( void ) const;
