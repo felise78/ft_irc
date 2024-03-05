@@ -78,23 +78,25 @@ e_cmd	CommandHandler::getCMD(const std::string & str) {
 void	CommandHandler::authenticateUser() {
 
 	// if user is not authenticated, we search for the PASS, NICK and USER commands first
-	if (commandsFromClient.find("CAP") != commandsFromClient.end()) {
-		handleCAP(); // this one might not be needed
-	}
-	if (commandsFromClient["command"] == "NICK") {
+	// if (commandsFromClient.find("CAP") != commandsFromClient.end()) {
+	// 	handleCAP(); // this one might not be needed
+	// }
+	if (commandsFromClient.find("NICK") != commandsFromClient.end()) {
 		handleNICK();
 	}
-	if (commandsFromClient["command"] == "PASS") {
+	if (commandsFromClient.find("PASS") != commandsFromClient.end()) {
 		handlePASS();
 	}
-	if (commandsFromClient["command"] == "USER") {
+	if (commandsFromClient.find("USER") != commandsFromClient.end()) {
 		handleUSER();
 	}
 
 	// setting authenticated to true if the user has sent NICK, USER and PASS
 	// NEED to add the PASS check as well !!!
-	if (!user.getNickName().empty() && !user.getUserName().empty() && !user.getPassword().empty()) {
+	if (!user.getNickName().empty() && !user.getUserName().empty()) {
 		user.setAuthenticated(true);
+		std::cout << "user authenticated " << std::endl;
+		// && !user.getPassword().empty() removed PASSWORD condition for now
 	}
 }
 

@@ -152,18 +152,50 @@ void IrcBot::handleResponse() {
 
 	std::cout << "Request from the server, RAW: " << _serverRequestBuffer << std::endl;
 
-	std::string response = _serverRequestBuffer;
+	std::string request = _serverRequestBuffer;
 
-	if (response.find("PRIVMSG") != std::string::npos) {
-		std::string sender = response.substr(1, response.find("!") - 1);
-		std::string message = response.substr(response.find("PRIVMSG") + 8);
+	if (request.find("PRIVMSG") != std::string::npos) {
+		std::string sender = request.substr(1, request.find("!") - 1);
+		std::string message = request.substr(request.find("PRIVMSG") + 8);
 		std::cout << "Message from " << sender << ": " << message << std::endl;
 	}
-	else if (response.find("PING") != std::string::npos) {
-		sendIrcMessage("PONG " + response.substr(5));
+	else if (request.find("PING") != std::string::npos) {
+		sendIrcMessage("PONG " + request.substr(5));
 	}
-	else if (response.find("DO_THE_THING") != std::string::npos) {
+	else if (request.find("DO_THE_THING") != std::string::npos) {
+
+		std::string toErase = "DO_THE_THING:";
+		size_t pos = _serverRequestBuffer.find(toErase);
+		if (pos != std::string::npos) {
+			_serverRequestBuffer.erase(pos, toErase.length());
+		}
+		handleGPT();
+
 	}
+}
+
+/*
+** Here we use so called `named pipes` to communicate with the GPT container.
+** Also known as `FIFO` (First In First Out).
+** The host_to_container.fifo is used to send/write the request string to the container.
+** The container_to_host.fifo is used to receive/read the response from the container.
+** Inside the container environment we have a python app that handles the requests to 
+** and responce from OpenAI's GPT via API.
+*/
+void IrcBot::handleGPT() {
+
+	std::ofstream host_to_container("./GPT/host_to_container.fifo");
+	host_to_container << _serverRequestBuffer;
+	host_to_container.close();
+
+	std::ifstream container_to_host("./GPT/container_to_host.fifo");
+	std::getline(container_to_host, _responseGPT);
+	container_to_host.close();
+
+	/* DEBUG */
+	// _responseGPT must be sent back to the server..
+	std::cout << "GPT response: " << _responseGPT << std::endl;
+
 }
 
 void IrcBot::signalHandler(int signal) {

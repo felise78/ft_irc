@@ -50,12 +50,3 @@ void UserResponse::responseBuilder() {
 		_user.responseBuffer = "\t..coucou. The Matrix has you.. waiting for command..\n";
 	}
 }
-
-// #include <sstream>
-// int	main(void)
-// {
-// 	std::stringstream strcat;
-
-// 	strcat << RPL_WELCOME("pia", "pia", "localhost") << RPL_YOURHOST("pia") << RPL_CREATED("pia", "1st jan 24") << RPL_MYINFO("pia");
-// 	std::cout << strcat.str();
-// }
