@@ -7,11 +7,9 @@ UserResponse::UserResponse(User & user, Server const & server)
 	std::cout << YELLOW << "\tuser.handshaked(): " << _user.handshaked() << RESET << std::endl;
 
 	if (_user.handshaked() == false) {
-		
 		handshakeResponse();
 	}
 	else {
-
 		responseBuilder();
 	}
 }
@@ -21,7 +19,7 @@ UserResponse::~UserResponse() {
 
 void UserResponse::handshakeResponse() {
 
-	std::string serverName = _server.getServerName();
+	// std::string serverName = _server.getServerName();
 	std::string serverVersion = "_server.getServerVersion()";
 	std::string serverCreated = "_server.getCreationDate()";
 	std::string hostName = _user.getHostName();
@@ -45,6 +43,13 @@ void UserResponse::responseBuilder() {
 
 		_user.responseBuffer = "\t<empty request>\n";
 	} 
+	else if (_user.pinged())
+	{
+		std::cout << CYAN << "PINGED" << RESET << std::endl;
+		_user.responseBuffer = ":" + _user.getNickName() + "!" + _user.getUserName() + "@" + _user.getHostName() + " PONG " + _server.getServerName() + "\r\n";
+		std::cout << _user.responseBuffer << std::endl;
+		_user.setPinged(false);
+	}
 	else {
 
 		_user.responseBuffer = "\t..coucou. The Matrix has you.. waiting for command..\n";

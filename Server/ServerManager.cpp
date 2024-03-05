@@ -138,20 +138,19 @@ void	ServerManager::_handle(int fd) {
 
 	User &user = usersMap[fd];
 
-	// UserRequest	userRequest(user.userMessageBuffer);
-	if (user.authenticated())
-	{	Request	userRequest(user.userMessageBuffer);
+	vector<string> splitMessageBuffer = split(user.userMessageBuffer, "\n");
+	for (vector<string>::iterator it = splitMessageBuffer.begin(); it != splitMessageBuffer.end(); it++)
+	{	
+		std::cout << MAGENTA << *it << RESET << std::endl;
+		Request	userRequest(*it);
 		map<string, string> input_map = userRequest.getRequestMap();
-		map<string, string>::iterator it = input_map.begin();
-		for (; it != input_map.end(); it++)
+		map<string, string>::iterator it2 = input_map.begin();
+		for (; it2 != input_map.end(); it2++)
 		{
-			std::cout << MAGENTA << it->first << ": " << it->second << RESET << std::endl;
+			std::cout << MAGENTA << it2->first << ": " << it2->second << RESET << std::endl;
 		}
-		CommandHandler cmdHandler(*this, user, input_map);}
-	else 
-		UserRequestParsing	userRequest(*this, user);
-	// userRequest.printCommands();
-	/* ***** */
+		CommandHandler cmdHandler(*this, user, input_map);
+	}
 
 	// We add the client's fd to the send_fd_pool once the client is authenticated (received NICK, USER, PASS..)
 	if (user.authenticated()) {
@@ -354,4 +353,23 @@ int ServerManager::getFdbyNickName( const std::string& nickname ) const
 			return it->second.getSocket();
 	}
 	return -1;
+}
+
+std::vector<std::string> split(const std::string& input, const std::string& delimiter) 
+{
+    std::vector<std::string> tokens;
+    size_t lastPos = 0;
+    size_t pos = input.find(delimiter, lastPos);
+    while (pos != std::string::npos)
+	{
+		string str = input.substr(lastPos, pos - lastPos);
+		if (!str.empty()) {
+			tokens.push_back(str);}
+		lastPos = pos + delimiter.length();
+		pos = input.find(delimiter, lastPos);
+    }
+	string str = input.substr(lastPos);
+	if (!str.empty()) {
+    	tokens.push_back(str);}
+    return tokens;
 }

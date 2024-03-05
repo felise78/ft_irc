@@ -25,6 +25,8 @@
 		std::map<std::string, Channel*>	_channels;
 		bool							_authenticated;
 		bool							_handshaked;
+		bool							_pinged;
+
 		// Setters //
 		void	setPort(const int& port);
 		void	setSocket(const int& socket);
@@ -35,6 +37,7 @@
 		void	setChannel(Channel& channel);
 		void	setAuthenticated(bool authenticated);
 		void	setHandshaked(bool handshaked);
+		void	setPinged(bool pinged);
 		// Getters //
 		const int& getPort( void ) const;
 		const int& getSocket( void ) const;
@@ -45,6 +48,8 @@
 		Channel& getChannel( const std::string& name ) const;
 		bool	authenticated();
 		bool	handshaked();
+		bool	pinged();
+
 
 		void	printChannels( void ) const;   // for debug
 		void	removeChannel(const std::string& channelName);

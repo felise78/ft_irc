@@ -19,6 +19,57 @@
 #define BUF_SIZE	10240
 #define MSG_SIZE	512 // 512 bytes is the maximum length of a message in the IRC protocol
 
+class ServerManager {
+
+	private:
+		Server						_server;
+
+		fd_set						_recv_fd_pool; // To store the socket FDs of the Users
+		fd_set						_send_fd_pool; // To store the socket FDs of the Users
+		int							_serverFd; // The server's socket FD
+		int							_max_fd; // To track the max value of the socket FD, needed for `select()` function and for loop in `run()`
+
+		// Main logic to run the servers, receive, handle and respond to the requests
+		void						_run();
+		void						_accept(int UserFd);
+		void						_handle(int fd);
+		void						_respond(int fd);
+
+		// Helper functions
+		void						_fcntl();
+		void						_addToSet(int fd, fd_set *set);
+		void						_removeFromSet(int fd, fd_set *set);
+		void						_closeConnection(int fd);
+
+	public:
+		// `UserMap` key is the User's socket FD and the value is the User object
+		std::map<int, User>			usersMap; // int is fd 
+		// Add Channel map here of all created channels
+		std::map<std::string, Channel *>	channelMap;
+		int									error;
+
+		ServerManager();
+		~ServerManager();
+
+		// Initializing User's data. Command Passing.
+		// Maybe we can moove this logic to the User class.. ?!
+		void						initUser(int UserFd, struct sockaddr_in &address);
+
+		// General Helpers
+		std::string					timeStamp();
+		void						checkErrorAndExit(int returnValue, const std::string& msg);
+		void						log(int UserFd);
+		bool						isClient(int fd);
+		void						setChannel(Channel& channel);
+		Channel& 					getChannel( const std::string& name ) const;
+		int 						getFdbyNickName( const std::string& nickname ) const;
+
+};
+
+std::vector<std::string> split(const std::string& input, const std::string& delimiter);
+
+#endif
+
 /*
 ** This class here is for testing and easier further integration ..
 class User {
@@ -63,52 +114,3 @@ class User {
 };
 */
 /* ***** */
-
-class ServerManager {
-
-	private:
-		Server						_server;
-
-		fd_set						_recv_fd_pool; // To store the socket FDs of the Users
-		fd_set						_send_fd_pool; // To store the socket FDs of the Users
-		int							_serverFd; // The server's socket FD
-		int							_max_fd; // To track the max value of the socket FD, needed for `select()` function and for loop in `run()`
-
-		// Main logic to run the servers, receive, handle and respond to the requests
-		void						_run();
-		void						_accept(int UserFd);
-		void						_handle(int fd);
-		void						_respond(int fd);
-
-		// Helper functions
-		void						_fcntl();
-		void						_addToSet(int fd, fd_set *set);
-		void						_removeFromSet(int fd, fd_set *set);
-		void						_closeConnection(int fd);
-
-	public:
-		// `UserMap` key is the User's socket FD and the value is the User object
-		std::map<int, User>			usersMap; // int is fd 
-		// Add Channel map here of all created channels
-		std::map<std::string, Channel *>	channelMap;
-		int									error;
-
-		ServerManager();
-		~ServerManager();
-
-		// Initializing User's data. Command Passing.
-		// Maybe we can moove this logic to the User class.. ?!
-		void						initUser(int UserFd, struct sockaddr_in &address);
-
-		// General Helpers
-		std::string					timeStamp();
-		void						checkErrorAndExit(int returnValue, const std::string& msg);
-		void						log(int UserFd);
-		bool						isClient(int fd);
-		void						setChannel(Channel& channel);
-		Channel& 					getChannel( const std::string& name ) const;
-		int 					getFdbyNickName( const std::string& nickname ) const;
-
-};
-
-#endif

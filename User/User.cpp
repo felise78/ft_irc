@@ -56,11 +56,18 @@ void	User::setChannel(Channel& channel)
 	_channels[channel.getName()] = &channel;
 }
 
+void	User::setPinged(bool pinged)
+{
+	_pinged = pinged;
+}
+
 // ---------------------------------------- GETTERS ----------------------------------------- // 
 
 bool	User::authenticated() { return this->_authenticated; }
 
 bool	User::handshaked() { return this->_handshaked; }
+
+bool	User::pinged() { return this->_pinged; }
 
 const int& User::getPort( void ) const
 {
