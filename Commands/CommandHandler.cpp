@@ -178,13 +178,13 @@ void	CommandHandler::handleJOIN() {
 		Channel new_channel(channel);
 		server.setChannel(new_channel);
 		user.setChannel(new_channel);
-		user.getChannel(channel).setUser(user);
+		_channel->setUser(user);
 		
-		// if we still decide that the user that creates the channel is the op : 
-		user.getChannel(channel).setOp(user.getNickName());
+		// set the creator of the channel as operator
+		_channel->setOp(user.getNickName());
 
 		if (password.empty() == false)
-			user.getChannel(channel).setKey(password);
+			_channel->setKey(password);
 	}
 	else
 	{
@@ -241,10 +241,10 @@ void	CommandHandler::handleINVITE() {
 		Channel new_channel(channel);
 		server.setChannel(new_channel);
 		user.setChannel(new_channel);
-		user.getChannel(channel).setUser(user);
+		_channel->setUser(user);
 		
 		// the user that creates the channel is the op : 
-		user.getChannel(channel).setOp(user.getNickName());
+		_channel->setOp(user.getNickName());
 
 		// invite the nickname
 		server.usersMap[nick_fd].setChannel(new_channel);
@@ -267,23 +267,29 @@ void	CommandHandler::handleTOPIC()	{
  	// format : /TOPIC #channel 
 
 	std::string channel; 
-	std::string topic;	
+	std::string topic;	// will be params
 
-	// without params after channel, simply print the topic of the channel
-	if (topic.empty() == true)
+	if (server.channelMap.find(channel) == server.channelMap.end())
 	{
-		std::cout << user.getChannel(channel).getTheme() << std::endl;
+		server.error = 403; // no such channel
+		return;
+	}
+	// without params after channel, simply print the topic of the channel
+	if (topic.empty() == true) // will be params
+	{
+		if (_channel->getTheme().empty() == false)
+			std::cout << _channel->getTheme() << std::endl;
 		return;
 	}
 	// else s' il y a un param apres le nom du channel
 	// check si le channel est restricted dans la modif du topic
-	if (user.getChannel(channel).getTopicRestricted() == true)
+	if (_channel->getTopicRestricted() == true)
 	{
-		if(user.getChannel(channel).isOp(user.getNickName()) == false)
+		if(_channel->isOp(user.getNickName()) == false)
 			return;
 	}
 	// si pas de restrictions ou user was op then modify topic
-	user.getChannel(channel).setTheme(topic);
+	_channel->setTheme(topic);
 }
 
 void	CommandHandler::handleKICK()
@@ -300,7 +306,7 @@ void	CommandHandler::handleKICK()
 		server.error = 403; // no such channel
 		return;
 	}
-	if (user.getChannel(channel).isOp(user.getNickName()) == false)
+	if (_channel->isOp(user.getNickName()) == false)
 	{
 		server.error = 482; // chan op privilege is needed
 		return;
@@ -315,8 +321,8 @@ void	CommandHandler::handleKICK()
 		server.error = 441; // user not in channel
 		return;
 	}
-	user.getChannel(channel).getUser(nickname).removeChannel(channel);
-	user.getChannel(channel).removeUser(nickname);
+	_channel->getUser(nickname).removeChannel(channel);
+	_channel->removeUser(nickname);
 	server.getChannel(channel).removeUser(nickname); // dunnow if necessarry to remove it in both
 }
 
