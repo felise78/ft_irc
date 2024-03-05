@@ -23,8 +23,12 @@ def interactive_chat(
 		"gpt-3.5-turbo", help="The model to use for generating the response."
 	),
 ):
-	os.mkfifo ("/usr/src/app/host_to_container.fifo")
-	os.mkfifo ("/usr/src/app/container_to_host.fifo")
+	fifo_in = "/usr/src/app/host_to_container.fifo"
+	fifo_out = "/usr/src/app/container_to_host.fifo"
+	if not os.path.exists(fifo_in):
+		os.mkfifo(fifo_in)
+	if not os.path.exists(fifo_out):
+		os.mkfifo(fifo_out)
 
 	# """ Interactive CLI chat with Chat GPT via API """
 	# typer.echo(
