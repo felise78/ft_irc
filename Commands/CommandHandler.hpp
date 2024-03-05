@@ -78,6 +78,7 @@ class CommandHandler {
 
 		//COMMAND UTILS
 		void				parse_modes();
+		void				setChannel();
 
 };
 

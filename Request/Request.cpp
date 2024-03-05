@@ -84,6 +84,7 @@ void	Request::parse_params()
 {
 	bool hash = false;
 
+	// check if there is only one channel in the params
 	std::string::iterator it = _input_map["params"].begin();
 
 	for ( ; it != _input_map["params"].end(); ++it)
@@ -91,7 +92,10 @@ void	Request::parse_params()
 		if (*it == '#' && hash == false)
 			hash = true;
 		else if (*it == '#' && hash == true)
+		{
+			//server.error = 461; // two many channels
 			return;
+		}
 	}
 }
 

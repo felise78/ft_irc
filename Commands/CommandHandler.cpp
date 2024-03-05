@@ -52,6 +52,9 @@ CommandHandler::CommandHandler(ServerManager& srv, User &usr, map<string, string
 		// if user is not authenticated, we search for the PASS, NICK and USER commands first
 		authenticateUser();
 	}
+
+	// setting the channel if there is one in params
+	setChannel();
 }
 
 CommandHandler::~CommandHandler() {
@@ -67,6 +70,23 @@ e_cmd	CommandHandler::getCMD(const std::string & str) {
 		}
 	}
 	return NONE;
+}
+
+void	CommandHandler::setChannel()
+{
+	size_t hashPos = commandsFromClient["params"].find('#');
+    
+    if (hashPos != std::string::npos) {
+        size_t spacePos = commandsFromClient["params"].find(' ', hashPos);
+		std::string channelName = commandsFromClient["params"].substr(hashPos, spacePos - hashPos);
+		if (server.channelMap.find(channelName) == server.channelMap.end())
+		{
+			server.error = 403; // no such channel
+			return; // ou throw ? 
+		}
+		else 
+			_channel = server.channelMap[channelName];
+    }
 }
 
 /*
@@ -223,6 +243,11 @@ void	CommandHandler::handlePRIVMSG() {
 			server.error = 403; // no such channel
 			return;
 		}
+		if (_channel->_users.find(user.getNickName()) == _channel->_users.end())
+		{
+			server.error = 442; // user not in that channel
+			return;
+		}
 		// sinon send le message a tous les Users du channel
 		_channel->broadcast(msg);
 	}
@@ -272,9 +297,11 @@ void	CommandHandler::handleINVITE() {
 	}
 	else 
 	{
-		// il faut que le user qui lance l'invite fasse partie du channel ou il invite
 		if (user._channels.find(channel) == user._channels.end())
+		{
+			server.error = 442; // user not in that channel
 			return;
+		}
 		server.usersMap[nick_fd].setChannel(server.getChannel(channel));
 		server.getChannel(channel).setUser(server.usersMap[nick_fd]);
 	}
@@ -286,21 +313,26 @@ void	CommandHandler::handleTOPIC()	{
 
  	// format : /TOPIC #channel 
 
-	std::string channel; 
 	std::string topic;	// will be params
 
-	if (server.channelMap.find(channel) == server.channelMap.end())
+	if (server.channelMap.find(_channel->getName()) == server.channelMap.end())
 	{
 		server.error = 403; // no such channel
 		return;
 	}
-	// without params after channel, simply print the topic of the channel
+	if (_channel->_users.find(user.getNickName()) == _channel->_users.end())
+	{
+		server.error = 442; // user not in that channel
+		return;
+	}
+	// si y'a pas de params 
 	if (topic.empty() == true) // will be params
 	{
 		if (_channel->getTheme().empty() == true)
 			server.error = 331; // no topic is set
 		else
-			std::cout << _channel->getTheme() << std::endl;
+			std::cout << _channel->getTheme() << std::endl; // print juste le topic
+			// print ou envoie en privmsg ??
 		return;
 	}
 	// else s' il y a un param apres le nom du channel
