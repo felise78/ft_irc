@@ -48,7 +48,6 @@
 
 		void	printChannels( void ) const;   // for debug
 		void	removeChannel(const std::string& channelName);
-		
 	};
 
 #endif

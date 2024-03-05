@@ -212,14 +212,31 @@ void	CommandHandler::handlePRIVMSG() {
 
 	std::cout << YELLOW << "PRIVMSG command received.." << RESET << std::endl;
 
-	// format : /msg nickname <message>
+	// format : /msg <msgtarget> <message>
 
-	std::string nickname; // just for compile 
-
+	std::string msg;
+	// <msgtarget> can be a nickname for a private message or the name of a channel for broadcast
+	if (_channel) // si le msgtarget est un channel, le channel de CommandHandler est donc set
+	{
+		if (server.channelMap.find(_channel->getName()) == server.channelMap.end())
+		{
+			server.error = 403; // no such channel
+			return;
+		}
+		// sinon send le message a tous les Users du channel
+		_channel->broadcast(msg);
+	}
+	// sinon, msgtarget est donc un nickname
+	std::string nickname; 
+	int nick_fd = server.getFdbyNickName(nickname);
 	// check if the nickname exists in the server
-	if(server.getFdbyNickName(nickname) == -1)
+	if(nick_fd == -1)
+	{
+		server.error = 401; // no such nickname
 		return;
+	}
 	// send the private message
+	server.usersMap[nick_fd].userMessageBuffer = msg;
 	
 }
 
@@ -233,10 +250,11 @@ void	CommandHandler::handleINVITE() {
 	std::string nickname;
 
 	int nick_fd = server.getFdbyNickName(nickname);
-
-	// check si le user existe dans la usermap du server
 	if(nick_fd == -1)
+	{
+		server.error = 401; // no such nickname
 		return;
+	}
 	// si le channel n'existe pas , le creer.
 	if(server.channelMap.find(channel) == server.channelMap.end())
 	{
@@ -279,18 +297,21 @@ void	CommandHandler::handleTOPIC()	{
 	// without params after channel, simply print the topic of the channel
 	if (topic.empty() == true) // will be params
 	{
-		if (_channel->getTheme().empty() == false)
+		if (_channel->getTheme().empty() == true)
+			server.error = 331; // no topic is set
+		else
 			std::cout << _channel->getTheme() << std::endl;
 		return;
 	}
 	// else s' il y a un param apres le nom du channel
-	// check si le channel est restricted dans la modif du topic
 	if (_channel->getTopicRestricted() == true)
 	{
 		if(_channel->isOp(user.getNickName()) == false)
+		{
+			server.error = 482; // chan op privilege is needed
 			return;
+		}
 	}
-	// si pas de restrictions ou user was op then modify topic
 	_channel->setTheme(topic);
 }
 

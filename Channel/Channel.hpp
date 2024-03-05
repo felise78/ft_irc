@@ -53,6 +53,7 @@
 			void	removeUser(const std::string& nickname);
 			void	removeOp(const std::string& opNickname);
 			void	removeLimit();
+			void	broadcast(std::string msg);
 			void	printUsers( void ) const; // for debug
 			void	printOps( void) const; // for debug
 	};

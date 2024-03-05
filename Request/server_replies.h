@@ -23,7 +23,7 @@ PRIVMSG is used to send private messages between users, as well as to send messa
 // code 411
 #define ERR_NOTEXTTOSEND ":No text to send"					
 // code 412
-#define ERR_NOSUCHNICK "<nickname> :No such nick/channel"
+#define ERR_NOSUCHNICK "<nickname> :No such nick"
 // code 401
 #define ERR_TOOMANYTARGETS "<target> :<error code> recipients. <abort message>"	
 // code 407
@@ -55,8 +55,10 @@ client isn't a member.*/
 /*INVITE COMMAND*/
 /*Returned when a client tries to invite a user to a channel they are already on.*/
 #define ERR_USERONCHANNEL "<user> <channel> :is already on channel"
+
 /*The attempted INVITE message was successful and is being passed onto the end client.*/
 #define RPL_INVITING "<channel> <nick>"
+// code 341
 // ERR_NEEDMOREPARAMS (see KICK)
 // ERR_NOTONCHANNEL (see KICK)
 // ERR_CHANOPRIVSNEEDED (see KICK)
@@ -66,6 +68,7 @@ client isn't a member.*/
 If the topic is set, RPL_TOPIC is sent back, else RPL_NOTOPIC.*/
 #define RPL_TOPIC "<channel> :<topic>"
 #define RPL_NOTOPIC "<channel> :No topic is set"
+// code 331
 #define ERR_NOCHANMODES "<channel> :Channel doesn't support modes"
 // ERR_CHANOPRIVSNEEDED (see KICK)
 // ERR_NOTONCHANNEL (see KICK)

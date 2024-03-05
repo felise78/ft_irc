@@ -194,6 +194,14 @@ void	Channel::removeLimit()
 	_limited = false;
 }
 
+void	Channel::broadcast(std::string msg)
+{
+	std::map<std::string, User*>::iterator it;
+
+	for(it = _users.begin(); it != _users.end(); ++it)
+		it->second->userMessageBuffer = msg;
+}
+
 void Channel::printUsers( void) const
 {
 	std::map<std::string, User*>::const_iterator it;
