@@ -1,7 +1,7 @@
 #include "Request.hpp"
 
 /*CONSTRUCTORS/DESTRUCTORS*/
-Request::Request(std::string buffer) : _input_buffer(buffer), _request_valid(false)
+Request::Request(ServerManager& server, std::string buffer) : _server(server), _input_buffer(buffer), _request_valid(false)
 {
 	if (DEBUG)
 		std::cout << "Request constructor called" << std::endl;

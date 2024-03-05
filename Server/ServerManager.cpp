@@ -140,7 +140,7 @@ void	ServerManager::_handle(int fd) {
 
 	// UserRequest	userRequest(user.userMessageBuffer);
 	if (user.authenticated())
-	{	Request	userRequest(user.userMessageBuffer);
+	{	Request	userRequest(*this, user.userMessageBuffer);
 		map<string, string> input_map = userRequest.getRequestMap();
 		map<string, string>::iterator it = input_map.begin();
 		for (; it != input_map.end(); it++)
