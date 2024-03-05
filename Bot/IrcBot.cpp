@@ -11,7 +11,9 @@ IrcBot::IrcBot(const std::string& serverName, int port, const std::string& pass,
 	_serverName(serverName),
 	_serverPass(pass),
 	_botName(botName),
-	_serverRequestBuffer("") {
+	_serverRequestBuffer(""),
+	_responseGPT(""),
+	_authenticated(false) {
 
 	// Setting up the signal handler
 	signal(SIGINT, IrcBot::signalHandler);
@@ -28,6 +30,8 @@ IrcBot::~IrcBot() {
 }
 
 void IrcBot::initClientSocket() {
+
+	// ..well, it is actually a socket the bot is using to connect to the server
 
 	if ((_serverSocket = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
 		throw IrcBotException("ERROR: Failure opening socket for IrcBot client.\n");
@@ -56,10 +60,6 @@ void IrcBot::connectToServer() {
 
 	memset(&(serv_addr.sin_zero), '\0', 8);
 
-	// if (connect(_serverSocket, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0) {
-	// 	throw IrcBotException("ERROR: connecting to server failed. Make sure the server is up..\n");
-	// 	signalFlag = true;
-	// }
 	try {
 		if (connect(_serverSocket, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0) {
 			throw IrcBotException("ERROR: connecting to server failed. Make sure the server is up..\n");
@@ -75,9 +75,6 @@ void IrcBot::connectToServer() {
 	std::cout << "Bot name: " << _botName << std::endl;
 	std::cout << "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - " << std::endl;
 
-	// if (connect(_serverSocket, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0) {
-	// 	std::cerr << "error: connecting to server failed\n";
-	// }
 }
 
 void IrcBot::sendHandshake() {
@@ -119,14 +116,9 @@ void IrcBot::handleServerRequest() {
 
 	memset(buffer, 0, BUFFER_SIZE);
 
+	// normaly the `read` will block the program until there is something to read from the socket..
+	// ..this is expected behavior for the bot, so we don't need to set the socket to non-blocking mode with `fcntl`..
 	bytes = read(_serverSocket, buffer, BUFFER_SIZE - 1);
-	// if (bytes < 0) {
-	// 	throw IrcBotException("ERROR: reading from socket failed\n");
-	// }
-	// else if (bytes == 0) {
-	// 	throw IrcBotException("ERROR: server closed the connection\n");
-	// 	signalFlag = true;
-	// }
 
 	try {
 		if (bytes > 0) {
@@ -152,6 +144,17 @@ void IrcBot::handleResponse() {
 
 	std::cout << "Request from the server, RAW: " << _serverRequestBuffer << std::endl;
 
+	/* DEBUG */
+	// Check the string for (001 or 002, 003, 004).. if there means the bot is authenticated/registered on the server side
+	if (_serverRequestBuffer.find("001") != std::string::npos) {
+		_authenticated = true;
+
+		joinChannel("#helpdesk");
+		sendMessage("#helpdesk", "Hi there! I'm NeoBot. I'm here to help. Type 'DO_THE_THING: <question>' to get started.");
+	}
+	
+	/* ***** */
+
 	std::string request = _serverRequestBuffer;
 
 	if (request.find("PRIVMSG") != std::string::npos) {
@@ -169,7 +172,8 @@ void IrcBot::handleResponse() {
 		if (pos != std::string::npos) {
 			_serverRequestBuffer.erase(pos, toErase.length());
 		}
-		handleGPT();
+
+		// handleGPT();
 
 	}
 }
@@ -199,7 +203,7 @@ void IrcBot::handleGPT() {
 }
 
 void IrcBot::signalHandler(int signal) {
-	std::cout << "Interrupt signal (" << signal << ") received. Closing connection and exit.\n";
+	std::cout << "Interrupt signal (" << signal << ") received." << std::endl;
 	signalFlag = true;
 	// exit(signal);
 }

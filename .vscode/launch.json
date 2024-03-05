@@ -7,9 +7,12 @@
             "request": "launch",
             /* change this path to executable:
             */
-            "program": "${workspaceFolder}/ircserv",
+            // "program": "${workspaceFolder}/ircserv",
+            "program": "${workspaceFolder}/bot",
             // change this path for input args:
-            "args": [],
+            "args": [
+				"", "", ""
+			],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

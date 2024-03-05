@@ -2,15 +2,26 @@
 #include "../Channel/Channel.hpp"
 #include <iostream> 
 
-// User::User(const int& fd) : _socket(fd)
-// {
-// 	//std::cout << "User has been created" << std::endl;
-// }
+User::User() : 
+	_port(0), 
+	_socket(0), 
+	_hostName(""), 
+	_nickName(""), 
+	_userName(""), 
+	_realName(""),
+	_password(""), 
+	userMessageBuffer(""),
+	responseBuffer(""),
+	_authenticated(false), 
+	_handshaked(false),
+	isBot(false) {
 
-// User::~User()
-// {
-// 	//std::cout << "User " << _userName << " has been destructed" << std::endl;
-// }
+};
+
+User::~User()
+{
+	//std::cout << "User " << _userName << " has been destructed" << std::endl;
+}
 
 // --------------------------------------- SETTERS ---------------------------------------- // 
 
@@ -54,6 +65,11 @@ void	User::setChannel(Channel& channel)
 	if (_channels.find(channel.getName()) != _channels.end()) // si le channel est deja dans User
 		return;
 	_channels[channel.getName()] = &channel;
+}
+
+void	User::setAsBot()
+{
+	isBot = true;
 }
 
 // ---------------------------------------- GETTERS ----------------------------------------- // 
