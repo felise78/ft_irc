@@ -10,6 +10,7 @@
 #include "../Commands/CommandHandler.hpp"
 #include "../User/User.hpp"
 
+
 #ifndef DEBUG
 	#define DEBUG 0
 #endif
@@ -29,9 +30,12 @@
 // 	PART
 // }	t_commands;
 
+class ServerManager;
+
 class Request
 {
 	private:
+		ServerManager&							_server;							
 		std::string                         	_input_buffer;
 		std::map<std::string, std::string>		_input_map;
 															// This is useful because there can be multiple channels/users/ involved
@@ -42,10 +46,11 @@ class Request
 
 	
 	public:
-		Request(std::string buffer);
+		Request(ServerManager& server, std::string buffer);
 		~Request();
 		//SETTERS
 		void	parse_args();
+		void	parse_params();
 		void 	set_to_map(std::vector<std::string>& split_buffer);
 		//GETTERS
 		std::string const&								getCommand() const; //command
