@@ -93,7 +93,7 @@ void	Request::parse_params()
 			hash = true;
 		else if (*it == '#' && hash == true)
 		{
-			//server.error = 461; // two many channels
+			_server.error = 461; // two many channels
 			return;
 		}
 	}

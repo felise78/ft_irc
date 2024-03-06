@@ -18,6 +18,36 @@ User::User() :
 
 };
 
+User::User(const User& copy)
+{
+	*this = copy;
+}
+
+User& User::operator=(const User& src)
+{
+	if (*this != src)
+	{
+		_port = src._port;
+		_socket = src._socket;
+		_hostName = src._hostName;
+		_nickName = src._nickName;
+		_userName = src._userName;
+		_realName = src._realName;
+		_password = src._password;
+		userMessageBuffer = src.userMessageBuffer;
+		responseBuffer = src.responseBuffer;
+		_authenticated = src._authenticated;
+		_handshaked = src._handshaked;
+		isBot = src.isBot;
+		std::map<std::string, Channel*>::iterator it;
+		for(it = src._channels.begin(); it != src._channels.end(); ++it)
+		{
+			Channel *new_channel = new Channel(*it->second);
+			_channels[*it->first] = new_channel;
+		}
+	}
+}
+
 User::~User()
 {
 	//std::cout << "User " << _userName << " has been destructed" << std::endl;

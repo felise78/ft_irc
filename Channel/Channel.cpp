@@ -10,6 +10,35 @@ Channel::Channel(const std::string& name) : _name(name), _nb(0), _limited(false)
 	//std::cout << "Channel " << _name << " has been created" << std::endl;
 }
 
+Channel::Channel(const Channel& copy)
+{
+	*this = copy;
+}
+
+Channel& Channel::operator=( const Channel& src )
+{
+	if (*this != src)
+	{
+		_name = src._name;
+		_theme = src._theme;
+		_key = src._key;
+		_nb = src._nb;
+		_limit = src._limit;
+		_limited = src._limited;
+		_invit_only = src._invit_only;
+		_topic_restricted = src._topic_restricted;
+		_protected = src._protected;
+		std::map<std::string, User*>::iterator it;
+		for (it = src._users.begin(); it != src._users.end(); ++it)
+		{
+			User* newUser = new User(*it->second);
+			_users[*it->first] = newUser;
+		}
+		_ops = src._ops;
+	}
+	return *this;
+}
+
 Channel::~Channel()
 {
 	//std::cout << "Channel " << _name << " has been destructed" << std::endl;

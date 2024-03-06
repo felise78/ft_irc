@@ -336,12 +336,12 @@ void	ServerManager::setChannel(Channel& channel)
 {
 	if (channelMap.find(channel.getName()) != channelMap.end())
 		return;
-	channelMap[channel.getName()] = &channel;
+	channelMap.insert(std::make_pair(channel.getName(), channel));
 }
 
-Channel& ServerManager::getChannel( const std::string& name ) const
+const Channel& ServerManager::getChannel( const std::string& name ) const
 {
-	return *channelMap.at(name);
+	return channelMap.at(name);
 }
 
 int ServerManager::getFdbyNickName( const std::string& nickname ) const

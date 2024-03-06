@@ -23,6 +23,8 @@
 
 		public :
 			Channel(const std::string& name);
+			Channel(const Channel& copy);
+			Channel& operator=( const Channel& src );
 			~Channel();
 			std::map<std::string, User*> 	_users;
 			std::vector<std::string>		_ops;

@@ -19,7 +19,10 @@
 
 		public :
 		User();
+		User(const User& copy);
+		User& operator=(const User& src);
 		~User();
+		// attributs publics
 		std::string						userMessageBuffer;
 		std::string						responseBuffer;
 		std::map<std::string, Channel*>	_channels;

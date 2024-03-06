@@ -2,7 +2,7 @@
 #include "../User/User.hpp"
 
 CommandHandler::CommandHandler(ServerManager& srv, User &usr, map<string, string> &commands) :
-	server(srv), user(usr), commandsFromClient(commands) { 
+	server(srv), user(usr), commandsFromClient(commands){ 
 
 	// Filling in the `mapEnumToString` map to convert enum to string, this will help to identify the command and execute when needed
 	mapEnumToString[NONE] = "NONE";
@@ -53,8 +53,7 @@ CommandHandler::CommandHandler(ServerManager& srv, User &usr, map<string, string
 		authenticateUser();
 	}
 
-	// setting the channel if there is one in params
-	setChannel();
+	setChannelName();
 }
 
 CommandHandler::~CommandHandler() {
@@ -72,20 +71,13 @@ e_cmd	CommandHandler::getCMD(const std::string & str) {
 	return NONE;
 }
 
-void	CommandHandler::setChannel()
+void	CommandHandler::setChannelName()
 {
 	size_t hashPos = commandsFromClient["params"].find('#');
     
     if (hashPos != std::string::npos) {
         size_t spacePos = commandsFromClient["params"].find(' ', hashPos);
-		std::string channelName = commandsFromClient["params"].substr(hashPos, spacePos - hashPos);
-		if (server.channelMap.find(channelName) == server.channelMap.end())
-		{
-			server.error = 403; // no such channel
-			return; // ou throw ? 
-		}
-		else 
-			_channel = server.channelMap[channelName];
+		*this->channelName = commandsFromClient["params"].substr(hashPos, spacePos - hashPos);
     }
 }
 
@@ -198,38 +190,36 @@ void	CommandHandler::handleJOIN() {
 	std::cout << YELLOW << "JOIN command received.." << RESET << std::endl;
 
 	// format : /join #channel (password)
-	const std::string channel;
+
 	const std::string password;
 	
-	if (server.channelMap.find(channel) == server.channelMap.end())
+	if (server.channelMap.find(channelName) == server.channelMap.end())
 	{
-		Channel new_channel(channel);
+		Channel new_channel(channelName);
+		new_channel.setUser(user);
+		// set the creator of the channel as operator
+		new_channel.setOp(user.getNickName());
+		if (password.empty() == false)
+			_channel.setKey(password);
 		server.setChannel(new_channel);
 		user.setChannel(new_channel);
-		_channel->setUser(user);
-		
-		// set the creator of the channel as operator
-		_channel->setOp(user.getNickName());
-
-		if (password.empty() == false)
-			_channel->setKey(password);
 	}
 	else
 	{
-		if (server.channelMap[channel]->getInvit() == true)
+		if (server.channelMap[channelName].getInvit() == true)
 			return;
-		if (server.channelMap[channel]->getProtected() == true)
+		if (server.channelMap[channelName].getProtected() == true)
 		{
-			if (server.channelMap[channel]->getKey() != password)
+			if (server.channelMap[channelName].getKey() != password)
 				return;
 		}
-		if (user._channels.find(channel) == user._channels.end())
+		if (user._channels.find(channelName) == user._channels.end())
 		{
-			user.setChannel(server.getChannel(channel));
-			server.getChannel(channel).setUser(user);
+			user.setChannel(server.getChannel(channelName));
+			server.getChannel(channelName).setUser(user);
 		}
 		else 
-			return ; // une erreur ?
+			return ; // user already in channel 
 	}
 
 }
@@ -244,18 +234,18 @@ void	CommandHandler::handlePRIVMSG() {
 	// <msgtarget> can be a nickname for a private message or the name of a channel for broadcast
 	if (_channel) // si le msgtarget est un channel, le channel de CommandHandler est donc set
 	{
-		if (server.channelMap.find(_channel->getName()) == server.channelMap.end())
+		if (server.channelMap.find(_channel.getName()) == server.channelMap.end())
 		{
 			server.error = 403; // no such channel
 			return;
 		}
-		if (_channel->_users.find(user.getNickName()) == _channel->_users.end())
+		if (_channel._users.find(user.getNickName()) == _channel._users.end())
 		{
 			server.error = 442; // user not in that channel
 			return;
 		}
 		// sinon send le message a tous les Users du channel
-		_channel->broadcast(msg);
+		_channel.broadcast(msg);
 	}
 	// sinon, msgtarget est donc un nickname
 	std::string nickname; 
@@ -292,10 +282,10 @@ void	CommandHandler::handleINVITE() {
 		Channel new_channel(channel);
 		server.setChannel(new_channel);
 		user.setChannel(new_channel);
-		_channel->setUser(user);
+		new_channel.setUser(user); // revoir ca
 		
 		// the user that creates the channel is the op : 
-		_channel->setOp(user.getNickName());
+		new_channel.setOp(user.getNickName());
 
 		// invite the nickname
 		server.usersMap[nick_fd].setChannel(new_channel);
@@ -321,12 +311,12 @@ void	CommandHandler::handleTOPIC()	{
 
 	std::string topic;	// will be params
 
-	if (server.channelMap.find(_channel->getName()) == server.channelMap.end())
+	if (server.channelMap.find(_channel.getName()) == server.channelMap.end())
 	{
 		server.error = 403; // no such channel
 		return;
 	}
-	if (_channel->_users.find(user.getNickName()) == _channel->_users.end())
+	if (_channel._users.find(user.getNickName()) == _channel._users.end())
 	{
 		server.error = 442; // user not in that channel
 		return;
@@ -334,23 +324,23 @@ void	CommandHandler::handleTOPIC()	{
 	// si y'a pas de params 
 	if (topic.empty() == true) // will be params
 	{
-		if (_channel->getTheme().empty() == true)
+		if (_channel.getTheme().empty() == true)
 			server.error = 331; // no topic is set
 		else
-			std::cout << _channel->getTheme() << std::endl; // print juste le topic
+			std::cout << _channel.getTheme() << std::endl; // print juste le topic
 			// print ou envoie en privmsg ??
 		return;
 	}
 	// else s' il y a un param apres le nom du channel
-	if (_channel->getTopicRestricted() == true)
+	if (_channel.getTopicRestricted() == true)
 	{
-		if(_channel->isOp(user.getNickName()) == false)
+		if(_channel.isOp(user.getNickName()) == false)
 		{
 			server.error = 482; // chan op privilege is needed
 			return;
 		}
 	}
-	_channel->setTheme(topic);
+	_channel.setTheme(topic);
 }
 
 void	CommandHandler::handleKICK()
@@ -367,7 +357,7 @@ void	CommandHandler::handleKICK()
 		server.error = 403; // no such channel
 		return;
 	}
-	if (_channel->isOp(user.getNickName()) == false)
+	if (_channel.isOp(user.getNickName()) == false)
 	{
 		server.error = 482; // chan op privilege is needed
 		return;
@@ -377,13 +367,13 @@ void	CommandHandler::handleKICK()
 		server.error = 401; // no such nickname
 		return;
 	}
-	if (server.channelMap[channel]->_users.find(nickname) == server.channelMap[channel]->_users.end())
+	if (server.channelMap[channel]._users.find(nickname) == server.channelMap[channel]._users.end())
 	{
 		server.error = 441; // user not in channel
 		return;
 	}
-	_channel->getUser(nickname).removeChannel(channel);
-	_channel->removeUser(nickname);
+	_channel.getUser(nickname).removeChannel(channel);
+	_channel.removeUser(nickname);
 	server.getChannel(channel).removeUser(nickname); // dunnow if necessarry to remove it in both
 }
 
