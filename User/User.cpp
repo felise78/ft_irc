@@ -20,7 +20,7 @@ User::User() :
 
 User::~User()
 {
-	//std::cout << "User " << _userName << " has been destructed" << std::endl;
+	//std::cout << "User " << _userName << " has been destroyed" << std::endl;
 }
 
 // --------------------------------------- SETTERS ---------------------------------------- // 
@@ -53,6 +53,11 @@ void 	User::setUserName(const std::string& username)
 void 	User::setHostName(const std::string& hostname)
 {
 	_hostName = hostname;
+}
+
+void	User::setRealName(const std::string& realname)
+{
+	_realName = realname;
 }
 
 void 	User::setPassword(const std::string& password)
@@ -108,6 +113,11 @@ const std::string& User::getUserName( void ) const
 const std::string& User::getHostName( void ) const
 {
 	return _hostName;
+}
+
+const std::string& User::getRealName() const 
+{
+	return _realName;
 }
 
 const std::string& User::getPassword( void ) const

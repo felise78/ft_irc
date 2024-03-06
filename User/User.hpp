@@ -34,6 +34,7 @@
 		void 	setNickName(const std::string& nickname);
 		void 	setUserName(const std::string& username);
 		void 	setHostName(const std::string& hostname);
+		void	setRealName(const std::string& realname);
 		void 	setPassword(const std::string& password);
 		void	setChannel(Channel& channel);
 		void	setAuthenticated(bool authenticated);
@@ -46,6 +47,7 @@
 		const std::string& getNickName( void ) const;
 		const std::string& getUserName( void ) const;
 		const std::string& getHostName( void ) const;
+		const std::string& getRealName() const;
 		const std::string& getPassword( void ) const;
 		Channel& getChannel( const std::string& name ) const;
 		bool	authenticated();

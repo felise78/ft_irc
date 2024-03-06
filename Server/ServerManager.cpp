@@ -114,7 +114,7 @@ void	ServerManager::_handle(int fd) {
 
 	bytes_read = read(fd, buffer, BUF_SIZE);
 	std::cout << timeStamp();
-
+	std::cout << std::endl << MAGENTA << "bytes read:" << bytes_read << std::endl;
 	if (bytes_read == 0) {
 		std::cout << YELLOW << "[!] bytes_read == 0 from client fd:[" << fd << "]" << RESET << std::endl;
 		//std::cout << YELLOW << "[!] Connection closed by the client. ";
@@ -128,8 +128,9 @@ void	ServerManager::_handle(int fd) {
 	}
 
 	// UsersMap[fd].requestBuffer.append(buffer, bytes_read);
-	usersMap[fd].userMessageBuffer = std::string(buffer, bytes_read);
-
+	usersMap[fd].userMessageBuffer += std::string(buffer, bytes_read);
+	std::cout << std::endl << MAGENTA << "USER MESSAGE BUFFER: " << usersMap[fd].userMessageBuffer << std::endl;
+	std::cout << "Size of user msg buffer: " << usersMap[fd].userMessageBuffer.size() << std::endl;
 	/* DEBUG */
 	// At this point received data can be parsed and added to User's class (NAME, NICK, PASS etc..)
 	std::cout << CYAN << "[*] received from client fd[" << fd << "]: " << RESET << std::endl;
@@ -137,12 +138,16 @@ void	ServerManager::_handle(int fd) {
 	std::cout << CYAN << "parsing..." << RESET << std::endl;
 
 	User &user = usersMap[fd];
-
+	if (noCRLFinBuffer(user.userMessageBuffer))
+	{
+		std::cout << "Passes through here\n";
+		return ;
+	}
 	vector<string> splitMessageBuffer = split(user.userMessageBuffer, "\n");
 	for (vector<string>::iterator it = splitMessageBuffer.begin(); it != splitMessageBuffer.end(); it++)
 	{	
 		std::cout << MAGENTA << *it << RESET << std::endl;
-		Request	userRequest(*it);
+		Request	userRequest(*this, *it);
 		map<string, string> input_map = userRequest.getRequestMap();
 		map<string, string>::iterator it2 = input_map.begin();
 		for (; it2 != input_map.end(); it2++)
@@ -151,6 +156,7 @@ void	ServerManager::_handle(int fd) {
 		}
 		CommandHandler cmdHandler(*this, user, input_map);
 	}
+	user.userMessageBuffer.clear();
 
 	// We add the client's fd to the send_fd_pool once the client is authenticated (received NICK, USER, PASS..)
 	if (user.authenticated()) {
@@ -355,6 +361,9 @@ int ServerManager::getFdbyNickName( const std::string& nickname ) const
 	return -1;
 }
 
+/*UTILS*/
+
+// split splits string input at every occurence of string delimiter, and returns a vector
 std::vector<std::string> split(const std::string& input, const std::string& delimiter) 
 {
     std::vector<std::string> tokens;
@@ -372,4 +381,30 @@ std::vector<std::string> split(const std::string& input, const std::string& deli
 	if (!str.empty()) {
     	tokens.push_back(str);}
     return tokens;
+}
+
+void trim(std::string &str, std::string delimiter)
+{
+	size_t start = str.find_first_not_of(delimiter);
+    if (start != std::string::npos) {
+		str = str.substr(start);
+    } 
+	else {
+		str.clear(); // Entire string is whitespace
+        return;
+    }
+    size_t end = str.find_last_not_of(delimiter);
+    if (end != std::string::npos) {
+        str = str.substr(0, end + 1);
+    } else {
+        str.clear(); // Entire string is whitespace
+    }
+}
+
+int	noCRLFinBuffer(std::string const& buffer)
+{
+	size_t crlf = buffer.find("\n");
+	if (crlf == std::string::npos)
+		return 1;
+	return 0;
 }

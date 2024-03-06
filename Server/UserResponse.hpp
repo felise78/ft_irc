@@ -36,6 +36,7 @@ class UserResponse {
 
 		void			handshakeResponse();
 		void			responseBuilder();
+		std::string			getPrefix();
 
 };
 

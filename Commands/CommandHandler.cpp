@@ -165,8 +165,8 @@ void	CommandHandler::handlePASS() {
 void	CommandHandler::handleNICK() {
 	std::cout << YELLOW << "NICK command received.." << RESET << std::endl;
 
-	const std::string nickname = commandsFromClient["params"];
-
+	std::string nickname = commandsFromClient["params"];
+	trim(nickname, " \t\r");
 	// parsing nickname;
 	if (nickname.length() > 9)
 	{
@@ -187,37 +187,43 @@ void	CommandHandler::handleNICK() {
 		server.error = 433; // nickname in use
 		return; 
 	}
-
-	const std::string nickname;
-
-	// parsing nickname;
-	if (nickname.length() > 9)
-	{
-		server.error = 432; // erroneus nickname
-		return; 
-	}
-	string::const_iterator it;
-	for(it = nickname.begin() ; it != nickname.end(); ++it)
-	{
-		if (std::isalnum(*it) == false)
-		{
-			server.error = 432; // erroneus nickname
-			return;
-		}
-	}
-	if (server.getFdbyNickName(nickname) != -1)
-	{
-		server.error = 433; // nickname in use
-		return; 
-	}
-
 	user.setNickName(nickname);
 }
 
 void	CommandHandler::handleUSER() {
 	std::cout << YELLOW << "USER command received.." << RESET << std::endl;
 
-	user.setUserName(commandsFromClient["params"]);
+	std::vector<std::string> params = split(commandsFromClient["params"], " ");
+	vector<string>::iterator hostnameIt = params.begin() + 1;
+	vector<string>::iterator realnameIt = params.begin() + 3;
+	for (vector<string>::iterator it = params.begin(); it != params.end(); it++)
+	{
+		if (it == params.begin()) {
+			user.setUserName(*it);
+		}
+		if (it == hostnameIt) {
+			string hostname = "localhost";
+			user.setHostName(hostname);
+		}
+		if (it == realnameIt)
+		{
+			string realName = *it;
+			if (realName[0] == ':')
+			{
+				realName = (realName).substr(1);
+				it++;
+				for (; it != params.end(); it++)
+				{
+					realName += " ";
+					realName += (*it);
+				}
+			}
+			user.setRealName(realName);
+			/*DEBUG*/
+			std::cout << "Username: " << user.getUserName() << ", HostName: " << user.getHostName() << ", RealName: " << user.getRealName() << std::endl;
+			return ;
+		}
+	}
 }
 
 void	CommandHandler::handleJOIN() {
@@ -285,7 +291,7 @@ void	CommandHandler::handlePRIVMSG() {
 		_channel->broadcast(msg);
 	}
 	// sinon, msgtarget est donc un nickname
-	std::string nickname; 
+	std::string nickname;
 	int nick_fd = server.getFdbyNickName(nickname);
 	// check if the nickname exists in the server
 	if(nick_fd == -1)

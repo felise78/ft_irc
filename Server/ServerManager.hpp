@@ -67,6 +67,8 @@ class ServerManager {
 };
 
 std::vector<std::string> split(const std::string& input, const std::string& delimiter);
+void	trim(std::string &str, std::string delimiter);
+int		noCRLFinBuffer(std::string const& buffer);
 
 #endif
 
