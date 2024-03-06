@@ -332,14 +332,14 @@ bool	ServerManager::isClient(int fd) {
 }
 
 
-void	ServerManager::setChannel(Channel& channel)
+void	ServerManager::setChannel(const Channel& channel)
 {
 	if (channelMap.find(channel.getName()) != channelMap.end())
 		return;
 	channelMap.insert(std::make_pair(channel.getName(), channel));
 }
 
-const Channel& ServerManager::getChannel( const std::string& name ) const
+Channel& ServerManager::getChannel( const std::string& name )
 {
 	return channelMap.at(name);
 }

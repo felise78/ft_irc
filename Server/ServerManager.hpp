@@ -105,8 +105,8 @@ class ServerManager {
 		void						checkErrorAndExit(int returnValue, const std::string& msg);
 		void						log(int UserFd);
 		bool						isClient(int fd);
-		void						setChannel(Channel& channel);
-		const Channel& 				getChannel( const std::string& name ) const;
+		void						setChannel(const Channel& channel);
+		Channel& 				getChannel( const std::string& name );
 		int 						getFdbyNickName( const std::string& nickname ) const;
 
 };

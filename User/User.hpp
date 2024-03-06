@@ -19,13 +19,13 @@
 
 		public :
 		User();
-		User(const User& copy);
-		User& operator=(const User& src);
+		// User(const User& copy);
+		// User& operator=(const User& src);
 		~User();
 		// attributs publics
 		std::string						userMessageBuffer;
 		std::string						responseBuffer;
-		std::map<std::string, Channel*>	_channels;
+		std::map<std::string, Channel>	_channels;
 		bool							_authenticated;
 		bool							_handshaked;
 		bool							isBot;
@@ -47,7 +47,7 @@
 		const std::string& getUserName( void ) const;
 		const std::string& getHostName( void ) const;
 		const std::string& getPassword( void ) const;
-		Channel& getChannel( const std::string& name ) const;
+		Channel& getChannel( const std::string& name );
 		bool	authenticated();
 		bool	handshaked();
 
