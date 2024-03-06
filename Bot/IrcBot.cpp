@@ -1,8 +1,9 @@
 #include "IrcBot.hpp"
 
 //Global variable for signal handling
-bool signalFlag = false;
+// bool signalFlag = false;
 
+IrcBot* IrcBot::ircBotInstance = NULL;
 
 IrcBot::IrcBot(const std::string& serverName, int port, const std::string& pass, const std::string& botName)
 	: 
@@ -13,13 +14,16 @@ IrcBot::IrcBot(const std::string& serverName, int port, const std::string& pass,
 	_botName(botName),
 	_serverRequestBuffer(""),
 	_responseGPT(""),
-	_authenticated(false) {
+	_authenticated(false),
+	signalErrorFlag(false) {
+	
+	ircBotInstance = this;
 
 	// Setting up the signal handler
 	signal(SIGINT, IrcBot::signalHandler);
 
 	// Initializing the client socket
-	initClientSocket();
+	initSocket();
 
 	// Establishing a connection to the server
 	connectToServer();
@@ -29,51 +33,35 @@ IrcBot::~IrcBot() {
 	close(_serverSocket);
 }
 
-void IrcBot::initClientSocket() {
+void IrcBot::initSocket() {
 
 	// ..well, it is actually a socket the bot is using to connect to the server
 
-	if ((_serverSocket = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-		throw IrcBotException("ERROR: Failure opening socket for IrcBot client.\n");
-	}
+	_serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+	checkErrorAndExit(_serverSocket, "ERROR: Failure opening socket for IrcBot client.\n");
 }
 
+/*
+** This function is used to establish a connection to the server given the server's IP address and port.
+*/
 void IrcBot::connectToServer() {
-
-	struct hostent* server = gethostbyname(_serverName.c_str());
-
-	try {
-		if (server == NULL) {
-			throw IrcBotException("ERROR: no such host [" + _serverName + "]\n");
-		}
-	}
-	catch (IrcBotException& e) {
-		std::cerr << e.what();
-		exit(1);
-	}	
 
 	struct sockaddr_in serv_addr;
 
+	memset(&serv_addr, 0, sizeof(serv_addr));
+
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_port = htons(_serverPort);
-	serv_addr.sin_addr = *((struct in_addr*)server->h_addr);
+	serv_addr.sin_addr.s_addr = inet_addr(_serverName.c_str()); // This works only for IPv4 in `127.0.0.1` format
 
-	memset(&(serv_addr.sin_zero), '\0', 8);
+	int returnValue = connect(_serverSocket, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
+	checkErrorAndExit(returnValue, "ERROR: connecting to server [" + _serverName + "] failed. Make sure the server is up..\n");
 
-	try {
-		if (connect(_serverSocket, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0) {
-			throw IrcBotException("ERROR: connecting to server failed. Make sure the server is up..\n");
-		}
-	}	
-	catch (IrcBotException& e) {
-		std::cerr << e.what();
-		exit(1);
+	if (!signalErrorFlag) {
+		std::cout << "Connected to server: " << _serverName << " on port: " << _serverPort << std::endl;
+		std::cout << "Bot name: " << _botName << std::endl;
+		std::cout << "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - " << std::endl;
 	}
-
-	/* DEBUG */
-	std::cout << "Connected to server: " << _serverName << " on port: " << _serverPort << std::endl;
-	std::cout << "Bot name: " << _botName << std::endl;
-	std::cout << "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - " << std::endl;
 
 }
 
@@ -92,16 +80,10 @@ void IrcBot::joinChannel(const std::string& channel) {
 void IrcBot::sendIrcMessage(const std::string& message) {
 
 	std::string fullMessage = message + "\r\n";
+	
+	int returnValue = write(_serverSocket, fullMessage.c_str(), fullMessage.length());
+	checkErrorAndExit(returnValue, "ERROR: writing to socket failed\n");
 
-	try {
-		if (write(_serverSocket, fullMessage.c_str(), fullMessage.length()) < 0) {
-			throw IrcBotException("ERROR: writing to socket failed\n");
-		}
-	}
-	catch (IrcBotException& e) {
-		std::cerr << e.what();
-		exit(1);
-	}
 }
 
 void IrcBot::sendMessage(const std::string& channel, const std::string& message) {
@@ -111,33 +93,23 @@ void IrcBot::sendMessage(const std::string& channel, const std::string& message)
 
 void IrcBot::handleServerRequest() {
 
-	int bytes = 0;
 	char		buffer[BUFFER_SIZE];
 
 	memset(buffer, 0, BUFFER_SIZE);
 
 	// normaly the `read` will block the program until there is something to read from the socket..
 	// ..this is expected behavior for the bot, so we don't need to set the socket to non-blocking mode with `fcntl`..
-	bytes = read(_serverSocket, buffer, BUFFER_SIZE - 1);
+	int bytes = read(_serverSocket, buffer, BUFFER_SIZE - 1);
+	checkErrorAndExit(bytes, "ERROR: reading from socket failed\n"); // check if `-1`
 
-	try {
-		if (bytes > 0) {
-			buffer[bytes] = '\0';
-			_serverRequestBuffer = buffer;
-		}
-		else if (bytes == 0) {
-			throw IrcBotException("ERROR: server closed the connection\n");
-		}
-		else {
-			throw IrcBotException("ERROR: reading from socket failed\n");
-		}
-	}
-	catch (IrcBotException& e) {
-		std::cerr << e.what();
-		exit(1);
+	if (bytes == 0) {
+		checkErrorAndExit(-1, "ERROR: server closed the connection\n");
 	}
 
+	// once the code made it this far means `read` was successful and we can process the buffer
+	buffer[bytes] = '\0';
 	_serverRequestBuffer = buffer;
+
 }
 
 void IrcBot::handleResponse() {
@@ -178,6 +150,34 @@ void IrcBot::handleResponse() {
 	}
 }
 
+void IrcBot::checkErrorAndExit(int returnValue, const std::string& message) {
+
+	if (returnValue < 0) {
+
+		std::cerr << RED << message << RESET << std::endl;
+
+		signalErrorFlag = true;
+	}
+}
+
+void IrcBot::signalHandler(int signal) {
+	std::cout << RED << "\nInterrupt signal (" << signal << ") received." << RESET << std::endl;
+	
+	ircBotInstance->handleSignal();
+
+	// exit will show as if there is a memory leak..
+	// exit(signal);
+}
+
+void IrcBot::handleSignal() {
+
+	std::cout << YELLOW << "Sending QUIT request to the server.." << RESET << std::endl;
+	sendIrcMessage("QUIT :NeoBot is leaving the building..");	
+
+	signalErrorFlag = true;
+	
+} 
+
 /*
 ** Here we use so called `named pipes` to communicate with the GPT container.
 ** Also known as `FIFO` (First In First Out).
@@ -196,14 +196,44 @@ void IrcBot::handleGPT() {
 	std::getline(container_to_host, _responseGPT);
 	container_to_host.close();
 
-	/* DEBUG */
 	// _responseGPT must be sent back to the server..
 	std::cout << "GPT response: " << _responseGPT << std::endl;
 
 }
 
-void IrcBot::signalHandler(int signal) {
-	std::cout << "Interrupt signal (" << signal << ") received." << std::endl;
-	signalFlag = true;
-	// exit(signal);
+/*
+** This function is used to establish a connection to the server.
+** It uses the `getaddrinfo` function to get the server address and port.
+** The `struct addrinfo` is used to identify the server name/address and port.
+** The `getaddrinfo` function returns a list of `struct addrinfo` structures, each of which contains an Internet address that can be specified in a call to `connect`.
+** This slows down the program since it has to be free'd with `freeaddrinfo` after the connection is established.
+** ..we will use older method where the address is given directly to the `connect` function in `127.0.0.1` format.
+void IrcBot::connectToServer() {
+
+	struct addrinfo		hints;
+	struct addrinfo*	result;
+
+	memset(&hints, 0, sizeof(hints));
+
+	hints.ai_family = AF_INET;
+	hints.ai_socktype = SOCK_STREAM;
+
+	int returnValue = getaddrinfo(_serverName.c_str(), NULL, &hints, &result);
+	checkErrorAndExit(returnValue, "ERROR: getaddrinfo failed. No such host [" + _serverName + "]\n");
+
+	struct sockaddr_in* serv_addr = (struct sockaddr_in*)result->ai_addr;
+	serv_addr->sin_port = htons(_serverPort);
+
+	returnValue = connect(_serverSocket, (struct sockaddr*)serv_addr, sizeof(*serv_addr));
+	checkErrorAndExit(returnValue, "ERROR: connecting to server [" + _serverName + "] failed. Make sure the server is up..\n");
+
+	if (!signalErrorFlag) {
+		std::cout << "Connected to server: " << _serverName << " on port: " << _serverPort << std::endl;
+		std::cout << "Bot name: " << _botName << std::endl;
+		std::cout << "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - " << std::endl;
+	}
+
+	freeaddrinfo(result);
+
 }
+*/
