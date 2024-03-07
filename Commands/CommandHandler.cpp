@@ -41,6 +41,7 @@ CommandHandler::CommandHandler(ServerManager& srv, User &usr, map<string, string
 	cmdToHandler["INVITE"] = &CommandHandler::handleINVITE;
 	cmdToHandler["KICK"] = &CommandHandler::handleKICK;
 	cmdToHandler["MODE"] = &CommandHandler::handleMODE;
+	cmdToHandler["PING"] = &CommandHandler::handlePING;
 	// .. and so on
 
 
@@ -93,16 +94,18 @@ void	CommandHandler::authenticateUser() {
 	// if (commandsFromClient.find("CAP") != commandsFromClient.end()) {
 	// 	handleCAP(); // this one might not be needed
 	// }
-	if (commandsFromClient.find("NICK") != commandsFromClient.end()) {
+	// if (commandsFromClient.find("NICK") != commandsFromClient.end()) {
+	if (commandsFromClient["command"] == "NICK") {
 		handleNICK();
 	}
-	if (commandsFromClient.find("PASS") != commandsFromClient.end()) {
+	// if (commandsFromClient.find("PASS") != commandsFromClient.end()) {
+	if (commandsFromClient["command"] == "PASS") {
 		handlePASS();
 	}
-	if (commandsFromClient.find("USER") != commandsFromClient.end()) {
+	// if (commandsFromClient.find("USER") != commandsFromClient.end()) {
+	if (commandsFromClient["command"] == "USER") {
 		handleUSER();
 	}
-
 	// setting authenticated to true if the user has sent NICK, USER and PASS
 	// NEED to add the PASS check as well !!!
 	if (!user.getNickName().empty() && !user.getUserName().empty()) {
@@ -129,7 +132,8 @@ void	CommandHandler::executeCommand() {
 
 	// The synax is important here !! (`cmdToHandler[cmdStr]()` - won't work)
 	// first we get the pointer to the handler method and then we call it on `this` object
-	(this->*cmdToHandler[cmdStr])();
+	if (cmdToHandler.find(cmdStr) != cmdToHandler.end())
+		(this->*cmdToHandler[cmdStr])();
 }
 
 /*
@@ -147,14 +151,14 @@ void	CommandHandler::handleCAP() {
 void	CommandHandler::handlePASS() {
 	std::cout << YELLOW << "PASS command received.." << RESET << std::endl;
 
-	user.setPassword(commandsFromClient["PASS"]);
+	user.setPassword(commandsFromClient["params"]);
 }
 
 void	CommandHandler::handleNICK() {
 	std::cout << YELLOW << "NICK command received.." << RESET << std::endl;
 
-	const std::string nickname;
-
+	std::string nickname = commandsFromClient["params"];
+	trim(nickname, " \t\r");
 	// parsing nickname;
 	if (nickname.length() > 9)
 	{
@@ -175,14 +179,43 @@ void	CommandHandler::handleNICK() {
 		server.error = 433; // nickname in use
 		return; 
 	}
-
-	user.setNickName(commandsFromClient["NICK"]);
+	user.setNickName(nickname);
 }
 
 void	CommandHandler::handleUSER() {
 	std::cout << YELLOW << "USER command received.." << RESET << std::endl;
 
-	user.setUserName(commandsFromClient["USER"]);
+	std::vector<std::string> params = split(commandsFromClient["params"], " ");
+	vector<string>::iterator hostnameIt = params.begin() + 1;
+	vector<string>::iterator realnameIt = params.begin() + 3;
+	for (vector<string>::iterator it = params.begin(); it != params.end(); it++)
+	{
+		if (it == params.begin()) {
+			user.setUserName(*it);
+		}
+		if (it == hostnameIt) {
+			string hostname = "localhost";
+			user.setHostName(hostname);
+		}
+		if (it == realnameIt)
+		{
+			string realName = *it;
+			if (realName[0] == ':')
+			{
+				realName = (realName).substr(1);
+				it++;
+				for (; it != params.end(); it++)
+				{
+					realName += " ";
+					realName += (*it);
+				}
+			}
+			user.setRealName(realName);
+			/*DEBUG*/
+			std::cout << "Username: " << user.getUserName() << ", HostName: " << user.getHostName() << ", RealName: " << user.getRealName() << std::endl;
+			return ;
+		}
+	}
 }
 
 void	CommandHandler::handleJOIN() {
@@ -248,7 +281,7 @@ void	CommandHandler::handlePRIVMSG() {
 		server.channelMap[channelName].broadcast(msg);
 	}
 	// sinon, msgtarget est donc un nickname
-	std::string nickname; 
+	std::string nickname;
 	int nick_fd = server.getFdbyNickName(nickname);
 	// check if the nickname exists in the server
 	if(nick_fd == -1)
@@ -382,4 +415,10 @@ void	CommandHandler::handleMODE()
 	std::cout << YELLOW << "MODE command received.." << RESET << std::endl;
 	
 	ModeHandler	mode_handler(commandsFromClient, server, user);
+}
+
+void	CommandHandler::handlePING()
+{
+	std::cout << YELLOW << "PING command received.." << RESET << std::endl;
+	user.setPinged(true);
 }

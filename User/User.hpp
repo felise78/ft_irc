@@ -28,6 +28,8 @@
 		std::map<std::string, Channel>	_channels;
 		bool							_authenticated;
 		bool							_handshaked;
+		bool							_pinged;
+
 		bool							isBot;
 		// Setters //
 		void	setPort(const int& port);
@@ -35,21 +37,26 @@
 		void 	setNickName(const std::string& nickname);
 		void 	setUserName(const std::string& username);
 		void 	setHostName(const std::string& hostname);
+		void	setRealName(const std::string& realname);
 		void 	setPassword(const std::string& password);
 		void	setChannel(Channel& channel);
 		void	setAuthenticated(bool authenticated);
 		void	setHandshaked(bool handshaked);
 		void	setAsBot();
+		void	setPinged(bool pinged);
 		// Getters //
 		const int& getPort( void ) const;
 		const int& getSocket( void ) const;
 		const std::string& getNickName( void ) const;
 		const std::string& getUserName( void ) const;
 		const std::string& getHostName( void ) const;
+		const std::string& getRealName() const;
 		const std::string& getPassword( void ) const;
 		Channel& getChannel( const std::string& name );
 		bool	authenticated();
 		bool	handshaked();
+		bool	pinged();
+
 
 		void	printChannels( void ) const;   // for debug
 		void	removeChannel(const std::string& channelName);
