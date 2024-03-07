@@ -2,7 +2,7 @@
 #include "../User/User.hpp"
 
 CommandHandler::CommandHandler(ServerManager& srv, User &usr, map<string, string> &commands) :
-	server(srv), user(usr), commandsFromClient(commands){ 
+	server(srv), user(usr), commandsFromClient(commands), { 
 
 	// Filling in the `mapEnumToString` map to convert enum to string, this will help to identify the command and execute when needed
 	mapEnumToString[NONE] = "NONE";
@@ -79,6 +79,12 @@ void	CommandHandler::setChannelName()
     if (hashPos != std::string::npos) {
         size_t spacePos = commandsFromClient["params"].find(' ', hashPos);
 		this->channelName = commandsFromClient["params"].substr(hashPos, spacePos - hashPos);
+		string::iterator it = channelName.begin() + 1;
+		for ( ; it != channelName.end(); ++it)
+		{
+			if (std::isalnum(*it) == false)
+				errChannelName = true;
+		}
     }
 }
 
@@ -219,20 +225,29 @@ void	CommandHandler::handleUSER() {
 }
 
 void	CommandHandler::handleJOIN() {
-//need to handle the case where the channel name is wrong, eg two ##?
+
 	std::cout << YELLOW << "JOIN command received.." << RESET << std::endl;
 
 	// format : /join #channel (password)
 
-	const std::string password;
-	
+	// set the password if there is one
+	if (commandsFromClient["params"].size() != channelName.size())
+	{
+		size_t space = commandsFromClient["params"].find(' ');
+    
+    	if (space != std::string::npos)
+			this->password = commandsFromClient["params"].substr(space + 1, commandsFromClient["params"].size() - space + 1);
+	}
+	// check if the server doesn't exist, creates it
 	if (server.channelMap.find(channelName) == server.channelMap.end())
 	{
+		if (errChannelName == true)
+			return; // erreur wrong format channel name
 		Channel new_channel(channelName);
 		new_channel.setUser(user);
 		// set the creator of the channel as operator
 		new_channel.setOp(user.getNickName());
-		if (password.empty() == false)
+		if (password.empty() == false) 				// parse the password
 			new_channel.setKey(password);
 		server.setChannel(new_channel);
 		user.setChannel(new_channel);
@@ -240,11 +255,14 @@ void	CommandHandler::handleJOIN() {
 	else
 	{
 		if (server.channelMap[channelName].getInvit() == true)
-			return;
+		{
+			server.error = 
+			return; // code erreur channel est sur invit
+		}
 		if (server.channelMap[channelName].getProtected() == true)
 		{
 			if (server.channelMap[channelName].getKey() != password)
-				return;
+				return; // code erreur wrong password
 		}
 		if (user._channels.find(channelName) == user._channels.end())
 		{
@@ -262,6 +280,7 @@ void	CommandHandler::handlePRIVMSG() {
 	std::cout << YELLOW << "PRIVMSG command received.." << RESET << std::endl;
 
 	// format : /msg <msgtarget> <message>
+
 
 	std::string msg;
 	// <msgtarget> can be a nickname for a private message or the name of a channel for broadcast
@@ -309,12 +328,12 @@ void	CommandHandler::handleINVITE() {
 		server.error = 401; // no such nickname
 		return;
 	}
-	// si le channel n'existe pas , le creer.
+	// creates the channel if it doesn't exists
 	if(server.channelMap.find(channel) == server.channelMap.end())
 	{
+		if (errChannelName == true)
+			return; // erreur wrong format channel name
 		Channel new_channel(channel);
-		server.setChannel(new_channel);
-		user.setChannel(new_channel);
 		new_channel.setUser(user); // revoir ca
 		
 		// the user that creates the channel is the op : 
@@ -323,6 +342,8 @@ void	CommandHandler::handleINVITE() {
 		// invite the nickname
 		server.usersMap[nick_fd].setChannel(new_channel);
 		new_channel.setUser(server.usersMap[nick_fd]);
+		server.setChannel(new_channel);
+		user.setChannel(new_channel);
 	}
 	else 
 	{

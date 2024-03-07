@@ -53,7 +53,11 @@ class CommandHandler {
 		map<string, string>							&commandsFromClient;
 		map<e_cmd, string>							mapEnumToString; // map to convert CMD enum to string
 		map<string, void (CommandHandler::*)() >	cmdToHandler; // map to convert CMD to handler method
-		std::string									channelName;
+		// std::string									channelName;
+		// std::string									password;
+		// bool										errChannelName;
+		std::string									param1;
+		std::string									param2;
 		CommandHandler(ServerManager& srv, User &usr, map<string, string> &commands);
 		~CommandHandler();
 
@@ -81,7 +85,7 @@ class CommandHandler {
 		//COMMAND UTILS
 	//	void				parse_modes();
 		void				setChannelName();
-
+		void				parse_channelName();
 };
 
 #endif
