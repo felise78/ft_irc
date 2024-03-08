@@ -54,6 +54,7 @@
 			bool	isOp(const std::string& nickname);
 			void	removeUser(const std::string& nickname);
 			void	removeOp(const std::string& opNickname);
+			void	removeTopic();
 			void	removeLimit();
 			void	broadcast(std::string msg);
 			void	printUsers( void ) const; // for debug

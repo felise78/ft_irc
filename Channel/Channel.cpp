@@ -183,6 +183,11 @@ void	Channel::removeOp(const std::string& opNickname)
     }
 }
 
+void	Channel::removeTopic()
+{
+	_theme = "";
+}
+
 void	Channel::removeLimit()
 {
 	_limited = false;

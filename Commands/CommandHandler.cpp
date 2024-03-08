@@ -163,7 +163,7 @@ void	CommandHandler::handleNICK() {
 	// parsing nickname;
 	if (nickname.length() > 9)
 	{
-		server.error = 432; // erroneus nickname
+		server.error = 432; // ERR_ERRONEUSNICKNAME
 		return; 
 	}
 	string::const_iterator it;
@@ -171,13 +171,13 @@ void	CommandHandler::handleNICK() {
 	{
 		if (std::isalnum(*it) == false)
 		{
-			server.error = 432; // erroneus nickname
+			server.error = 432; // ERR_ERRONEUSNICKNAME
 			return;
 		}
 	}
 	if (server.getFdbyNickName(nickname) != -1)
 	{
-		server.error = 433; // nickname in use
+		server.error = 433; // ERR_NICKNAMEINUSE
 		return; 
 	}
 	user.setNickName(nickname);
@@ -399,44 +399,48 @@ void	CommandHandler::handlePRIVMSG() {
 	}
 }
 
- void	CommandHandler::handleTOPIC()	{
+void	CommandHandler::handleTOPIC()	{
 
 std::cout << YELLOW << "TOPIC command received.." << RESET << std::endl;
 
-//  	// format : /TOPIC #channel 
+ 	// format : /TOPIC #channel [topic]
 
-// 	std::string topic;	// will be params
-
-// 	if (server.channelMap.find(channelName) == server.channelMap.end())
-// 	{
-// 		server.error = 403; // no such channel
-// 		return;
-// 	}
-// 	if (server.channelMap[channelName]._users.find(user.getNickName()) == server.channelMap[channelName]._users.end())
-// 	{
-// 		server.error = 442; // user not in that channel
-// 		return;
-// 	}
-// 	// si y'a pas de params 
-// 	if (topic.empty() == true) // will be params
-// 	{
-// 		if (server.channelMap[channelName].getTheme().empty() == true)
-// 			server.error = 331; // no topic is set
-// 		else
-// 			std::cout << server.channelMap[channelName].getTheme() << std::endl; // print juste le topic
-// 			// print ou envoie en privmsg ??
-// 		return;
-// 	}
-// 	// else s' il y a un param apres le nom du channel
-// 	if (server.channelMap[channelName].getTopicRestricted() == true)
-// 	{
-// 		if(server.channelMap[channelName].isOp(user.getNickName()) == false)
-// 		{
-// 			server.error = 482; // chan op privilege is needed
-// 			return;
-// 		}
-// 	}
-// 	server.channelMap[channelName].setTheme(topic);
+	size_t i = commandsFromClient["params"].find_first_of(' ');
+	std::string channelName = commandsFromClient["params"].substr(0, i);
+	if (server.channelMap.find(channelName) == server.channelMap.end())
+	{
+		server.error = 403; // ERR_NOSUCHCHANNEL
+		return;
+	}
+	if (server.channelMap[channelName]._users.find(user.getNickName()) == server.channelMap[channelName]._users.end())
+	{
+		server.error = 442; // ERR_NOTONCHANNEL
+		return;
+	}
+	if (i == std::string::npos)
+	{
+		if (server.channelMap[channelName].getTheme().empty() == true)
+			server.error = 331; // RPL_NOTOPIC
+		else
+			server.error = 332; // RPL_TOPIC : server.channelMap[channelName].getTheme();
+		return;
+	}
+	else 	// si il y a un 2e param apr le channel
+	{
+		std::string topic = commandsFromClient["params"].substr(i + 1);
+		if (server.channelMap[channelName].getTopicRestricted() == true)
+		{
+			if(server.channelMap[channelName].isOp(user.getNickName()) == false)
+			{
+				server.error = 482; // ERR_CHANOPRIVSNEEDED
+				return;
+			}
+		}
+		if (topic.empty())
+			server.channelMap[channelName].removeTopic();
+		// et pour le cas ou topic est une string d'espaces ?
+		server.channelMap[channelName].setTheme(topic);  
+	}
 }
 
 void	CommandHandler::handleKICK()
