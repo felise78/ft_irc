@@ -228,13 +228,16 @@ void	CommandHandler::handleJOIN() {
 	std::vector<std::string> params = split(commandsFromClient["params"], " ");
 	if (params.begin() + 2 != params.end())
 	{
-		server.error = 407; // too many targets
+		server.error = 407; // ERR_TOOMANYTARGETS
 		return;
 	}
 	std::string channelName = parse_channelName(*params.begin());
 	if (channelName.empty() == true)
-		return; // erroneus channel name
-	// check if the server doesn't exist, creates it
+	{
+		server.error = 403; // ERR_NOSUCHCHANNEL ??  // ERRONEUSCHANNAME
+		return; 
+	}
+	// check if the channel doesn't exist, creates it
 	if (server.channelMap.find(channelName) == server.channelMap.end())
 	{
 		Channel new_channel(channelName);
@@ -246,25 +249,33 @@ void	CommandHandler::handleJOIN() {
 		server.setChannel(new_channel);
 		user.setChannel(new_channel);
 	}
+	// if channel already exists
 	else
 	{
 		if (server.channelMap[channelName].getInvit() == true)
 		{
-			server.error = 461;
-			return; // ERR_INVITEONLYCHAN
+			server.error = 473; // ERR_INVITEONLYCHAN
+			return; 
 		}
 		if (server.channelMap[channelName].getProtected() == true)
 		{
 			if (server.channelMap[channelName].getKey() != *(params.begin() + 1))
-				return; // ERR_BADCHANNELKEY
+			{
+				server.error = 464 ; // ERR_PASSWDMISMATCH
+				return;
+			}
 		}
 		if (user._channels.find(channelName) == user._channels.end())
 		{
 			if (server.channelMap[channelName].getLimited() == true)
 			{
 				if (server.channelMap[channelName].getNb() == server.channelMap[channelName].getLimit())
-					return; // ERR_CHANNELISFULL
+				{
+					server.error = 471; // ERR_CHANNELISFULL
+					return; 
+				}
 			}
+			// add the user
 			user.setChannel(server.getChannel(channelName));
 			server.channelMap[channelName].setUser(user);
 		}
