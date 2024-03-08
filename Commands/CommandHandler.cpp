@@ -304,7 +304,7 @@ void	CommandHandler::handlePRIVMSG() {
 	std::string msg = commandsFromClient["params"].substr(i + 1);
 	if (msgtarget.find(' ') != std::string::npos)
 	{
-		// ERRONEUS NICKNAME ? 
+		server.error = 401; // ERR_NOSUCHNICK
 		return;
 	}
 	// <msgtarget> is a Channel : 
