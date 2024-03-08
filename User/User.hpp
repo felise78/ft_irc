@@ -28,6 +28,7 @@
 		bool							_pinged;
 
 		bool							isBot;
+
 		// Setters //
 		void	setPort(const int& port);
 		void	setSocket(const int& socket);
