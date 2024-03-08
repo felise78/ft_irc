@@ -10,6 +10,34 @@ Channel::Channel(const std::string& name) : _name(name), _nb(0), _limited(false)
 	//std::cout << "Channel " << _name << " has been created" << std::endl;
 }
 
+// Channel::Channel(const Channel& copy) 
+// {
+// 	*this = copy;
+// }
+
+// Channel& Channel::operator=(const Channel& src )
+// {
+// 	if (*this != src)
+// 	{
+// 		_name = src._name;
+// 		_theme = src._theme;
+// 		_key = src._key;
+// 		_nb = src._nb;
+// 		_limit = src._limit;
+// 		_limited = src._limited;
+// 		_invit_only = src._invit_only;
+// 		_topic_restricted = src._topic_restricted;
+// 		_protected = src._protected;
+// 		std::map<std::string, User>::const_iterator it;
+// 		for (it = src._users.begin(); it != src._users.end(); ++it)
+// 		{
+// 			_users[it->first] = it->second;
+// 		}
+// 		_ops = src._ops;
+// 	}
+// 	return *this;
+// }
+
 Channel::~Channel()
 {
 	//std::cout << "Channel " << _name << " has been destructed" << std::endl;
@@ -47,7 +75,7 @@ void	Channel::setUser(User& user)
 			return;
 		}
 	}
-	_users[user.getNickName()] = &user;
+	_users[user.getNickName()] = user;
 	user.setChannel(*this);
 	_nb++;
 }
@@ -108,10 +136,9 @@ const std::string&	Channel::getKey( void ) const
 	return _key;
 }
 
-User& Channel::getUser( const std::string & nickname ) const
+User& Channel::getUser( const std::string & nickname )
 {
-	map<string, User *>::const_iterator it = _users.find(nickname);
-	return *(it->second);
+	return _users.at(nickname);
 }
 
 const std::string& Channel::getOp( const std::string & nickname ) const
@@ -167,7 +194,7 @@ bool	Channel::isOp(const std::string& nickname)
 
 void	Channel::removeUser(const std::string& nickname)
 {
-	std::map<std::string, User*>::iterator it;
+	std::map<std::string, User>::iterator it;
 	it = _users.find(nickname);
     if (it != _users.end())
 	{
@@ -196,19 +223,19 @@ void	Channel::removeLimit()
 
 void	Channel::broadcast(std::string msg)
 {
-	std::map<std::string, User*>::iterator it;
+	std::map<std::string, User>::iterator it;
 
 	for(it = _users.begin(); it != _users.end(); ++it)
-		it->second->userMessageBuffer = msg;
+		it->second.userMessageBuffer = msg;
 }
 
 void Channel::printUsers( void) const
 {
-	std::map<std::string, User*>::const_iterator it;
+	std::map<std::string, User>::const_iterator it;
 
     std::cout << "Users in this channel:" << std::endl;
     for ( it = _users.begin(); it != _users.end(); ++it)
-        std::cout << it->second->getNickName() << std::endl;
+        std::cout << it->second.getNickName() << std::endl;
 }
 
 void Channel::printOps( void) const

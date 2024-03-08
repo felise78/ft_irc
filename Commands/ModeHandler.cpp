@@ -29,7 +29,7 @@ int	ModeHandler::parse_errors()
 			args.push_back(tmp);
 	}
 	typedef vector<string>::iterator stringVecIt;
-	typedef map<string, Channel*>::iterator channelIt;
+	typedef map<string, Channel>::iterator channelIt;
 
 	stringVecIt it = args.begin();
 	for (; it != args.end(); it++)
@@ -39,7 +39,7 @@ int	ModeHandler::parse_errors()
 			n_channels++;
 			channelIt	it2 = (_server.channelMap).find(*it);
 			if (it2 != (_server.channelMap).end())
-				_channel = it2->second;
+				_channel = &it2->second;
 			else
 			{
 				// send_error_msg to client, ERR_NOSUCHCHANNEL

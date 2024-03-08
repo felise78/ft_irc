@@ -18,6 +18,37 @@ User::User() :
 
 };
 
+// User::User(const User& copy)
+// {
+// 	*this = copy;
+// }
+
+// User& User::operator=(const User& src)
+// {
+// 	if (*this != src)
+// 	{
+// 		_port = src._port;
+// 		_socket = src._socket;
+// 		_hostName = src._hostName;
+// 		_nickName = src._nickName;
+// 		_userName = src._userName;
+// 		_realName = src._realName;
+// 		_password = src._password;
+// 		userMessageBuffer = src.userMessageBuffer;
+// 		responseBuffer = src.responseBuffer;
+// 		_authenticated = src._authenticated;
+// 		_handshaked = src._handshaked;
+// 		isBot = src.isBot;
+// 		std::map<std::string, Channel*>::const_iterator it;
+// 		for(it = src._channels.begin(); it != src._channels.end(); ++it)
+// 		{
+// 			Channel *new_channel = new Channel(*it->second);
+// 			_channels[it->first] = new_channel;
+// 		}
+// 	}
+// 	return *this;
+// }
+
 User::~User()
 {
 	//std::cout << "User " << _userName << " has been destroyed" << std::endl;
@@ -69,7 +100,7 @@ void	User::setChannel(Channel& channel)
 {
 	if (_channels.find(channel.getName()) != _channels.end()) // si le channel est deja dans User
 		return;
-	_channels[channel.getName()] = &channel;
+	_channels.insert(std::make_pair(channel.getName(), channel));
 }
 
 void	User::setAsBot()
@@ -125,17 +156,17 @@ const std::string& User::getPassword( void ) const
 	return _password;
 }
 
-Channel& User::getChannel( const std::string& name ) const
+Channel& User::getChannel( const std::string& name )
 {
-	std::map<std::string, Channel *>::const_iterator it = _channels.find(name);
-	return *(it->second);
+	std::map<std::string, Channel>::iterator it = _channels.find(name);
+	return it->second;
 }
 
 // fonction membres 
 
 void	User::removeChannel(const std::string& channelName)
 {
-	std::map<std::string, Channel*>::iterator it;
+	std::map<std::string, Channel>::iterator it;
 	it = _channels.find(channelName);
     if (it != _channels.end())
         _channels.erase(it);
@@ -143,9 +174,9 @@ void	User::removeChannel(const std::string& channelName)
 
 void User::printChannels( void ) const
 {
-	std::map<std::string, Channel*>::const_iterator it;
+	std::map<std::string, Channel>::const_iterator it;
 
     std::cout << "Channels in this user:" << std::endl;
     for ( it = _channels.begin(); it != _channels.end(); ++it)
-        std::cout << it->second->getName() << std::endl;
+        std::cout << it->second.getName() << std::endl;
 }
