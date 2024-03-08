@@ -83,9 +83,7 @@ class CommandHandler {
 	
 
 		//COMMAND UTILS
-	//	void				parse_modes();
-		void				setChannelName();
-		void				parse_channelName();
+		const std::string	parse_channelName(std::string& channelName);
 };
 
 #endif
