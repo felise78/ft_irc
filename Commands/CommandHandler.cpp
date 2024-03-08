@@ -445,37 +445,52 @@ std::cout << YELLOW << "TOPIC command received.." << RESET << std::endl;
 
 void	CommandHandler::handleKICK()
 {
-//  	std::cout << YELLOW << "KICK command received.." << RESET << std::endl;
+ 	std::cout << YELLOW << "KICK command received.." << RESET << std::endl;
 
-// 	// format de la commande : /KICK #channel nickname
+	// format de la commande : /KICK #channel nickname
 
-// 	//std::string channel;
-// 	std::string nickname;
-	
-// 	if (server.channelMap.find(channelName) == server.channelMap.end())
-// 	{
-// 		server.error = 403; // no such channel
-// 		return;
-// 	}
-// 	if (server.channelMap[channelName].isOp(user.getNickName()) == false)
-// 	{
-// 		server.error = 482; // chan op privilege is needed
-// 		return;
-// 	}
-// 	if (server.usersMap.find(server.getFdbyNickName(nickname)) == server.usersMap.end())
-// 	{
-// 		server.error = 401; // no such nickname
-// 		return;
-// 	}
-// 	if (server.channelMap[channelName]._users.find(nickname) == server.channelMap[channelName]._users.end())
-// 	{
-// 		server.error = 441; // user not in channel
-// 		return;
-// 	}
-// 	server.channelMap[channelName].getUser(nickname).removeChannel(channelName);
-// 	server.channelMap[channelName].removeUser(nickname);
-// 	server.channelMap[channelName].removeUser(nickname); // dunnow if necessarry to remove it in both
- }
+	std::vector<std::string> params = split(commandsFromClient["params"], " ");
+	if (params.begin() + 2 != params.end())
+	{
+		server.error = 407; // ERR_TOOMANYTARGETS
+		return;
+	}
+	else if (params.begin() + 1 == params.end())
+	{
+		server.error = 461; //    ERR_NEEDMOREPARAMS
+		return;
+	}
+	std::string channelName = parse_channelName(*params.begin());
+	if (channelName.empty() == true || server.channelMap.find(channelName) == server.channelMap.end())
+	{
+		server.error = 403; // ERR_NOSUCHCHANNEL
+		return; 
+	}
+	if (server.channelMap[channelName]._users.find(user.getNickName()) == server.channelMap[channelName]._users.end())
+	{
+		server.error = 442; // ERR_NOTONCHANNEL
+		return;
+	}
+	if (server.channelMap[channelName].isOp(user.getNickName()) == false)
+	{
+		server.error = 482; // ERR_CHANOPRIVSNEEDED
+		return;
+	}
+	std::string nickname = *(params.begin() + 1);
+	if (server.usersMap.find(server.getFdbyNickName(nickname)) == server.usersMap.end())
+	{
+		server.error = 401; // ERR_NOSUCHNICK
+		return;
+	}
+	if (server.channelMap[channelName]._users.find(nickname) == server.channelMap[channelName]._users.end())
+	{
+		server.error = 441; // ERR_USERNOTINCHANNEL
+		return;
+	}
+	server.channelMap[channelName].getUser(nickname).removeChannel(channelName);
+	server.channelMap[channelName].removeUser(nickname);
+	server.channelMap[channelName].removeUser(nickname);
+}
 
 void	CommandHandler::handleMODE()
 {
