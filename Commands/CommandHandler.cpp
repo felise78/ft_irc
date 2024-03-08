@@ -234,7 +234,7 @@ void	CommandHandler::handleJOIN() {
 	std::string channelName = parse_channelName(*params.begin());
 	if (channelName.empty() == true)
 	{
-		server.error = 403; // ERR_NOSUCHCHANNEL ??  // ERRONEUSCHANNAME
+		server.error = 403; // ERR_NOSUCHCHANNEL
 		return; 
 	}
 	// check if the channel doesn't exist, creates it
@@ -320,7 +320,9 @@ void	CommandHandler::handlePRIVMSG() {
 			server.error = 442; // ERR_NOTONCHANNEL
 			return;
 		}
-		server.channelMap[msgtarget].broadcast(msg); // voir dans la methode comment handle avec la macro
+		// ! \\ handle envoi du message 
+		server.channelMap[msgtarget].broadcast(msg);
+		// ! \\ handle envoi du message 
 	}
 	else  // <msgtarget> is a nickname
 	{
@@ -330,7 +332,9 @@ void	CommandHandler::handlePRIVMSG() {
 			server.error = 401; // ERR_NOSUCHNICK
 			return;
 		}
-		server.usersMap[nick_fd].userMessageBuffer = msg; // handle with macro
+		// ! \\ handle envoi du message 
+		server.usersMap[nick_fd].userMessageBuffer = msg;
+		// ! \\ handle envoi du message 
 	}
 }
 
@@ -338,44 +342,61 @@ void	CommandHandler::handlePRIVMSG() {
 
 	std::cout << YELLOW << "INVITE command received.." << RESET << std::endl;
 
-// 	// format : /INVITE nickname #channel
+	//format : /INVITE nickname #channel
 	
-// 	std::string channel;
-// 	std::string nickname;
-
-// 	int nick_fd = server.getFdbyNickName(nickname);
-// 	if(nick_fd == -1)
-// 	{
-// 		server.error = 401; // no such nickname
-// 		return;
-// 	}
-// 	// creates the channel if it doesn't exists
-// 	if(server.channelMap.find(channel) == server.channelMap.end())
-// 	{
-// 		if (errChannelName == true)
-// 			return; // erreur wrong format channel name
-// 		Channel new_channel(channel);
-// 		new_channel.setUser(user); // revoir ca
-		
-// 		// the user that creates the channel is the op : 
-// 		new_channel.setOp(user.getNickName());
-
-// 		// invite the nickname
-// 		server.usersMap[nick_fd].setChannel(new_channel);
-// 		new_channel.setUser(server.usersMap[nick_fd]);
-// 		server.setChannel(new_channel);
-// 		user.setChannel(new_channel);
-//	}
-// 	else 
-// 	{
-// 		if (user._channels.find(channel) == user._channels.end())
-// 		{
-// 			server.error = 442; // user not in that channel
-// 			return;
-// 		}
-// 		server.usersMap[nick_fd].setChannel(server.getChannel(channel));
-// 		server.channelMap[channelName].setUser(server.usersMap[nick_fd]);
-// 	}
+	std::vector<std::string> params = split(commandsFromClient["params"], " ");
+	if (params.begin() + 2 != params.end())
+	{
+		server.error = 407; // ERR_TOOMANYTARGETS
+		return;
+	}
+	int nick_fd = server.getFdbyNickName(*params.begin());
+	if(nick_fd == -1)
+	{
+		server.error = 401; // ERR_NOSUCHNICK
+		return;
+	}
+	std::string channelName = parse_channelName(*(params.begin() + 1));
+	if (channelName.empty() == true)
+	{
+		server.error = 403; // ERR_NOSUCHCHANNEL ??
+		return; 
+	}
+	// creates the channelName if it doesn't exists
+	if(server.channelMap.find(channelName) == server.channelMap.end())
+	{
+		Channel new_channel(channelName);
+		new_channel.setUser(user);
+		// the user that creates the channel is the op : 
+		new_channel.setOp(user.getNickName());
+		new_channel.setUser(server.usersMap[nick_fd]);
+		server.setChannel(new_channel);
+		server.usersMap[nick_fd].setChannel(new_channel);
+		user.setChannel(new_channel);
+	}
+	else // channel already exists
+	{
+		if (user._channels.find(channelName) == user._channels.end())
+		{
+			server.error = 442; // ERR_NOTONCHANNEL
+			return;
+		}
+		if (server.channelMap[channelName].getLimited() == true)
+		{
+			if (server.channelMap[channelName].getNb() == server.channelMap[channelName].getLimit())
+			{
+				server.error = 471; // ERR_CHANNELISFULL
+				return; 
+			}
+		}
+		if (server.channelMap[channelName]._users.find(*params.begin()) != server.channelMap[channelName]._users.end())
+		{
+			server.error = 443; // ERR_USERONCHANNEL
+			return ; 
+		}
+		server.usersMap[nick_fd].setChannel(server.getChannel(channelName));
+		server.channelMap[channelName].setUser(server.usersMap[nick_fd]);
+	}
 }
 
  void	CommandHandler::handleTOPIC()	{
