@@ -20,7 +20,7 @@ User::User() :
 
 User::~User()
 {
-	//std::cout << "User " << _userName << " has been destructed" << std::endl;
+	//std::cout << "User " << _userName << " has been destroyed" << std::endl;
 }
 
 // --------------------------------------- SETTERS ---------------------------------------- // 
@@ -55,6 +55,11 @@ void 	User::setHostName(const std::string& hostname)
 	_hostName = hostname;
 }
 
+void	User::setRealName(const std::string& realname)
+{
+	_realName = realname;
+}
+
 void 	User::setPassword(const std::string& password)
 {
 	_password = password;
@@ -72,11 +77,18 @@ void	User::setAsBot()
 	isBot = true;
 }
 
+void	User::setPinged(bool pinged)
+{
+	_pinged = pinged;
+}
+
 // ---------------------------------------- GETTERS ----------------------------------------- // 
 
 bool	User::authenticated() { return this->_authenticated; }
 
 bool	User::handshaked() { return this->_handshaked; }
+
+bool	User::pinged() { return this->_pinged; }
 
 const int& User::getPort( void ) const
 {
@@ -101,6 +113,11 @@ const std::string& User::getUserName( void ) const
 const std::string& User::getHostName( void ) const
 {
 	return _hostName;
+}
+
+const std::string& User::getRealName() const 
+{
+	return _realName;
 }
 
 const std::string& User::getPassword( void ) const

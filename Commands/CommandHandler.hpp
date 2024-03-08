@@ -69,15 +69,18 @@ class CommandHandler {
 		void				handlePASS();
 		void				handleNICK();
 		void				handleUSER();
+		void				handlePING();
 		void				handleJOIN();
 		void				handlePRIVMSG();
 		void				handleMODE();
 		void				handleKICK();
 		void				handleINVITE();
 		void				handleTOPIC();
+	
 
 		//COMMAND UTILS
 		void				parse_modes();
+		void				setChannel();
 
 };
 

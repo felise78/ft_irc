@@ -20,33 +20,45 @@ connection is active.*/
 PRIVMSG is used to send private messages between users, as well as to send messages to channels.
 <msgtarget> is usually the nickname of the recipient of the message, or a channel name.*/
 #define ERR_NORECIPIENT ":No recipient given (<command>)"
-#define ERR_NOTEXTTOSEND ":No text to send"
-#define ERR_NOSUCHNICK "<nickname> :No such nick/channel"
-#define ERR_TOOMANYTARGETS "<target> :<error code> recipients. <abort message>"
+// code 411
+#define ERR_NOTEXTTOSEND ":No text to send"					
+// code 412
+#define ERR_NOSUCHNICK "<nickname> :No such nick"
+// code 401
+#define ERR_TOOMANYTARGETS "<target> :<error code> recipients. <abort message>"	
+// code 407
 /*Sent to a user who is either (a) not on a channel which is mode +n 
 or (b) not a chanop (or mode +v) on a channel which has mode +m set 
 or where the user is banned and is trying to send a PRIVMSG message to that channel.*/
-#define ERR_CANNOTSENDTOCHAN "<channel name> :Cannot send to channel"
+#define ERR_CANNOTSENDTOCHAN "<channel name> :Cannot send to channel"	// code 404
+// code 404
 
 /*KICK COMMAND*/
 /*Returned to the client that it didn't supply enough parameters.*/
 #define ERR_NEEDMOREPARAMS "<command> :Not enough parameters"
+// code 461
 /*the target user of the command is not on the given channel*/
-#define ERR_USERNOTINCHANNEL "<nick> <channel> :They aren't on that channel"
+#define ERR_USERNOTINCHANNEL "<nick> <channel> :They aren't on that channel" // code 441
+// code 441
 /*Used to indicate the given channel name is invalid.*/
 #define ERR_NOSUCHCHANNEL "<channel name> :No such channel"
+// code 403
 /*Any command requiring 'chanop' privileges (such as MODE messages) MUST return this error 
 if the client making the attempt is not a chanop on the specified channel.*/
 #define ERR_CHANOPRIVSNEEDED "<channel> :You're not channel operator"
+// code 482
 /*Returned by the server whenever a client tries to perform a channel affecting command for which the
 client isn't a member.*/
 #define ERR_NOTONCHANNEL "<channel> :You're not on that channel"
+// code 442
 
 /*INVITE COMMAND*/
 /*Returned when a client tries to invite a user to a channel they are already on.*/
 #define ERR_USERONCHANNEL "<user> <channel> :is already on channel"
+
 /*The attempted INVITE message was successful and is being passed onto the end client.*/
 #define RPL_INVITING "<channel> <nick>"
+// code 341
 // ERR_NEEDMOREPARAMS (see KICK)
 // ERR_NOTONCHANNEL (see KICK)
 // ERR_CHANOPRIVSNEEDED (see KICK)
@@ -56,6 +68,7 @@ client isn't a member.*/
 If the topic is set, RPL_TOPIC is sent back, else RPL_NOTOPIC.*/
 #define RPL_TOPIC "<channel> :<topic>"
 #define RPL_NOTOPIC "<channel> :No topic is set"
+// code 331
 #define ERR_NOCHANMODES "<channel> :Channel doesn't support modes"
 // ERR_CHANOPRIVSNEEDED (see KICK)
 // ERR_NOTONCHANNEL (see KICK)
@@ -63,8 +76,11 @@ If the topic is set, RPL_TOPIC is sent back, else RPL_NOTOPIC.*/
 
 /*MODE COMMAND*/
 #define ERR_UNKNOWNMODE "<char> :is unknown mode char to me for <channel>"
+// code 472
 #define RPL_CHANNELMODEIS "<channel> <mode> <mode params>"
+
 #define ERR_KEYSET "<channel> :Channel key already set"
+// code 467
 // ERR_USERNOTINCHANNEL (see KICK)
 // ERR_NOCHANMODES (see TOPIC)
 // ERR_NEEDMOREPARAMS (see KICK)
@@ -77,13 +93,16 @@ If the topic is set, RPL_TOPIC is sent back, else RPL_NOTOPIC.*/
 
 /*The command sent is unknown by the server.*/
 #define ERR_UNKNOWNCOMMAND "<command> :Unknown command"
+// code 421
 
 /*Returned after receiving a NICK message which contains characters which do not 
 fall in the defined set.  See section 2.3.1 for details on valid nicknames.*/
 #define ERR_ERRONEUSNICKNAME "<nick> :Erroneous nickname"
+// code 432
 
 /*Nickname used*/
 #define ERR_NICKNAMEINUSE "<nick> :Nickname is already in use"
+// code 433
 
 
 
