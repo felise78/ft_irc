@@ -63,18 +63,6 @@ void	Channel::setKey(const std::string & key)
 
 void	Channel::setUser(User& user)
 {
-	// si le user existe deja
-	if (_users.find(user.getNickName()) != _users.end())
-		return ; // throw une erreur ? 
-	
-	if (_limited == true)
-	{
-		if (_nb >= _limit)
-		{
-			std::cout << "User limit has been reached in this channel" << std::endl; // for debug // throw error ? 
-			return;
-		}
-	}
 	_users[user.getNickName()] = user;
 	user.setChannel(*this);
 	_nb++;
@@ -160,6 +148,11 @@ const int& Channel::getNb( void ) const
 const int& 		Channel::getLimit( void ) const
 {
 	return _limit;
+}
+
+const bool&		Channel::getLimited( void ) const
+{
+	return _limited;
 }
 
 const bool& 	Channel::getInvit( void ) const

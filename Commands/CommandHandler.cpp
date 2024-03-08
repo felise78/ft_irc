@@ -227,7 +227,10 @@ void	CommandHandler::handleJOIN() {
 
 	std::vector<std::string> params = split(commandsFromClient["params"], " ");
 	if (params.begin() + 2 != params.end())
-		return; // code erreur il y a trop de parametres
+	{
+		server.error = 407; // too many targets
+		return;
+	}
 	std::string channelName = parse_channelName(*params.begin());
 	if (channelName.empty() == true)
 		return; // erroneus channel name
@@ -248,20 +251,28 @@ void	CommandHandler::handleJOIN() {
 		if (server.channelMap[channelName].getInvit() == true)
 		{
 			server.error = 461;
-			return; // code erreur channel est sur invit
+			return; // ERR_INVITEONLYCHAN
 		}
 		if (server.channelMap[channelName].getProtected() == true)
 		{
 			if (server.channelMap[channelName].getKey() != *(params.begin() + 1))
-				return; // code erreur wrong password
+				return; // ERR_BADCHANNELKEY
 		}
 		if (user._channels.find(channelName) == user._channels.end())
 		{
+			if (server.channelMap[channelName].getLimited() == true)
+			{
+				if (server.channelMap[channelName].getNb() == server.channelMap[channelName].getLimit())
+					return; // ERR_CHANNELISFULL
+			}
 			user.setChannel(server.getChannel(channelName));
 			server.channelMap[channelName].setUser(user);
 		}
-		else 
-			return ; // user already in channel 
+		else
+		{
+			server.error = 443; // ERR_USERONCHANNEL
+			return ; 
+		}
 	}
 
 }
@@ -272,6 +283,7 @@ void	CommandHandler::handlePRIVMSG() {
 
 // 	// format : /msg <msgtarget> <message>
 
+// si pas de message : 412     ERR_NOTEXTTOSEND
 
 // 	std::string msg;
 // 	// <msgtarget> can be a nickname for a private message or the name of a channel for broadcast

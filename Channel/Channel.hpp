@@ -48,6 +48,7 @@
 			const std::string& getOp( const std::string & nickname ) const;
 			const int& getNb( void ) const;
 			const int& getLimit( void ) const;
+			const bool& getLimited( void ) const;
 			const bool& getInvit( void ) const;
 			const bool& getTopicRestricted() const;
 			const bool& getProtected() const;
