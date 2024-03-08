@@ -38,16 +38,16 @@ void UserResponse::responseBuilder() {
 
 	// BUILDING RESPONSES BASED ON THE COMMANDS RECEIVED FROM THE CLIENT
 	(void) _server; //delete
-	if (_user.userMessageBuffer.empty()) {
-
-		_user.responseBuffer = "\t<empty request>\n";
-	} 
-	else if (_user.pinged())
+	if (_user.pinged())
 	{
 		std::cout << CYAN << "PINGED" << RESET << std::endl;
 		_user.responseBuffer = getPrefix() + " PONG " + _server.getServerName() + "\r\n";
 		std::cout << _user.responseBuffer << std::endl;
 		_user.setPinged(false);
+	}
+	else if (_user.userMessageBuffer.empty()) {
+
+		_user.responseBuffer = "\t<empty request>\n";
 	}
 	else {
 

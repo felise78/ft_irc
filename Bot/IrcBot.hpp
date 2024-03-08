@@ -59,9 +59,9 @@ public:
 	void		handleResponse();
 	void		handleGPT();
 
-	// The following declarations sre needed for the signal handling (to be able to close the socket and exit properly)
-	// ..the signalHandler() must be static, as well as the anything it operates on.
-	// ..the ircBotInstance is a pointer to the instance of the IrcBot class, so it can be used in the signalHandler() to close the socket and exit properly
+	// The following declarations are needed for the signal handling (to be able to close the socket and exit properly)
+	// ..the signalHandler() must be static, as well as anything it operates on.
+	// ..the ircBotInstance is a pointer to `IrcBot` instance, this way it can be used in the `signalHandler()` to call `handleSignal()`.
 	static 	IrcBot*	ircBotInstance;
 	static void	signalHandler(int signal);
 	void		handleSignal();
