@@ -292,39 +292,46 @@ void	CommandHandler::handlePRIVMSG() {
 
 	std::cout << YELLOW << "PRIVMSG command received.." << RESET << std::endl;
 
-// 	// format : /msg <msgtarget> <message>
+	// format : /msg <msgtarget> <message>
 
-// si pas de message : 412     ERR_NOTEXTTOSEND
-
-// 	std::string msg;
-// 	// <msgtarget> can be a nickname for a private message or the name of a channel for broadcast
-// 	if (this->channelName.empty() == false) // si le msgtarget est un channel, le channel de CommandHandler est donc set
-// 	{
-// 		if (server.channelMap.find(channelName) == server.channelMap.end())
-// 		{
-// 			server.error = 403; // no such channel
-// 			return;
-// 		}
-// 		if (server.channelMap[channelName]._users.find(user.getNickName()) == server.channelMap[channelName]._users.end())
-// 		{
-// 			server.error = 442; // user not in that channel
-// 			return;
-// 		}
-// 		// sinon send le message a tous les Users du channel
-// 		server.channelMap[channelName].broadcast(msg);
-// 	}
-// 	// sinon, msgtarget est donc un nickname
-// 	std::string nickname;
-// 	int nick_fd = server.getFdbyNickName(nickname);
-// 	// check if the nickname exists in the server
-// 	if(nick_fd == -1)
-// 	{
-// 		server.error = 401; // no such nickname
-// 		return;
-// 	}
-// 	// send the private message
-// 	server.usersMap[nick_fd].userMessageBuffer = msg;
-	
+	size_t i = commandsFromClient["params"].find_first_of(':');
+	if (i == std::string::npos)
+	{
+		server.error = 412; // ERR_NOTEXTTOSEND
+		return;
+	}
+	std::string msgtarget = commandsFromClient["params"].substr(0, i);
+	std::string msg = commandsFromClient["params"].substr(i + 1);
+	if (msgtarget.find(' ') != std::string::npos)
+	{
+		// ERRONEUS NICKNAME ? 
+		return;
+	}
+	// <msgtarget> is a Channel : 
+	if (*msgtarget.begin() == '#')
+	{
+		if (server.channelMap.find(msgtarget) == server.channelMap.end())
+		{
+			server.error = 403; // ERR_NOSUCHCHANNEL
+			return;
+		}
+		if (server.channelMap[msgtarget]._users.find(user.getNickName()) == server.channelMap[msgtarget]._users.end())
+		{
+			server.error = 442; // ERR_NOTONCHANNEL
+			return;
+		}
+		server.channelMap[msgtarget].broadcast(msg); // voir dans la methode comment handle avec la macro
+	}
+	else  // <msgtarget> is a nickname
+	{
+		int nick_fd = server.getFdbyNickName(msgtarget);
+		if(nick_fd == -1)
+		{
+			server.error = 401; // ERR_NOSUCHNICK
+			return;
+		}
+		server.usersMap[nick_fd].userMessageBuffer = msg; // handle with macro
+	}
 }
 
  void	CommandHandler::handleINVITE() {
