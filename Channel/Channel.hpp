@@ -24,8 +24,6 @@
 		public :
 			Channel() {}
 			Channel(const std::string& name);
-			// Channel(const Channel& copy);
-			// Channel& operator=( const Channel& src );
 			~Channel();
 			std::map<std::string, User> 	_users;
 			std::vector<std::string>		_ops;
@@ -48,6 +46,7 @@
 			const std::string& getOp( const std::string & nickname ) const;
 			const int& getNb( void ) const;
 			const int& getLimit( void ) const;
+			const bool& getLimited( void ) const;
 			const bool& getInvit( void ) const;
 			const bool& getTopicRestricted() const;
 			const bool& getProtected() const;
@@ -55,6 +54,7 @@
 			bool	isOp(const std::string& nickname);
 			void	removeUser(const std::string& nickname);
 			void	removeOp(const std::string& opNickname);
+			void	removeTopic();
 			void	removeLimit();
 			void	broadcast(std::string msg);
 			void	printUsers( void ) const; // for debug

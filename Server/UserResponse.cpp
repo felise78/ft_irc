@@ -25,6 +25,7 @@ void UserResponse::handshakeResponse() {
 	std::string hostName = _user.getHostName();
 	std::string nickName = _user.getNickName();
 	std::string userName = _user.getUserName();
+	std::string serverName = _server.getServerName();
 
 	std::stringstream reply_buffer;
 	reply_buffer << RPL_WELCOME(nickName, hostName) << RPL_YOURHOST(nickName)
@@ -37,21 +38,19 @@ void UserResponse::handshakeResponse() {
 void UserResponse::responseBuilder() {
 
 	// BUILDING RESPONSES BASED ON THE COMMANDS RECEIVED FROM THE CLIENT
-	(void) _server; //delete
 	if (_user.pinged())
 	{
 		std::cout << CYAN << "PINGED" << RESET << std::endl;
 		_user.responseBuffer = getPrefix() + " PONG " + _server.getServerName() + "\r\n";
-		std::cout << _user.responseBuffer << std::endl;
+		// _user.responseBuffer = ":localhost PONG localhost\r\n";
+		std::cout << _user.responseBuffer << "Pinged set to: "<< std::boolalpha << _user.pinged() <<std::endl;
 		_user.setPinged(false);
-	}
-	else if (_user.userMessageBuffer.empty()) {
+		std::cout << "Pinged set to: "<< std::boolalpha << _user.pinged() <<std::endl;
 
-		_user.responseBuffer = "\t<empty request>\n";
 	}
 	else {
 
-		_user.responseBuffer = "\t..coucou. The Matrix has you.. waiting for command..\n";
+		_user.responseBuffer += "\r\n";
 	}
 }
 

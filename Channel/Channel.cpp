@@ -5,38 +5,12 @@
 
 using namespace std;
 
-Channel::Channel(const std::string& name) : _name(name), _nb(0), _limited(false), _topic_restricted(false), _protected(false)
+Channel::Channel(const std::string& name) : _name(name), _theme(""), _key(""), _nb(0), _limit(0), 
+_limited(false), _invit_only(false), _topic_restricted(false), _protected(false)
 {
 	//std::cout << "Channel " << _name << " has been created" << std::endl;
 }
 
-// Channel::Channel(const Channel& copy) 
-// {
-// 	*this = copy;
-// }
-
-// Channel& Channel::operator=(const Channel& src )
-// {
-// 	if (*this != src)
-// 	{
-// 		_name = src._name;
-// 		_theme = src._theme;
-// 		_key = src._key;
-// 		_nb = src._nb;
-// 		_limit = src._limit;
-// 		_limited = src._limited;
-// 		_invit_only = src._invit_only;
-// 		_topic_restricted = src._topic_restricted;
-// 		_protected = src._protected;
-// 		std::map<std::string, User>::const_iterator it;
-// 		for (it = src._users.begin(); it != src._users.end(); ++it)
-// 		{
-// 			_users[it->first] = it->second;
-// 		}
-// 		_ops = src._ops;
-// 	}
-// 	return *this;
-// }
 
 Channel::~Channel()
 {
@@ -63,18 +37,6 @@ void	Channel::setKey(const std::string & key)
 
 void	Channel::setUser(User& user)
 {
-	// si le user existe deja
-	if (_users.find(user.getNickName()) != _users.end())
-		return ; // throw une erreur ? 
-	
-	if (_limited == true)
-	{
-		if (_nb >= _limit)
-		{
-			std::cout << "User limit has been reached in this channel" << std::endl; // for debug // throw error ? 
-			return;
-		}
-	}
 	_users[user.getNickName()] = user;
 	user.setChannel(*this);
 	_nb++;
@@ -162,6 +124,11 @@ const int& 		Channel::getLimit( void ) const
 	return _limit;
 }
 
+const bool&		Channel::getLimited( void ) const
+{
+	return _limited;
+}
+
 const bool& 	Channel::getInvit( void ) const
 {
 	return _invit_only;
@@ -214,6 +181,11 @@ void	Channel::removeOp(const std::string& opNickname)
             break; 
         }
     }
+}
+
+void	Channel::removeTopic()
+{
+	_theme = "";
 }
 
 void	Channel::removeLimit()
