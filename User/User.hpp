@@ -2,6 +2,7 @@
 # define USER_HPP
 
 	#include <string>
+	#include <sstream>
 	#include <map>
 	#include "../Channel/Channel.hpp"
 
@@ -54,6 +55,7 @@
 		const std::string& getRealName() const;
 		const std::string& getPassword( void ) const;
 		Channel& getChannel( const std::string& name );
+		std::string			getPrefix();
 		bool	authenticated();
 		bool	handshaked();
 		bool	pinged();

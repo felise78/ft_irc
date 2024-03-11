@@ -165,6 +165,15 @@ Channel& User::getChannel( const std::string& name )
 
 // fonction membres 
 
+std::string	User::getPrefix()
+{
+	std::stringstream prefix;
+	prefix << ":" << _nickName << "!" << _userName;
+	if (!_hostName.empty())
+		prefix << "@" << _hostName;
+	return (prefix.str());
+}
+
 void	User::removeChannel(const std::string& channelName)
 {
 	std::map<std::string, Channel>::iterator it;
