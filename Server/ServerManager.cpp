@@ -446,10 +446,9 @@ void	ServerManager::handleSignal() {
 
 	// Closing all available connections, cleaning up and terminating the main loop..
 
-	for (int fd = 3; fd <= _max_fd; fd++) {
+	for (int fd = _max_fd; fd >= _serverFd; fd--) {
 		_closeConnection(fd);
 	}
-	_closeConnection(_serverFd);
 
 	_sigInt = true;
 }

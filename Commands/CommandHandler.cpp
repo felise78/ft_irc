@@ -313,7 +313,7 @@ void	CommandHandler::handlePRIVMSG() {
 	size_t i = commandsFromClient["params"].find_first_of(':');
 	if (i == std::string::npos)
 	{
-		user.responseBuffer = 412; // ERR_NOTEXTTOSEND
+		user.responseBuffer = ERR_NOTEXTTOSEND;
 		return;
 	}
 	std::string msgtarget = commandsFromClient["params"].substr(0, i);
@@ -328,7 +328,7 @@ void	CommandHandler::handlePRIVMSG() {
 	{
 		if (server.channelMap.find(msgtarget) == server.channelMap.end())
 		{
-			user.responseBuffer = ERR_NOSUCHCHANNEL(channelName);
+			user.responseBuffer = ERR_NOSUCHCHANNEL(msgtarget);
 			return;
 		}
 		if (server.channelMap[msgtarget]._users.find(user.getNickName()) == server.channelMap[msgtarget]._users.end())
@@ -363,7 +363,7 @@ void	CommandHandler::handlePRIVMSG() {
 	std::vector<std::string> params = split(commandsFromClient["params"], " ");
 	if (params.begin() + 2 != params.end())
 	{
-		user.responseBuffer = ERR_TOOMANYTARGETS(*(params.en() - 1));
+		user.responseBuffer = ERR_TOOMANYTARGETS(*(params.end() - 1));
 		return;
 	}
 	int nick_fd = server.getFdbyNickName(*params.begin());
@@ -401,7 +401,7 @@ void	CommandHandler::handlePRIVMSG() {
 		{
 			if (server.channelMap[channelName].getNb() == server.channelMap[channelName].getLimit())
 			{
-				user.responseBuffer = 471; // ERR_CHANNELISFULL
+				user.responseBuffer = ERR_CHANNELISFULL(channelName);
 				return; 
 			}
 		}
@@ -468,7 +468,7 @@ void	CommandHandler::handleKICK()
 	std::vector<std::string> params = split(commandsFromClient["params"], " ");
 	if (params.begin() + 2 != params.end())
 	{
-		user.responseBuffer = ERR_TOOMANYTARGETS(*(params.en() - 1));
+		user.responseBuffer = ERR_TOOMANYTARGETS(*(params.end() - 1));
 		return;
 	}
 	else if (params.begin() + 1 == params.end())
