@@ -73,6 +73,7 @@ e_cmd	CommandHandler::getCMD(const std::string & str) {
 
 const std::string	CommandHandler::parse_channelName(std::string& channelName)
 {
+	std::cout << channelName << std::endl;
 	if (channelName[0] != '#')
 		return ""; 
 	string::iterator it = channelName.begin() + 1;
@@ -524,11 +525,29 @@ void	CommandHandler::handlePING()
 void	CommandHandler::handlePART()
 {
 	std::cout << YELLOW << "PING command received.." << RESET << std::endl;
+	
 	// format: /PART #channel [message]
-
+	std::string channelName;
 	size_t i = commandsFromClient["params"].find_first_of(' ');
-	std::string channelName = commandsFromClient["params"].substr(0, i);
-	if (i == commandsFromClient["params"].size())
-		;
-
+	if (i == std::string::npos)
+		channelName = commandsFromClient["params"];
+	else 
+		channelName = commandsFromClient["params"].substr(0, i);
+	std::string msg;
+	if (i != commandsFromClient["params"].size() && i != std::string::npos)
+		msg = commandsFromClient["params"].substr(i + 1, commandsFromClient["params"].size() - i + 1);
+	if (server.channelMap.find(channelName) == server.channelMap.end())
+	{
+		user.responseBuffer = ERR_NOSUCHCHANNEL(channelName);
+		return; 
+	}
+	if (server.channelMap[channelName]._users.find(user.getNickName()) == server.channelMap[channelName]._users.end())
+	{
+		user.responseBuffer = ERR_USERNOTINCHANNEL(user.getNickName(), channelName); 
+		return;
+	}
+	if (msg.empty() == false)
+		server.channelMap[channelName].broadcast(msg);
+	user._channels[channelName].removeUser(user.getNickName());
+	user.removeChannel(channelName);
 }
