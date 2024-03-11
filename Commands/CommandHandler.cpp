@@ -71,15 +71,21 @@ e_cmd	CommandHandler::getCMD(const std::string & str) {
 	return NONE;
 }
 
+#include <stdio.h>
 const std::string	CommandHandler::parse_channelName(std::string& channelName)
 {
 	if (channelName[0] != '#')
-		return ""; 
+		return "";
+	printf("channel name is %s\nADD\n", channelName.c_str());
 	string::iterator it = channelName.begin() + 1;
 	for ( ; it != channelName.end(); ++it)
 	{
 		if (std::isalnum(*it) == false)
+		{
+			/*DEBUG*/
+			std::cout << "ASCII code of char that is not alnum: " << (int)(*it) << std::endl;
 			return "";
+		}
 	}
 	return channelName;
 }
@@ -238,7 +244,7 @@ void	CommandHandler::handleJOIN() {
 		;
 	else
 	{
-		user.responseBuffer = ERR_TOOMANYTARGETS(*(params.begin() + 2));
+		user.responseBuffer = ERR_TOOMANYTARGETS(*(params.begin()));
 		return;
 	}
 	std::string channelName = parse_channelName(*params.begin());
@@ -258,6 +264,9 @@ void	CommandHandler::handleJOIN() {
 			new_channel.setKey(*(params.begin() + 1));
 		server.setChannel(new_channel);
 		user.setChannel(new_channel);
+		std::string topic = server.channelMap[channelName].getTheme();
+		user.responseBuffer = user.getPrefix() + " JOIN " + channelName + "\r\n";
+		user.responseBuffer += RPL_TOPIC(channelName, topic);
 	}
 	// if channel already exists
 	else
@@ -292,7 +301,8 @@ void	CommandHandler::handleJOIN() {
 			user.setChannel(server.getChannel(channelName));
 			server.channelMap[channelName].setUser(user);
 			std::string topic = server.channelMap[channelName].getTheme();
-			user.responseBuffer = RPL_TOPIC(channelName, topic);
+			user.responseBuffer = ":localhost JOIN " + channelName + "\r\n";
+			user.responseBuffer += RPL_TOPIC(channelName, topic);
 		}
 		else
 		{
@@ -317,7 +327,7 @@ void	CommandHandler::handlePRIVMSG() {
 		user.responseBuffer = ERR_NOTEXTTOSEND;
 		return;
 	}
-	std::string msgtarget = commandsFromClient["params"].substr(0, i);
+	std::string msgtarget = commandsFromClient["params"].substr(0, i - 1);
 	std::string msg = commandsFromClient["params"].substr(i + 1);
 	if (msgtarget.find(' ') != std::string::npos)
 	{

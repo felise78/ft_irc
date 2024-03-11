@@ -49,8 +49,8 @@ void UserResponse::responseBuilder() {
 
 	}
 	else {
-
 		_user.responseBuffer += "\r\n";
+		std::cout << "for response buffer: \"" << _user.responseBuffer << "\", message is: \"" << _user.userMessageBuffer << "\"" << std::endl;
 	}
 }
 

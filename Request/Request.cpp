@@ -22,10 +22,10 @@ void	Request::parse_args()
 		return ;
 	if (_input_buffer[0] == '/') //trimming initial slash, if it exists, and \r\n
 		_input_buffer.erase(_input_buffer.begin());
-	for (size_t i = _input_buffer.find_last_of('\n', '\r'); i != std::string::npos;)
+	for (size_t i = _input_buffer.find_last_of("\r\n"); i != std::string::npos;)
 	{
 		_input_buffer.erase(i);
-		i = _input_buffer.find_last_of('\n', '\r');
+		i = _input_buffer.find_last_of("\r\n");
 	}
 	if (_input_buffer.empty()) // si rien dans le buffer
 		_input_map.insert(std::make_pair("command", "NONE")); //
