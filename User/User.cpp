@@ -14,6 +14,7 @@ User::User() :
 	responseBuffer(""),
 	_authenticated(false), 
 	_handshaked(false),
+	_pinged(false),
 	isBot(false) {
 
 };
