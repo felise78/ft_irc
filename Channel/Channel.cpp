@@ -5,10 +5,12 @@
 
 using namespace std;
 
-Channel::Channel(const std::string& name) : _name(name), _nb(0), _limited(false), _topic_restricted(false), _protected(false)
+Channel::Channel(const std::string& name) : _name(name), _theme(""), _key(""), _nb(0), _limit(0), 
+_limited(false), _invit_only(false), _topic_restricted(false), _protected(false)
 {
 	//std::cout << "Channel " << _name << " has been created" << std::endl;
 }
+
 
 Channel::~Channel()
 {
@@ -35,19 +37,7 @@ void	Channel::setKey(const std::string & key)
 
 void	Channel::setUser(User& user)
 {
-	// si le user existe deja
-	if (_users.find(user.getNickName()) != _users.end())
-		return ; // throw une erreur ? 
-	
-	if (_limited == true)
-	{
-		if (_nb >= _limit)
-		{
-			std::cout << "User limit has been reached in this channel" << std::endl; // for debug // throw error ? 
-			return;
-		}
-	}
-	_users[user.getNickName()] = &user;
+	_users[user.getNickName()] = user;
 	user.setChannel(*this);
 	_nb++;
 }
@@ -108,10 +98,9 @@ const std::string&	Channel::getKey( void ) const
 	return _key;
 }
 
-User& Channel::getUser( const std::string & nickname ) const
+User& Channel::getUser( const std::string & nickname )
 {
-	map<string, User *>::const_iterator it = _users.find(nickname);
-	return *(it->second);
+	return _users.at(nickname);
 }
 
 const std::string& Channel::getOp( const std::string & nickname ) const
@@ -133,6 +122,11 @@ const int& Channel::getNb( void ) const
 const int& 		Channel::getLimit( void ) const
 {
 	return _limit;
+}
+
+const bool&		Channel::getLimited( void ) const
+{
+	return _limited;
 }
 
 const bool& 	Channel::getInvit( void ) const
@@ -167,7 +161,7 @@ bool	Channel::isOp(const std::string& nickname)
 
 void	Channel::removeUser(const std::string& nickname)
 {
-	std::map<std::string, User*>::iterator it;
+	std::map<std::string, User>::iterator it;
 	it = _users.find(nickname);
     if (it != _users.end())
 	{
@@ -189,6 +183,11 @@ void	Channel::removeOp(const std::string& opNickname)
     }
 }
 
+void	Channel::removeTopic()
+{
+	_theme = "";
+}
+
 void	Channel::removeLimit()
 {
 	_limited = false;
@@ -196,19 +195,19 @@ void	Channel::removeLimit()
 
 void	Channel::broadcast(std::string msg)
 {
-	std::map<std::string, User*>::iterator it;
+	std::map<std::string, User>::iterator it;
 
 	for(it = _users.begin(); it != _users.end(); ++it)
-		it->second->userMessageBuffer = msg;
+		it->second.userMessageBuffer = msg;
 }
 
 void Channel::printUsers( void) const
 {
-	std::map<std::string, User*>::const_iterator it;
+	std::map<std::string, User>::const_iterator it;
 
     std::cout << "Users in this channel:" << std::endl;
     for ( it = _users.begin(); it != _users.end(); ++it)
-        std::cout << it->second->getNickName() << std::endl;
+        std::cout << it->second.getNickName() << std::endl;
 }
 
 void Channel::printOps( void) const
