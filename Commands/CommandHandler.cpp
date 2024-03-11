@@ -197,6 +197,9 @@ void	CommandHandler::handleNICK() {
 		user.responseBuffer = ERR_NICKNAMEINUSE(nickname);
 		return; 
 	}
+	std::map<std::string, Channel>::iterator it2 = user._channels.begin();
+	for( ; it2 != user._channels.end(); ++it2)
+		it2->second.getUser(user.getNickName()).setNickName(nickname);
 	user.setNickName(nickname);
 }
 
