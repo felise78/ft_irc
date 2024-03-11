@@ -557,7 +557,9 @@ void	CommandHandler::handlePART()
 		return;
 	}
 	if (msg.empty() == false)
-		server.channelMap[channelName].broadcast(msg);
+		handlePRIVMSG();
 	user._channels[channelName].removeUser(user.getNickName());
 	user.removeChannel(channelName);
+	if (msg.empty())
+		user.responseBuffer = user.getPrefix() + " PART " + channelName + "\r\n";
 }
