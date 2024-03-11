@@ -79,6 +79,7 @@ class CommandHandler {
 		void				handleKICK();
 		void				handleINVITE();
 		void				handleTOPIC();
+		void				handlePART();
 	
 		//COMMAND UTILS
 		const std::string	parse_channelName(std::string& channelName);

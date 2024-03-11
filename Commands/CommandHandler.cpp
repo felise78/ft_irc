@@ -42,6 +42,7 @@ CommandHandler::CommandHandler(ServerManager& srv, User &usr, map<string, string
 	cmdToHandler["KICK"] = &CommandHandler::handleKICK;
 	cmdToHandler["MODE"] = &CommandHandler::handleMODE;
 	cmdToHandler["PING"] = &CommandHandler::handlePING;
+	cmdToHandler["PART"] = &CommandHandler::handlePART;
 	// .. and so on
 
 
@@ -233,16 +234,16 @@ void	CommandHandler::handleJOIN() {
 	// format : /join #channel (password)
 
 	std::vector<std::string> params = split(commandsFromClient["params"], " ");
-	if (params.begin() + 2 != params.end())
+	if (params.begin() + 1 == params.end() || params.begin() + 2 == params.end())
+		;
+	else
 	{
-		server.error = 407;
 		user.responseBuffer = ERR_TOOMANYTARGETS(*(params.begin() + 2));
 		return;
 	}
 	std::string channelName = parse_channelName(*params.begin());
 	if (channelName.empty() == true)
 	{
-		server.error = 403;
 		user.responseBuffer = ERR_NOSUCHCHANNEL(channelName);
 		return; 
 	}
@@ -263,7 +264,7 @@ void	CommandHandler::handleJOIN() {
 	{
 		if (server.channelMap[channelName].getInvit() == true)
 		{
-			server.error = 473; // ERR_INVITEONLYCHAN
+			//server.error = 473; // ERR_INVITEONLYCHAN
 			user.responseBuffer = ERR_INVITEONLYCHAN(channelName);
 			return; 
 		}
@@ -271,7 +272,7 @@ void	CommandHandler::handleJOIN() {
 		{
 			if (server.channelMap[channelName].getKey() != *(params.begin() + 1))
 			{
-				server.error = 475 ;
+				//server.error = 475 ;
 				user.responseBuffer = ERR_BADCHANNELKEY(channelName);
 				return;
 			}
@@ -282,7 +283,7 @@ void	CommandHandler::handleJOIN() {
 			{
 				if (server.channelMap[channelName].getNb() == server.channelMap[channelName].getLimit())
 				{
-					server.error = 471;
+					//server.error = 471;
 					user.responseBuffer = ERR_CHANNELISFULL(channelName);
 					return; 
 				}
@@ -295,7 +296,7 @@ void	CommandHandler::handleJOIN() {
 		}
 		else
 		{
-			server.error = 443;
+			//server.error = 443;
 			std::string nickName = user.getNickName();
 			user.responseBuffer = ERR_USERONCHANNEL(nickName, channelName);
 			return ; 
@@ -313,7 +314,7 @@ void	CommandHandler::handlePRIVMSG() {
 	size_t i = commandsFromClient["params"].find_first_of(':');
 	if (i == std::string::npos)
 	{
-		user.responseBuffer = 412; // ERR_NOTEXTTOSEND
+		user.responseBuffer = ERR_NOTEXTTOSEND;
 		return;
 	}
 	std::string msgtarget = commandsFromClient["params"].substr(0, i);
@@ -328,7 +329,7 @@ void	CommandHandler::handlePRIVMSG() {
 	{
 		if (server.channelMap.find(msgtarget) == server.channelMap.end())
 		{
-			user.responseBuffer = ERR_NOSUCHCHANNEL(channelName);
+			user.responseBuffer = ERR_NOSUCHCHANNEL(msgtarget);
 			return;
 		}
 		if (server.channelMap[msgtarget]._users.find(user.getNickName()) == server.channelMap[msgtarget]._users.end())
@@ -363,7 +364,7 @@ void	CommandHandler::handlePRIVMSG() {
 	std::vector<std::string> params = split(commandsFromClient["params"], " ");
 	if (params.begin() + 2 != params.end())
 	{
-		user.responseBuffer = ERR_TOOMANYTARGETS(*(params.en() - 1));
+		user.responseBuffer = ERR_TOOMANYTARGETS(*(params.end() - 1));
 		return;
 	}
 	int nick_fd = server.getFdbyNickName(*params.begin());
@@ -383,7 +384,6 @@ void	CommandHandler::handlePRIVMSG() {
 	{
 		Channel new_channel(channelName);
 		new_channel.setUser(user);
-		// the user that creates the channel is the op : 
 		new_channel.setOp(user.getNickName());
 		new_channel.setUser(server.usersMap[nick_fd]);
 		server.setChannel(new_channel);
@@ -401,7 +401,7 @@ void	CommandHandler::handlePRIVMSG() {
 		{
 			if (server.channelMap[channelName].getNb() == server.channelMap[channelName].getLimit())
 			{
-				user.responseBuffer = 471; // ERR_CHANNELISFULL
+				user.responseBuffer = ERR_CHANNELISFULL(channelName);
 				return; 
 			}
 		}
@@ -468,7 +468,7 @@ void	CommandHandler::handleKICK()
 	std::vector<std::string> params = split(commandsFromClient["params"], " ");
 	if (params.begin() + 2 != params.end())
 	{
-		user.responseBuffer = ERR_TOOMANYTARGETS(*(params.en() - 1));
+		user.responseBuffer = ERR_TOOMANYTARGETS(*(params.end() - 1));
 		return;
 	}
 	else if (params.begin() + 1 == params.end())
@@ -519,4 +519,16 @@ void	CommandHandler::handlePING()
 {
 	std::cout << YELLOW << "PING command received.." << RESET << std::endl;
 	user.setPinged(true);
+}
+
+void	CommandHandler::handlePART()
+{
+	std::cout << YELLOW << "PING command received.." << RESET << std::endl;
+	// format: /PART #channel [message]
+
+	size_t i = commandsFromClient["params"].find_first_of(' ');
+	std::string channelName = commandsFromClient["params"].substr(0, i);
+	if (i == commandsFromClient["params"].size())
+		;
+
 }
