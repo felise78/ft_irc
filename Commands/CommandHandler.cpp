@@ -163,7 +163,7 @@ void	CommandHandler::handleNICK() {
 	// parsing nickname;
 	if (nickname.length() > 9)
 	{
-		server.error = 432; // ERR_ERRONEUSNICKNAME
+		user.responseBuffer = 432; // ERR_ERRONEUSNICKNAME
 		return; 
 	}
 	string::const_iterator it;
@@ -171,13 +171,13 @@ void	CommandHandler::handleNICK() {
 	{
 		if (std::isalnum(*it) == false)
 		{
-			server.error = 432; // ERR_ERRONEUSNICKNAME
+			user.responseBuffer = 432; // ERR_ERRONEUSNICKNAME
 			return;
 		}
 	}
 	if (server.getFdbyNickName(nickname) != -1)
 	{
-		server.error = 433; // ERR_NICKNAMEINUSE
+		user.responseBuffer = 433; // ERR_NICKNAMEINUSE
 		return; 
 	}
 	user.setNickName(nickname);
@@ -228,13 +228,13 @@ void	CommandHandler::handleJOIN() {
 	std::vector<std::string> params = split(commandsFromClient["params"], " ");
 	if (params.begin() + 2 != params.end())
 	{
-		server.error = 407; // ERR_TOOMANYTARGETS
+		user.responseBuffer = ERR_TOOMANYTARGETS(*(params.en() - 1));
 		return;
 	}
 	std::string channelName = parse_channelName(*params.begin());
 	if (channelName.empty() == true)
 	{
-		server.error = 403; // ERR_NOSUCHCHANNEL
+		user.responseBuffer = ERR_NOSUCHCHANNEL(channelName);
 		return; 
 	}
 	// check if the channel doesn't exist, creates it
@@ -254,14 +254,14 @@ void	CommandHandler::handleJOIN() {
 	{
 		if (server.channelMap[channelName].getInvit() == true)
 		{
-			server.error = 473; // ERR_INVITEONLYCHAN
+			user.responseBuffer = 473; // ERR_INVITEONLYCHAN
 			return; 
 		}
 		if (server.channelMap[channelName].getProtected() == true)
 		{
 			if (server.channelMap[channelName].getKey() != *(params.begin() + 1))
 			{
-				server.error = 464 ; // ERR_PASSWDMISMATCH
+				user.responseBuffer = 464 ; // ERR_PASSWDMISMATCH
 				return;
 			}
 		}
@@ -271,7 +271,7 @@ void	CommandHandler::handleJOIN() {
 			{
 				if (server.channelMap[channelName].getNb() == server.channelMap[channelName].getLimit())
 				{
-					server.error = 471; // ERR_CHANNELISFULL
+					user.responseBuffer = 471; // ERR_CHANNELISFULL
 					return; 
 				}
 			}
@@ -281,7 +281,7 @@ void	CommandHandler::handleJOIN() {
 		}
 		else
 		{
-			server.error = 443; // ERR_USERONCHANNEL
+			user.responseBuffer = ERR_USERONCHANNEL(user.getNickName(), channelName);
 			return ; 
 		}
 	}
@@ -297,14 +297,14 @@ void	CommandHandler::handlePRIVMSG() {
 	size_t i = commandsFromClient["params"].find_first_of(':');
 	if (i == std::string::npos)
 	{
-		server.error = 412; // ERR_NOTEXTTOSEND
+		user.responseBuffer = 412; // ERR_NOTEXTTOSEND
 		return;
 	}
 	std::string msgtarget = commandsFromClient["params"].substr(0, i);
 	std::string msg = commandsFromClient["params"].substr(i + 1);
 	if (msgtarget.find(' ') != std::string::npos)
 	{
-		server.error = 401; // ERR_NOSUCHNICK
+		user.responseBuffer = ERR_NOSUCHNICK(msgtarget);
 		return;
 	}
 	// <msgtarget> is a Channel : 
@@ -312,12 +312,12 @@ void	CommandHandler::handlePRIVMSG() {
 	{
 		if (server.channelMap.find(msgtarget) == server.channelMap.end())
 		{
-			server.error = 403; // ERR_NOSUCHCHANNEL
+			user.responseBuffer = ERR_NOSUCHCHANNEL(channelName);
 			return;
 		}
 		if (server.channelMap[msgtarget]._users.find(user.getNickName()) == server.channelMap[msgtarget]._users.end())
 		{
-			server.error = 442; // ERR_NOTONCHANNEL
+			user.responseBuffer = ERR_USERNOTINCHANNEL(user.getNickName(), msgtarget);
 			return;
 		}
 		// ! \\ handle envoi du message 
@@ -329,7 +329,7 @@ void	CommandHandler::handlePRIVMSG() {
 		int nick_fd = server.getFdbyNickName(msgtarget);
 		if(nick_fd == -1)
 		{
-			server.error = 401; // ERR_NOSUCHNICK
+			user.responseBuffer = ERR_NOSUCHNICK(msgtarget);
 			return;
 		}
 		// ! \\ handle envoi du message 
@@ -347,19 +347,19 @@ void	CommandHandler::handlePRIVMSG() {
 	std::vector<std::string> params = split(commandsFromClient["params"], " ");
 	if (params.begin() + 2 != params.end())
 	{
-		server.error = 407; // ERR_TOOMANYTARGETS
+		user.responseBuffer = ERR_TOOMANYTARGETS(*(params.en() - 1));
 		return;
 	}
 	int nick_fd = server.getFdbyNickName(*params.begin());
 	if(nick_fd == -1)
 	{
-		server.error = 401; // ERR_NOSUCHNICK
+		user.responseBuffer = ERR_NOSUCHNICK(*params.begin());
 		return;
 	}
 	std::string channelName = parse_channelName(*(params.begin() + 1));
 	if (channelName.empty() == true)
 	{
-		server.error = 403; // ERR_NOSUCHCHANNEL ??
+		user.responseBuffer = ERR_NOSUCHCHANNEL(channelName);
 		return; 
 	}
 	// creates the channelName if it doesn't exists
@@ -378,20 +378,20 @@ void	CommandHandler::handlePRIVMSG() {
 	{
 		if (user._channels.find(channelName) == user._channels.end())
 		{
-			server.error = 442; // ERR_NOTONCHANNEL
+			user.responseBuffer = ERR_USERNOTINCHANNEL(user.getNickName(), channelName);
 			return;
 		}
 		if (server.channelMap[channelName].getLimited() == true)
 		{
 			if (server.channelMap[channelName].getNb() == server.channelMap[channelName].getLimit())
 			{
-				server.error = 471; // ERR_CHANNELISFULL
+				user.responseBuffer = 471; // ERR_CHANNELISFULL
 				return; 
 			}
 		}
 		if (server.channelMap[channelName]._users.find(*params.begin()) != server.channelMap[channelName]._users.end())
 		{
-			server.error = 443; // ERR_USERONCHANNEL
+			user.responseBuffer = ERR_USERONCHANNEL(*params.begin(), channelName);
 			return ; 
 		}
 		server.usersMap[nick_fd].setChannel(server.getChannel(channelName));
@@ -409,20 +409,20 @@ std::cout << YELLOW << "TOPIC command received.." << RESET << std::endl;
 	std::string channelName = commandsFromClient["params"].substr(0, i);
 	if (server.channelMap.find(channelName) == server.channelMap.end())
 	{
-		server.error = 403; // ERR_NOSUCHCHANNEL
+		user.responseBuffer = ERR_NOSUCHCHANNEL(channelName);
 		return;
 	}
 	if (server.channelMap[channelName]._users.find(user.getNickName()) == server.channelMap[channelName]._users.end())
 	{
-		server.error = 442; // ERR_NOTONCHANNEL
+		user.responseBuffer = ERR_USERNOTINCHANNEL(user.getNickName(), channelName);
 		return;
 	}
 	if (i == std::string::npos)
 	{
 		if (server.channelMap[channelName].getTheme().empty() == true)
-			server.error = 331; // RPL_NOTOPIC
+			user.responseBuffer = RPL_NOTOPIC(channelName);
 		else
-			server.error = 332; // RPL_TOPIC : server.channelMap[channelName].getTheme();
+			user.responseBuffer = RPL_TOPIC(channelName, server.channelMap[channelName].getTheme());
 		return;
 	}
 	else 	// si il y a un 2e param apr le channel
@@ -432,7 +432,7 @@ std::cout << YELLOW << "TOPIC command received.." << RESET << std::endl;
 		{
 			if(server.channelMap[channelName].isOp(user.getNickName()) == false)
 			{
-				server.error = 482; // ERR_CHANOPRIVSNEEDED
+				user.responseBuffer = ERR_CHANOPRIVSNEEDED(channelName);
 				return;
 			}
 		}
@@ -452,39 +452,39 @@ void	CommandHandler::handleKICK()
 	std::vector<std::string> params = split(commandsFromClient["params"], " ");
 	if (params.begin() + 2 != params.end())
 	{
-		server.error = 407; // ERR_TOOMANYTARGETS
+		user.responseBuffer = ERR_TOOMANYTARGETS(*(params.en() - 1));
 		return;
 	}
 	else if (params.begin() + 1 == params.end())
 	{
-		server.error = 461; //    ERR_NEEDMOREPARAMS
+		user.responseBuffer = ERR_NEEDMOREPARAMS(commandsFromClient["command"]);
 		return;
 	}
 	std::string channelName = parse_channelName(*params.begin());
 	if (channelName.empty() == true || server.channelMap.find(channelName) == server.channelMap.end())
 	{
-		server.error = 403; // ERR_NOSUCHCHANNEL
+		user.responseBuffer = ERR_NOSUCHCHANNEL(channelName);
 		return; 
 	}
 	if (server.channelMap[channelName]._users.find(user.getNickName()) == server.channelMap[channelName]._users.end())
 	{
-		server.error = 442; // ERR_NOTONCHANNEL
+		user.responseBuffer = ERR_USERNOTINCHANNEL(user.getNickName(), channelName);
 		return;
 	}
 	if (server.channelMap[channelName].isOp(user.getNickName()) == false)
 	{
-		server.error = 482; // ERR_CHANOPRIVSNEEDED
+		user.responseBuffer = ERR_CHANOPRIVSNEEDED(channelName);
 		return;
 	}
 	std::string nickname = *(params.begin() + 1);
 	if (server.usersMap.find(server.getFdbyNickName(nickname)) == server.usersMap.end())
 	{
-		server.error = 401; // ERR_NOSUCHNICK
+		user.responseBuffer = ERR_NOSUCHNICK(nickname);
 		return;
 	}
 	if (server.channelMap[channelName]._users.find(nickname) == server.channelMap[channelName]._users.end())
 	{
-		server.error = 441; // ERR_USERNOTINCHANNEL
+		user.responseBuffer = ERR_USERNOTINCHANNEL(nickname, channelName); 
 		return;
 	}
 	server.channelMap[channelName].getUser(nickname).removeChannel(channelName);
