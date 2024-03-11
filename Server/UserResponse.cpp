@@ -38,10 +38,6 @@ void UserResponse::handshakeResponse() {
 void UserResponse::responseBuilder() {
 
 	// BUILDING RESPONSES BASED ON THE COMMANDS RECEIVED FROM THE CLIENT
-	(void) _server; //delete
-	if (_user.userMessageBuffer.empty()) {
-		_user.responseBuffer = "\t<empty request>\n";
-	} 
 	if (_user.pinged())
 	{
 		std::cout << CYAN << "PINGED" << RESET << std::endl;
@@ -54,7 +50,7 @@ void UserResponse::responseBuilder() {
 	}
 	else {
 
-		_user.responseBuffer = "\t..coucou. The Matrix has you.. waiting for command..\n";
+		_user.responseBuffer += "\r\n";
 	}
 }
 

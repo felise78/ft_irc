@@ -109,10 +109,9 @@ void	CommandHandler::authenticateUser() {
 	}
 	// setting authenticated to true if the user has sent NICK, USER and PASS
 	// NEED to add the PASS check as well !!!
-	if (!user.getNickName().empty() && !user.getUserName().empty()) {
+	if (!user.getNickName().empty() && !user.getUserName().empty() && !user.getPassword().empty()) {
 		user.setAuthenticated(true);
 		std::cout << "user authenticated " << std::endl;
-		// && !user.getPassword().empty() removed PASSWORD condition for now
 
 		// Identifying if te user is a BOT ?!
 		if (user.getNickName() == "NeoBot") { // (or any other condition/name to identify the bot)
@@ -142,7 +141,14 @@ void	CommandHandler::executeCommand() {
 */
 void	CommandHandler::handleNONE() {
 	// do nothing or/and print error message
-	std::cout << RED << "[-] command not found.." << RESET << std::endl; 
+	std::cout << RED << "[-] command not found.." << RESET << std::endl;
+	if (commandsFromClient.find("command") == commandsFromClient.end())
+		return ;
+	user.responseBuffer = ":localhost 421 ";
+	user.responseBuffer += commandsFromClient["command"];
+	user.responseBuffer += " :Unknown command";
+	// std::string command = commandsFromClient["command"];
+	// user.responseBuffer = ERR_UNKNOWNCOMMAND(command); //Doesn't compile? Mystery
 }
 
 void	CommandHandler::handleCAP() {
@@ -163,7 +169,8 @@ void	CommandHandler::handleNICK() {
 	// parsing nickname;
 	if (nickname.length() > 9)
 	{
-		server.error = 432; // ERR_ERRONEUSNICKNAME
+		server.error = 432;
+		user.responseBuffer = ERR_ERRONEUSNICKNAME(nickname);
 		return; 
 	}
 	string::const_iterator it;
@@ -171,13 +178,15 @@ void	CommandHandler::handleNICK() {
 	{
 		if (std::isalnum(*it) == false)
 		{
-			server.error = 432; // ERR_ERRONEUSNICKNAME
+			server.error = 432;
+			user.responseBuffer = ERR_ERRONEUSNICKNAME(nickname);
 			return;
 		}
 	}
 	if (server.getFdbyNickName(nickname) != -1)
 	{
 		server.error = 433; // ERR_NICKNAMEINUSE
+		user.responseBuffer = ERR_NICKNAMEINUSE(nickname);
 		return; 
 	}
 	user.setNickName(nickname);
@@ -212,8 +221,6 @@ void	CommandHandler::handleUSER() {
 				}
 			}
 			user.setRealName(realName);
-			/*DEBUG*/
-			std::cout << "Username: " << user.getUserName() << ", HostName: " << user.getHostName() << ", RealName: " << user.getRealName() << std::endl;
 			return ;
 		}
 	}
@@ -228,13 +235,15 @@ void	CommandHandler::handleJOIN() {
 	std::vector<std::string> params = split(commandsFromClient["params"], " ");
 	if (params.begin() + 2 != params.end())
 	{
-		server.error = 407; // ERR_TOOMANYTARGETS
+		server.error = 407;
+		user.responseBuffer = ERR_TOOMANYTARGETS(*(params.begin() + 2));
 		return;
 	}
 	std::string channelName = parse_channelName(*params.begin());
 	if (channelName.empty() == true)
 	{
-		server.error = 403; // ERR_NOSUCHCHANNEL
+		server.error = 403;
+		user.responseBuffer = ERR_NOSUCHCHANNEL(channelName);
 		return; 
 	}
 	// check if the channel doesn't exist, creates it
@@ -255,13 +264,15 @@ void	CommandHandler::handleJOIN() {
 		if (server.channelMap[channelName].getInvit() == true)
 		{
 			server.error = 473; // ERR_INVITEONLYCHAN
+			user.responseBuffer = ERR_INVITEONLYCHAN(channelName);
 			return; 
 		}
 		if (server.channelMap[channelName].getProtected() == true)
 		{
 			if (server.channelMap[channelName].getKey() != *(params.begin() + 1))
 			{
-				server.error = 464 ; // ERR_PASSWDMISMATCH
+				server.error = 475 ;
+				user.responseBuffer = ERR_BADCHANNELKEY(channelName);
 				return;
 			}
 		}
@@ -271,17 +282,22 @@ void	CommandHandler::handleJOIN() {
 			{
 				if (server.channelMap[channelName].getNb() == server.channelMap[channelName].getLimit())
 				{
-					server.error = 471; // ERR_CHANNELISFULL
+					server.error = 471;
+					user.responseBuffer = ERR_CHANNELISFULL(channelName);
 					return; 
 				}
 			}
 			// add the user
 			user.setChannel(server.getChannel(channelName));
 			server.channelMap[channelName].setUser(user);
+			std::string topic = server.channelMap[channelName].getTheme();
+			user.responseBuffer = RPL_TOPIC(channelName, topic);
 		}
 		else
 		{
-			server.error = 443; // ERR_USERONCHANNEL
+			server.error = 443;
+			std::string nickName = user.getNickName();
+			user.responseBuffer = ERR_USERONCHANNEL(nickName, channelName);
 			return ; 
 		}
 	}

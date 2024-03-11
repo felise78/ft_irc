@@ -14,7 +14,7 @@
 #define ERR_CANNOTSENDTOCHAN(channel) (":localhost 404 " channel + " :Cannot send to channel")
 #define ERR_TOOMANYTARGETS(target) (":localhost 407 " + target + ":407 recipients. Use one target only.")
 #define ERR_NORECIPIENT(command) (":localhost 411 :No recipient given " + command)
-#define ERR_NOTEXTTOSEND (":localhost 412 :No text to send")					
+#define ERR_NOTEXTTOSEND ":localhost 412 :No text to send"			
 
 /*KICK COMMAND*/
 #define ERR_NOSUCHCHANNEL(channel) (":localhost 403 " + channel + " :No such channel")
@@ -41,4 +41,9 @@
 #define ERR_ERRONEUSNICKNAME(nick) (":localhost 432 " + nick + " :Erroneous nickname")
 #define ERR_NICKNAMEINUSE(nick) (":localhost 433 " + nick + " :Nickname is already in use")
 
+/*JOIN COMMAND*/
+#define ERR_CHANNELISFULL(channel) (":localhost 471 " + channel + " :Cannot join channel (+l)")
+#define ERR_INVITEONLYCHAN(channel) (":localhost 473 " + channel + " :Cannot join channel (+i)")
+#define ERR_BADCHANNELKEY(channel) (":localhost 475 " + channel + " :Cannot join channel (+k)")
+//                 ERR_TOOMANYCHANNELS
 #endif
