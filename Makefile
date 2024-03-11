@@ -30,6 +30,10 @@ $(NAME): $(OBJS)
 # cleaning the objects right after make
 	make clean
 
+valgrind: $(NAME)
+	clear
+	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --track-fds=all ./$(NAME)
+
 bot:
 	$(MAKE) -C Bot
 	mv Bot/bot .

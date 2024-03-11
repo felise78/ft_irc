@@ -3,7 +3,8 @@
 /*
 ** TESTING VALUES (must be passed as arguments to the program)
 */
-#define SERVER_NAME "localhost"
+// #define SERVER_NAME "localhost"
+#define SERVER_NAME "127.0.0.1"
 #define SERVER_PORT 55555
 #define SERVER_PASS "password"
 
@@ -23,7 +24,7 @@ int main(int argc, char	**argv) {
 	// Required a bit of parsing of argv to get the server name, port, and bot name
     IrcBot bot(SERVER_NAME, SERVER_PORT, SERVER_PASS, BOT_NAME);
 
-    while (!signalFlag) {
+    while (bot.signalErrorFlag == false) {
 		
 		// if the bot is registered/authenticated then it joins the channel and sends initial message
 		if (!bot._authenticated) {
@@ -31,11 +32,14 @@ int main(int argc, char	**argv) {
 		}
 
         bot.handleServerRequest();
-		bot.handleResponse();
+		
+		if (bot.signalErrorFlag == false) {
+			bot.handleResponse();
+		}
 
     }
 
-	std::cout << "Closing connection and exit.\n";
+	std::cout << YELLOW << "THE END..." << RESET << std::endl;
 
     return 0;
 }

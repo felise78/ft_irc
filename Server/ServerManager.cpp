@@ -3,10 +3,13 @@
 ServerManager::ServerManager() {
 	// std::cout << MAGENTA << "\tServersManager default constructor called" << RESET << std::endl;
 
+	SM_instance = this; // This is needed for the signal handling
+
 	FD_ZERO(&_recv_fd_pool);
 	FD_ZERO(&_send_fd_pool);
 	_serverFd = _server.getServerFd();
 	_max_fd = _serverFd;
+	_sigInt = false;
 
 	// DEBUG PRINT SERVERS DATA
 	_server.printServerData();
@@ -31,7 +34,9 @@ void	ServerManager::_run() {
 	fd_set	send_fd_pool_copy;
 	int		select_ret = 0;
 
-	while (true) {
+	signal(SIGINT, signalhandler);
+
+	while (!_sigInt) {
 
 		// The copy is needed because select() will modify the fd_sets passed to it
 		recv_fd_pool_copy = _recv_fd_pool;
@@ -40,7 +45,7 @@ void	ServerManager::_run() {
 		select_ret = select(_max_fd + 1, &recv_fd_pool_copy, &send_fd_pool_copy, NULL, NULL);
 		checkErrorAndExit(select_ret, "select() failed. Exiting..");
 
-		for (int fd = 3; fd <= _max_fd; fd++) {
+		for (int fd = 3; fd <= _max_fd && _sigInt == false; fd++) {
 
 			if (FD_ISSET(fd, &recv_fd_pool_copy) && fd == _server.getServerFd()) {
 
@@ -106,18 +111,34 @@ void	ServerManager::_accept(int clientFd) {
 ** This is handling the requests from the irc client side
 ** `_handle` is called from `run` function once the new connection 
 ** is accepted and the client's fd is added to the recv_fd_pool !! 
+**
+** ABOUT THE BEHAVIOR OF `CTRL-D` IN THE TERMINAL AND NETCAT: `co^Dmma^Dnd` test
+** The terminal and netcat `nc` handle `Ctrl-D` as the EOF (End of File) signal.
+** When `Ctrl-D` pressed in the middle of a line (i.e., after typing some characters 
+** but before pressing Enter), netcat and the terminal do not interpret this as an EOF signal !
+** Instead, they send the current line to the server, and then continue accepting input.
+** This is why you can type `co^Dmma^Dnd` and the server shall receive `command`.
+**
+** However, when `Ctrl-D` pressed on an empty line, netcat and the terminal interpret this as 
+** an EOF signal. The connection to the server is then closed, and any subsequent characters 
+** are not sent. 
+** So, pressind `Ctrl-D` twice or on an empty input, the characters typed after won't go through !!
 */
 void	ServerManager::_handle(int fd) {
 
-	char	buffer[BUF_SIZE] = {0};
+	// char	buffer[BUF_SIZE] = {0};
+	char	buffer[MSG_SIZE] = {0};
 	int		bytes_read = 0;
 
-	bytes_read = read(fd, buffer, BUF_SIZE);
+	bytes_read = read(fd, buffer, MSG_SIZE - 1); // -1 to leave space for the null terminator
+
+	/* DEBUG */
 	std::cout << timeStamp();
 	std::cout << std::endl << MAGENTA << "bytes read:" << bytes_read << std::endl;
+	/* ****** */
+
 	if (bytes_read == 0) {
 		std::cout << YELLOW << "[!] bytes_read == 0 from client fd:[" << fd << "]" << RESET << std::endl;
-		//std::cout << YELLOW << "[!] Connection closed by the client. ";
 		_closeConnection(fd);
 		return ;
 	}
@@ -129,31 +150,35 @@ void	ServerManager::_handle(int fd) {
 
 	// UsersMap[fd].requestBuffer.append(buffer, bytes_read);
 	usersMap[fd].userMessageBuffer += std::string(buffer, bytes_read);
+
+	/* DEBUG */
 	std::cout << std::endl << MAGENTA << "USER MESSAGE BUFFER: " << usersMap[fd].userMessageBuffer << std::endl;
 	std::cout << "Size of user msg buffer: " << usersMap[fd].userMessageBuffer.size() << std::endl;
-	/* DEBUG */
-	// At this point received data can be parsed and added to User's class (NAME, NICK, PASS etc..)
 	std::cout << CYAN << "[*] received from client fd[" << fd << "]: " << RESET << std::endl;
 	// std::cout << MAGENTA << usersMap[fd].userMessageBuffer << RESET;
 	std::cout << CYAN << "parsing..." << RESET << std::endl;
+	/* ***** */
 
 	User &user = usersMap[fd];
 	if (noCRLFinBuffer(user.userMessageBuffer))
 	{
-		std::cout << "Passes through here\n";
-		return ;
+		return ; // if no `\n` found in the buffer, we wait for the next read from this client fd
 	}
 	vector<string> splitMessageBuffer = split(user.userMessageBuffer, "\n");
 	for (vector<string>::iterator it = splitMessageBuffer.begin(); it != splitMessageBuffer.end(); it++)
 	{	
 		std::cout << MAGENTA << *it << RESET << std::endl;
 		Request	userRequest(*this, *it);
+		
+		/* DEBUG */
 		map<string, string> input_map = userRequest.getRequestMap();
 		map<string, string>::iterator it2 = input_map.begin();
 		for (; it2 != input_map.end(); it2++)
 		{
 			std::cout << MAGENTA << it2->first << ": " << it2->second << RESET << std::endl;
 		}
+		/* ***** */
+
 		CommandHandler cmdHandler(*this, user, input_map);
 	}
 	user.userMessageBuffer.clear();
@@ -163,10 +188,7 @@ void	ServerManager::_handle(int fd) {
 		_removeFromSet(fd, &_recv_fd_pool);
 		_addToSet(fd, &_send_fd_pool);
 	}
-	/* ***** */
 
-	// _removeFromSet(fd, &_recv_fd_pool);
-	// _addToSet(fd, &_send_fd_pool);
 }
 
 /*
@@ -179,17 +201,10 @@ void	ServerManager::_respond(int fd) {
 
 	UserResponse	userResponse(user, _server);
 
-	/* DEBUG */
-	// According to the protocol the first response to the IRC client shall be 001 RPL_WELCOME, 002 RPL_YOURHOST, 003 RPL_CREATED, 004 RPL_MYINFO
-	// Once received data from the client is complete the status of the User can be changed to `READY` and the first response can be composed and sent
-	// composeResponse(fd);	
-	/* ***** */
-
 	int		bytes_sent = 0;
 	int		bytes_to_send = user.responseBuffer.length();
 
 	bytes_sent = send(fd, user.responseBuffer.c_str(), bytes_to_send, 0);
-
 	std::cout << timeStamp();
 
 	if (bytes_sent == -1) {
@@ -198,16 +213,15 @@ void	ServerManager::_respond(int fd) {
 		return ;
 	}
 	else {
+		/* DEBUG */
 		std::cout << GREEN << "[+] Response sent to client fd:[" << fd << "]";
 		std::cout << ", bytes sent: [" << bytes_sent << "]" << RESET << std::endl;
 		std::cout << ". . . . . . . . . . . . . . . . . . . . . . . . . . . " << std::endl;
+		// std::cout << CYAN;
+		// std::cout << UsersMap[fd].responseBuffer << std::endl;
+		// std::cout << RESET;
+		/* ***** */
 	}
-
-	/* DEBUG */
-	// std::cout << CYAN;
-	// std::cout << UsersMap[fd].responseBuffer << std::endl;
-	// std::cout << RESET;
-	/* ***** */
 
 	if (user.handshaked() == true) {
 
@@ -307,13 +321,16 @@ std::string	ServerManager::timeStamp() {
 
 void	ServerManager::checkErrorAndExit(int returnValue, const std::string& msg) {
 
-	if (returnValue == -1) {
+	if (returnValue == -1 && _sigInt == false) {
 
 		std::cerr << RED << "\t[-]" << msg << RESET << std::endl;
 		exit(EXIT_FAILURE);
 	}
 }
 
+/*
+** Do we need this function ?!
+*/
 void	ServerManager::log(int clientFd) {
 
 	User &user = usersMap[clientFd];
@@ -407,4 +424,31 @@ int	noCRLFinBuffer(std::string const& buffer)
 	if (crlf == std::string::npos)
 		return 1;
 	return 0;
+}
+
+/*
+** SIGNAL HANDLING
+**
+** Initialization of the static member `SM_instance` happens in the constructor above
+*/
+ServerManager*	ServerManager::SM_instance = NULL;
+
+void	ServerManager::signalhandler(int signal) {
+
+	std::cout << RED << "\t[-] Signal received [" << signal << "] Exiting.." << RESET << std::endl;
+
+	if (SM_instance != NULL) {
+		SM_instance->handleSignal();
+	}
+}
+
+void	ServerManager::handleSignal() {
+
+	// Closing all available connections, cleaning up and terminating the main loop..
+
+	for (int fd = _max_fd; fd >= _serverFd; fd--) {
+		_closeConnection(fd);
+	}
+
+	_sigInt = true;
 }

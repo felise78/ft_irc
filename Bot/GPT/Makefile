@@ -39,9 +39,9 @@ ls:
 	@echo "$(YELLOW)>>> $(MAGENTA)Listing all containers...$(CYAN)"
 	@docker ps -a
 	@echo "$(NC)"
-	@echo "$(YELLOW)>>> $(MAGENTA)Listing all volumes...$(CYAN)"
-	@docker volume ls
-	@echo "$(NC)"
+# @echo "$(YELLOW)>>> $(MAGENTA)Listing all volumes...$(CYAN)"
+# @docker volume ls
+# @echo "$(NC)"
 	@echo "$(CYAN)= = = = = = = = = = = = = = = = = = = = = = = = = = $(NC)"
 
 .PHONY: build run clean ls

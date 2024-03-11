@@ -12,6 +12,7 @@
 #include <signal.h> // For signal handling
 #include <stdlib.h> // For exit()
 #include <fcntl.h> // For fcntl()
+#include <arpa/inet.h> // For inet_addr() and inet_pton() ..converts IP addresses from text to binary form
 
 // SOME COLORS FOR MAKING THE LIFE BRIGTHER !!!
 #define RED		"\033[1;31m"
@@ -41,11 +42,12 @@ private:
 public:
 
 	bool		_authenticated; // ..to use for new User verification (NICK, USER, PASS)
+	bool		signalErrorFlag;
 
     IrcBot(const std::string& serverName, int port, const std::string& pass, const std::string& botName);
     ~IrcBot();
 
-	void		initClientSocket();
+	void		initSocket();
     void		connectToServer();
 
 	void		sendHandshake();
@@ -57,19 +59,14 @@ public:
 	void		handleResponse();
 	void		handleGPT();
 
+	// The following declarations are needed for the signal handling (to be able to close the socket and exit properly)
+	// ..the signalHandler() must be static, as well as anything it operates on.
+	// ..the ircBotInstance is a pointer to `IrcBot` instance, this way it can be used in the `signalHandler()` to call `handleSignal()`.
+	static 	IrcBot*	ircBotInstance;
 	static void	signalHandler(int signal);
+	void		handleSignal();
 
-	// Getting used to exceptions ;)
-	class IrcBotException : public std::exception {
-		public:
-			std::string message;
-			IrcBotException(const std::string& msg) : message(msg) { }
-			~IrcBotException() throw() { }
-			const char* what() const throw() { 
-				static std::string colored_message = RED + message + RESET;
-				return colored_message.c_str();
-			}
-	};
+	void		checkErrorAndExit(int returnValue, const std::string& message);
 
 };
 
