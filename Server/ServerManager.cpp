@@ -134,7 +134,7 @@ void	ServerManager::_handle(int fd) {
 
 	/* DEBUG */
 	std::cout << timeStamp();
-	std::cout << std::endl << MAGENTA << "bytes read:" << bytes_read << std::endl;
+	std::cout << std::endl << MAGENTA << "bytes read:" << bytes_read << " Buffer: " << buffer << std::endl;
 	/* ****** */
 
 	if (bytes_read == 0) {
@@ -151,9 +151,10 @@ void	ServerManager::_handle(int fd) {
 	// UsersMap[fd].requestBuffer.append(buffer, bytes_read);
 	usersMap[fd].userMessageBuffer += std::string(buffer, bytes_read);
 
-	if (usersMap[fd].userMessageBuffer.find("CAP LS") != std::string::npos
-		&& usersMap[fd].userMessageBuffer.find("PASS") == std::string::npos)
+	if (usersMap[fd].getPassword().empty() && usersMap[fd].userMessageBuffer.find("PASS") == std::string::npos)
 	{
+		std::string msg = ERR_PASSWDMISMATCH;
+		write(fd, msg.c_str(), msg.size());
 		_closeConnection(fd);
 		return ;
 	}
@@ -222,6 +223,7 @@ void	ServerManager::_respond(int fd) {
 	else {
 		/* DEBUG */
 		std::cout << GREEN << "[+] Response sent to client fd:[" << fd << "]";
+		std::cout << "Response message: " << user.responseBuffer;
 		std::cout << ", bytes sent: [" << bytes_sent << "]" << RESET << std::endl;
 		std::cout << ". . . . . . . . . . . . . . . . . . . . . . . . . . . " << std::endl;
 		// std::cout << CYAN;

@@ -40,7 +40,7 @@ void UserResponse::handshakeResponse() {
 void UserResponse::responseBuilder() {
 
 	// BUILDING RESPONSES BASED ON THE COMMANDS RECEIVED FROM THE CLIENT
-		_user.responseBuffer += "\r\n";
+		// _user.responseBuffer += "\r\n";
 		std::cout << "for response buffer: \"" << _user.responseBuffer << "\", message is: \"" << _user.userMessageBuffer << "\"" << std::endl;
 }
 

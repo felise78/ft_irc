@@ -120,13 +120,16 @@ void	CommandHandler::authenticateUser() {
 			std::cout << CYAN << ".. this user is a BOT.. aha !!!" << std::endl;
 			user.setAsBot();
 		}
+		return ;
 	}
-	else
+	else if (!user.getNickName().empty() && !user.getUserName().empty() && user.getPassword().empty())
 	{
-		server.setBroadcast(ERR_NOTREGISTERED, user.getSocket());
+		// server.setBroadcast(ERR_NEEDMOREPARAMS(pass), user.getSocket());
+		// server.setBroadcast(ERR_NOTREGISTERED, user.getSocket());
 		// user.responseBuffer += "\r\n";
 		// user.responseBuffer += ERR_NOTREGISTERED;
 	}
+
 }
 
 void	CommandHandler::executeCommand() {
@@ -161,9 +164,11 @@ void	CommandHandler::executeCommand() {
 			std::cout << CYAN << ".. this user is a BOT.. aha !!!" << std::endl;
 			user.setAsBot();
 		}
+		return ;
 	}
-	else
+	else if (!user.getNickName().empty() && !user.getUserName().empty() && user.getPassword().empty())
 	{
+		std::string pass = "PASS";
 		server.setBroadcast(ERR_NOTREGISTERED, user.getSocket());
 		// if (user.getPassword().empty() && user._cap == true)
 		// {
@@ -172,6 +177,8 @@ void	CommandHandler::executeCommand() {
 		// user.responseBuffer += "\r\n";
 		// user.responseBuffer += ERR_NOTREGISTERED;
 	}
+	// server.setBroadcast(ERR_NOTREGISTERED, user.getSocket());
+
 }
 
 /*
@@ -301,7 +308,6 @@ void	CommandHandler::handleJOIN() {
 		;
 	else
 	{
-		server.error = 407;
 		if (params.begin() != params.end())
 			user.responseBuffer = ERR_TOOMANYTARGETS(*(params.end() - 1));
 		return;
