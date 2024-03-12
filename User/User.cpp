@@ -15,6 +15,7 @@ User::User() :
 	_authenticated(false), 
 	_handshaked(false),
 	_pinged(false),
+	_cap(false),
 	isBot(false) {
 
 };

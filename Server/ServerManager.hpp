@@ -30,20 +30,20 @@ class ServerManager {
 		int							_serverFd; // The server's socket FD
 		int							_max_fd; // To track the max value of the socket FD, needed for `select()` function and for loop in `run()`
 		bool						_sigInt; // To control the main loop of the server
-
+		std::string					_password;
 		// Main logic to run the servers, receive, handle and respond to the requests
 		void						_run();
 		void						_accept(int UserFd);
 		void						_handle(int fd);
 		void						_respond(int fd);
 
+	public:
 		// Helper functions
 		void						_fcntl();
 		void						_addToSet(int fd, fd_set *set);
 		void						_removeFromSet(int fd, fd_set *set);
 		void						_closeConnection(int fd);
 
-	public:
 		// `UserMap` key is the User's socket FD and the value is the User object
 		std::map<int, User>				usersMap; // int is fd 
 		// Add Channel map here of all created channels
@@ -64,7 +64,8 @@ class ServerManager {
 		void						setChannel(const Channel& channel);
 		Channel& 					getChannel( const std::string& name );
 		int 						getFdbyNickName( const std::string& nickname ) const;
-
+		std::string const&			getPassword() const;
+	
 		// These two functions are used to set the broadcast message and send it to the users
 		void						setBroadcast(std::string channelName, std::string sender_nick, std::string msg); // this will be used to broadcast messages to all users in a channel
 		void						setBroadcast(std::string msg, int fd); // to send message to a specific user given fd

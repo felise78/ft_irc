@@ -10,7 +10,7 @@ ServerManager::ServerManager() {
 	_serverFd = _server.getServerFd();
 	_max_fd = _serverFd;
 	_sigInt = false;
-
+	_password = "pass";
 	// DEBUG PRINT SERVERS DATA
 	_server.printServerData();
 
@@ -134,7 +134,7 @@ void	ServerManager::_handle(int fd) {
 
 	/* DEBUG */
 	std::cout << timeStamp();
-	std::cout << std::endl << MAGENTA << "bytes read:" << bytes_read << std::endl;
+	std::cout << std::endl << MAGENTA << "bytes read:" << bytes_read << " Buffer: " << buffer << std::endl;
 	/* ****** */
 
 	if (bytes_read == 0) {
@@ -164,27 +164,37 @@ void	ServerManager::_handle(int fd) {
 	{
 		return ; // if no `\n` found in the buffer, we wait for the next read from this client fd
 	}
+	if (bytes_read > 1 && usersMap[fd].getPassword().empty() && usersMap[fd].userMessageBuffer.find("PASS") == std::string::npos)
+	{
+		std::string msg = ERR_PASSWDMISMATCH;
+		write(fd, msg.c_str(), msg.size());
+		_closeConnection(fd);
+		return ;
+	}
 	vector<string> splitMessageBuffer = split(user.userMessageBuffer, "\n");
+	for (vector<string>::iterator it = splitMessageBuffer.begin(); it != splitMessageBuffer.end(); it++)
+	{	
+		if ((*it).find("PASS ") == 0 || (*it).find("pass ") == 0 || (*it).find("/pass ") == 0 || (*it).find("/PASS ") == 0)
+		{
+			Request	userRequest(*this, *it);
+			map<string, string> input_map = userRequest.getRequestMap();
+			CommandHandler cmdHandler(*this, user, input_map);
+			splitMessageBuffer.erase(it);
+			break ;
+		}
+	}
 	for (vector<string>::iterator it = splitMessageBuffer.begin(); it != splitMessageBuffer.end(); it++)
 	{	
 		std::cout << MAGENTA << *it << RESET << std::endl;
 		Request	userRequest(*this, *it);
-		
-		/* DEBUG */
 		map<string, string> input_map = userRequest.getRequestMap();
-		map<string, string>::iterator it2 = input_map.begin();
-		for (; it2 != input_map.end(); it2++)
-		{
-			std::cout << MAGENTA << it2->first << ": " << it2->second << RESET << std::endl;
-		}
-		/* ***** */
-
 		CommandHandler cmdHandler(*this, user, input_map);
 	}
 	user.userMessageBuffer.clear();
 
 	// We add the client's fd to the send_fd_pool once the client is authenticated (received NICK, USER, PASS..)
-	if (user.authenticated()) {
+	// if (user.authenticated())
+	if (!user.responseBuffer.empty()) {
 		_removeFromSet(fd, &_recv_fd_pool);
 		_addToSet(fd, &_send_fd_pool);
 	}
@@ -215,6 +225,7 @@ void	ServerManager::_respond(int fd) {
 	else {
 		/* DEBUG */
 		std::cout << GREEN << "[+] Response sent to client fd:[" << fd << "]";
+		std::cout << "Response message: " << user.responseBuffer;
 		std::cout << ", bytes sent: [" << bytes_sent << "]" << RESET << std::endl;
 		std::cout << ". . . . . . . . . . . . . . . . . . . . . . . . . . . " << std::endl;
 		// std::cout << CYAN;
@@ -223,14 +234,14 @@ void	ServerManager::_respond(int fd) {
 		/* ***** */
 	}
 
-	if (user.handshaked() == true) {
+	// if (user.handshaked() == true) {
 
-		_removeFromSet(fd, &_send_fd_pool);
-		_addToSet(fd, &_recv_fd_pool);
 
-		user.userMessageBuffer.clear();
-		user.responseBuffer.clear();
-	}
+	// }
+	_removeFromSet(fd, &_send_fd_pool);
+	_addToSet(fd, &_recv_fd_pool);
+	user.userMessageBuffer.clear();
+	user.responseBuffer.clear();
 }
 
 
@@ -453,7 +464,7 @@ void	ServerManager::setBroadcast(std::string msg, int fd) {
 
 	// THE MESSAGE `msg` TO BE SENT MUST BE ALREADY PROPERLY FORMATTED..
 	// it->second.responseBuffer = it->second.getPrefix() + " PRIVMSG " + it->second.getChannel() + " :" + msg + "\r\n";
-	it->second.responseBuffer = msg;
+	it->second.responseBuffer += msg;
 
 	_addToSet(fd, &_send_fd_pool);
 }
@@ -483,4 +494,9 @@ void	ServerManager::handleSignal() {
 	}
 
 	_sigInt = true;
+}
+
+std::string const&	ServerManager::getPassword() const
+{
+	return _password;
 }

@@ -32,7 +32,7 @@
 		bool							_authenticated;
 		bool							_handshaked;
 		bool							_pinged;
-
+		bool							_cap;
 		bool							isBot;
 
 		// Setters //
