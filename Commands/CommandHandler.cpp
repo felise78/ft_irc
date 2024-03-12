@@ -177,7 +177,6 @@ void	CommandHandler::handleNICK() {
 	// parsing nickname;
 	if (nickname.length() > 9)
 	{
-		server.error = 432;
 		user.responseBuffer = ERR_ERRONEUSNICKNAME(nickname);
 		return; 
 	}
@@ -186,14 +185,12 @@ void	CommandHandler::handleNICK() {
 	{
 		if (std::isalnum(*it) == false)
 		{
-			server.error = 432;
 			user.responseBuffer = ERR_ERRONEUSNICKNAME(nickname);
 			return;
 		}
 	}
 	if (server.getFdbyNickName(nickname) != -1)
 	{
-		server.error = 433; // ERR_NICKNAMEINUSE
 		user.responseBuffer = ERR_NICKNAMEINUSE(nickname);
 		return; 
 	}
@@ -277,7 +274,6 @@ void	CommandHandler::handleJOIN() {
 	{
 		if (server.channelMap[channelName].getInvit() == true)
 		{
-			//server.error = 473; // ERR_INVITEONLYCHAN
 			user.responseBuffer = ERR_INVITEONLYCHAN(channelName);
 			return; 
 		}
@@ -285,7 +281,6 @@ void	CommandHandler::handleJOIN() {
 		{
 			if (server.channelMap[channelName].getKey() != *(params.begin() + 1))
 			{
-				//server.error = 475 ;
 				user.responseBuffer = ERR_BADCHANNELKEY(channelName);
 				return;
 			}
@@ -296,7 +291,6 @@ void	CommandHandler::handleJOIN() {
 			{
 				if (server.channelMap[channelName].getNb() == server.channelMap[channelName].getLimit())
 				{
-					//server.error = 471;
 					user.responseBuffer = ERR_CHANNELISFULL(channelName);
 					return; 
 				}
@@ -310,7 +304,6 @@ void	CommandHandler::handleJOIN() {
 		}
 		else
 		{
-			//server.error = 443;
 			std::string nickName = user.getNickName();
 			user.responseBuffer = ERR_USERONCHANNEL(nickName, channelName);
 			return ; 
@@ -333,6 +326,7 @@ void	CommandHandler::handlePRIVMSG() {
 	}
 	std::string msgtarget = commandsFromClient["params"].substr(0, i - 1);
 	std::string msg = commandsFromClient["params"].substr(i + 1);
+	std::string reply;
 	if (msgtarget.find(' ') != std::string::npos)
 	{
 		user.responseBuffer = ERR_NOSUCHNICK(msgtarget);
@@ -351,10 +345,8 @@ void	CommandHandler::handlePRIVMSG() {
 			user.responseBuffer = ERR_USERNOTINCHANNEL(user.getNickName(), msgtarget);
 			return;
 		}
-		// ! \\ handle envoi du message 
-		// server.channelMap[msgtarget].broadcast(msg);
-		// ! \\ handle envoi du message 
-		server.setBroadcast(msg); // this will add all users fds to the `send_fd_pool` and send the message to all users in the channel
+		reply = RPL_PRIVMSG(user.getPrefix(), msgtarget, msg);
+		server.setBroadcast(reply); // this will add all users fds to the `send_fd_pool` and send the message to all users in the channel
 	}
 	else  // <msgtarget> is a nickname
 	{
@@ -366,8 +358,9 @@ void	CommandHandler::handlePRIVMSG() {
 		}
 		// ! \\ handle envoi du message 
 		// server.usersMap[nick_fd].userMessageBuffer = msg;
-		// ! \\ handle envoi du message 
-		server.setBroadcast(msg, nick_fd); // this will add the fd to the send_fd_pool and send the message to the user
+		// ! \\ handle envoi du message
+		reply = RPL_PRIVMSG(user.getPrefix(), msgtarget, msg);
+		server.setBroadcast(reply, nick_fd); // this will add the fd to the send_fd_pool and send the message to the user
 	}
 }
 
@@ -522,6 +515,7 @@ void	CommandHandler::handleKICK()
 	server.channelMap[channelName].getUser(nickname).removeChannel(channelName);
 	server.channelMap[channelName].removeUser(nickname);
 	server.channelMap[channelName].removeUser(nickname);
+	user.responseBuffer = RPL_KICK(user.getNickName(), channelName, nickname, "");
 }
 
 void	CommandHandler::handleMODE()
