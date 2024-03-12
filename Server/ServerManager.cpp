@@ -10,7 +10,7 @@ ServerManager::ServerManager() {
 	_serverFd = _server.getServerFd();
 	_max_fd = _serverFd;
 	_sigInt = false;
-	_password = "pass";
+	_password = "password";
 	// DEBUG PRINT SERVERS DATA
 	_server.printServerData();
 
@@ -164,12 +164,16 @@ void	ServerManager::_handle(int fd) {
 	{
 		return ; // if no `\n` found in the buffer, we wait for the next read from this client fd
 	}
-	if (bytes_read > 1 && usersMap[fd].getPassword().empty() && usersMap[fd].userMessageBuffer.find("PASS") == std::string::npos)
+	if (bytes_read > 1 && usersMap[fd].getPassword().empty())
 	{
-		std::string msg = ERR_PASSWDMISMATCH;
-		write(fd, msg.c_str(), msg.size());
-		_closeConnection(fd);
-		return ;
+		if (usersMap[fd].userMessageBuffer.find("PASS") == std::string::npos 
+		&& usersMap[fd].userMessageBuffer.find("pass") == std::string::npos)
+		{
+			std::string msg = ERR_PASSWDMISMATCH;
+			write(fd, msg.c_str(), msg.size());
+			_closeConnection(fd);
+			return ;
+		}
 	}
 	vector<string> splitMessageBuffer = split(user.userMessageBuffer, "\n");
 	for (vector<string>::iterator it = splitMessageBuffer.begin(); it != splitMessageBuffer.end(); it++)
