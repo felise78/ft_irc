@@ -45,15 +45,16 @@ CommandHandler::CommandHandler(ServerManager& srv, User &usr, map<string, string
 	cmdToHandler["PART"] = &CommandHandler::handlePART;
 	// .. and so on
 
+	executeCommand();
 
-	if (user.authenticated()) {
-		// process the commands directly
-		executeCommand();
-	}
-	else {
-		// if user is not authenticated, we search for the PASS, NICK and USER commands first
-		authenticateUser();
-	}
+	// if (user.authenticated()) {
+	// 	// process the commands directly
+	// 	executeCommand();
+	// }
+	// else {
+	// 	// if user is not authenticated, we search for the PASS, NICK and USER commands first
+	// 	authenticateUser();
+	// }
 }
 
 CommandHandler::~CommandHandler() {
@@ -93,9 +94,9 @@ const std::string	CommandHandler::parse_channelName(std::string& channelName)
 void	CommandHandler::authenticateUser() {
 
 	// if user is not authenticated, we search for the PASS, NICK and USER commands first
-	// if (commandsFromClient.find("CAP") != commandsFromClient.end()) {
-	// 	handleCAP(); // this one might not be needed
-	// }
+	if (commandsFromClient["command"] == "CAP") {
+		handleCAP(); // this one might not be needed
+	}
 	// if (commandsFromClient.find("NICK") != commandsFromClient.end()) {
 	if (commandsFromClient["command"] == "NICK") {
 		handleNICK();
@@ -110,7 +111,9 @@ void	CommandHandler::authenticateUser() {
 	}
 	// setting authenticated to true if the user has sent NICK, USER and PASS
 	// NEED to add the PASS check as well !!!
-	if (!user.getNickName().empty() && !user.getUserName().empty() && !user.getPassword().empty()) {
+	/*DEBUG*/
+	std::cout << "Nickname: " << user.getNickName() << ", username: " << user.getUserName() << ", password: " << user.getPassword() << std::endl;
+	if (!user.getNickName().empty() && !user.getUserName().empty() && user.getPassword() == server.getPassword()) {
 		user.setAuthenticated(true);
 		// Identifying if te user is a BOT ?!
 		if (user.getNickName() == "NeoBot") { // (or any other condition/name to identify the bot)
@@ -120,8 +123,9 @@ void	CommandHandler::authenticateUser() {
 	}
 	else
 	{
-		user.responseBuffer += "\r\n";
-		user.responseBuffer += ERR_NOTREGISTERED;
+		server.setBroadcast(ERR_NOTREGISTERED, user.getSocket());
+		// user.responseBuffer += "\r\n";
+		// user.responseBuffer += ERR_NOTREGISTERED;
 	}
 }
 
@@ -138,6 +142,36 @@ void	CommandHandler::executeCommand() {
 	// first we get the pointer to the handler method and then we call it on `this` object
 	if (cmdToHandler.find(cmdStr) != cmdToHandler.end())
 		(this->*cmdToHandler[cmdStr])();
+
+	/*NEW!!!!*/
+	if (user.authenticated())
+		return ;
+	std::cout << "Nickname: " << user.getNickName() << ", username: " << user.getUserName() << ", password: " << user.getPassword() << std::endl;
+	if (!user.getNickName().empty() && !user.getUserName().empty() && user.getPassword() == server.getPassword()) {
+		user.setAuthenticated(true);
+		std::string serverCreated = "_server.getCreationDate()";
+		std::string hostName = user.getHostName();
+		std::string nickName = user.getNickName();
+		std::stringstream reply_buffer;
+		reply_buffer << RPL_WELCOME(nickName, hostName) << RPL_YOURHOST(nickName)
+		<< RPL_CREATED(nickName, serverCreated) << RPL_MYINFO(nickName);
+		user.responseBuffer = reply_buffer.str();
+		// Identifying if te user is a BOT ?!
+		if (user.getNickName() == "NeoBot") { // (or any other condition/name to identify the bot)
+			std::cout << CYAN << ".. this user is a BOT.. aha !!!" << std::endl;
+			user.setAsBot();
+		}
+	}
+	else
+	{
+		server.setBroadcast(ERR_NOTREGISTERED, user.getSocket());
+		// if (user.getPassword().empty() && user._cap == true)
+		// {
+		// 	server._closeConnection(user.getSocket());
+		// }
+		// user.responseBuffer += "\r\n";
+		// user.responseBuffer += ERR_NOTREGISTERED;
+	}
 }
 
 /*
@@ -157,6 +191,7 @@ void	CommandHandler::handleNONE() {
 
 void	CommandHandler::handleCAP() {
 	std::cout << YELLOW << "CAP command received.." << RESET << std::endl;
+	user._cap = true;
 }
 
 void	CommandHandler::handlePASS() {
@@ -165,19 +200,24 @@ void	CommandHandler::handlePASS() {
 	if (commandsFromClient.find("params") == commandsFromClient.end())
 	{
 		std::string pass = "PASS";
-		user.responseBuffer = ERR_NEEDMOREPARAMS(pass);
+		server.setBroadcast(ERR_NEEDMOREPARAMS(pass), user.getSocket());
+		// user.responseBuffer = ERR_NEEDMOREPARAMS(pass);
 		return;
 	}
 	if (!(user.getPassword().empty()))
 	{
-		user.responseBuffer = ERR_ALREADYREGISTRED;
+		server.setBroadcast(ERR_ALREADYREGISTRED, user.getSocket());
 		return ;
 	}
 	std::string pass = commandsFromClient["params"];
 	if (pass == server.getPassword())
 		user.setPassword(commandsFromClient["params"]);
 	else
-		user.responseBuffer = ERR_PASSWDMISMATCH;
+	{
+		server.setBroadcast(ERR_PASSWDMISMATCH, user.getSocket());
+
+	}
+		// user.responseBuffer = ERR_PASSWDMISMATCH;
 }
 
 void	CommandHandler::handleNICK() {
@@ -547,6 +587,7 @@ void	CommandHandler::handlePING()
 {
 	std::cout << YELLOW << "PING command received.." << RESET << std::endl;
 	user.setPinged(true);
+	user.responseBuffer = user.getPrefix() + " PONG localhost";
 }
 
 void	CommandHandler::handlePART()

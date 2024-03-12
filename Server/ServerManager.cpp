@@ -151,6 +151,12 @@ void	ServerManager::_handle(int fd) {
 	// UsersMap[fd].requestBuffer.append(buffer, bytes_read);
 	usersMap[fd].userMessageBuffer += std::string(buffer, bytes_read);
 
+	if (usersMap[fd].userMessageBuffer.find("CAP LS") != std::string::npos
+		&& usersMap[fd].userMessageBuffer.find("PASS") == std::string::npos)
+	{
+		_closeConnection(fd);
+		return ;
+	}
 	/* DEBUG */
 	std::cout << std::endl << MAGENTA << "USER MESSAGE BUFFER: " << usersMap[fd].userMessageBuffer << std::endl;
 	std::cout << "Size of user msg buffer: " << usersMap[fd].userMessageBuffer.size() << std::endl;
@@ -184,10 +190,11 @@ void	ServerManager::_handle(int fd) {
 	user.userMessageBuffer.clear();
 
 	// We add the client's fd to the send_fd_pool once the client is authenticated (received NICK, USER, PASS..)
-	// if (user.authenticated()) {
+	// if (user.authenticated())
+	if (!user.responseBuffer.empty()) {
 		_removeFromSet(fd, &_recv_fd_pool);
 		_addToSet(fd, &_send_fd_pool);
-	// }
+	}
 
 }
 
@@ -223,14 +230,14 @@ void	ServerManager::_respond(int fd) {
 		/* ***** */
 	}
 
-	if (user.handshaked() == true) {
+	// if (user.handshaked() == true) {
 
-		_removeFromSet(fd, &_send_fd_pool);
-		_addToSet(fd, &_recv_fd_pool);
 
-		user.userMessageBuffer.clear();
-		user.responseBuffer.clear();
-	}
+	// }
+	_removeFromSet(fd, &_send_fd_pool);
+	_addToSet(fd, &_recv_fd_pool);
+	user.userMessageBuffer.clear();
+	user.responseBuffer.clear();
 }
 
 
@@ -452,7 +459,7 @@ void	ServerManager::setBroadcast(std::string msg, int fd) {
 
 	// THE MESSAGE `msg` TO BE SENT MUST BE ALREADY PROPERLY FORMATTED..
 	// it->second.responseBuffer = it->second.getPrefix() + " PRIVMSG " + it->second.getChannel() + " :" + msg + "\r\n";
-	it->second.responseBuffer = msg;
+	it->second.responseBuffer += msg;
 
 	_addToSet(fd, &_send_fd_pool);
 }
