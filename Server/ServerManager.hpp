@@ -37,13 +37,13 @@ class ServerManager {
 		void						_handle(int fd);
 		void						_respond(int fd);
 
+	public:
 		// Helper functions
 		void						_fcntl();
 		void						_addToSet(int fd, fd_set *set);
 		void						_removeFromSet(int fd, fd_set *set);
 		void						_closeConnection(int fd);
 
-	public:
 		// `UserMap` key is the User's socket FD and the value is the User object
 		std::map<int, User>				usersMap; // int is fd 
 		// Add Channel map here of all created channels
@@ -67,6 +67,10 @@ class ServerManager {
 		int 						getFdbyNickName( const std::string& nickname ) const;
 		std::string const&			getPassword() const;
 	
+		// These two functions are used to set the broadcast message and send it to the users
+		void						setBroadcast(std::string msg); // this will be used to broadcast messages to all users in a channel
+		void						setBroadcast(std::string msg, int fd); // to send message to a specific user given fd
+
 		// All this is necessary for the signal handling (to be able to close the socket and exit properly)
 		// `signaHandler()` must be static, as well as anything it operates on.
 		// `SM_instance` is a pointer to the ServerManager instance, so that the `signalHandler` can call `handleSignal()`.

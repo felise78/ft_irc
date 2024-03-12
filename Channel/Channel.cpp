@@ -199,6 +199,8 @@ void	Channel::broadcast(std::string msg)
 
 	for(it = _users.begin(); it != _users.end(); ++it)
 		it->second.userMessageBuffer = msg;
+
+	
 }
 
 void Channel::printUsers( void) const

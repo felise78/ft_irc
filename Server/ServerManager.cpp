@@ -427,6 +427,37 @@ int	noCRLFinBuffer(std::string const& buffer)
 }
 
 /*
+** This function is called in asituation when a user sends a message to a channel
+** i.e. `PRIVMSG #channel :message` where the message needs to be broadcasted to all users in the channel
+** In here we just add all the users to `_send_fd_pool` so that select picks them up
+** and calls `_respond` to send the message user by user.
+** The `responseBuffer` of each user is set to the message to be sent in `Channel::broadcast()`.
+*/
+void	ServerManager::setBroadcast(std::string msg) {
+
+	std::map<int, User>::iterator it;
+
+	for (it = usersMap.begin(); it != usersMap.end(); it++) {
+
+		setBroadcast(msg, it->first);
+	}
+}
+
+/*
+** This function overloads the previous one and is used to send a message to a specific user
+*/
+void	ServerManager::setBroadcast(std::string msg, int fd) {
+
+	std::map<int, User>::iterator it = usersMap.find(fd);
+
+	// THE MESSAGE `msg` TO BE SENT MUST BE ALREADY PROPERLY FORMATTED..
+	// it->second.responseBuffer = it->second.getPrefix() + " PRIVMSG " + it->second.getChannel() + " :" + msg + "\r\n";
+	it->second.responseBuffer = msg;
+
+	_addToSet(fd, &_send_fd_pool);
+}
+
+/*
 ** SIGNAL HANDLING
 **
 ** Initialization of the static member `SM_instance` happens in the constructor above

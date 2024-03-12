@@ -207,6 +207,9 @@ void	CommandHandler::handleNICK() {
 		user.responseBuffer = ERR_NICKNAMEINUSE(nickname);
 		return; 
 	}
+	std::map<std::string, Channel>::iterator it2 = user._channels.begin();
+	for( ; it2 != user._channels.end(); ++it2)
+		it2->second.getUser(user.getNickName()).setNickName(nickname);
 	user.setNickName(nickname);
 }
 
@@ -366,8 +369,9 @@ void	CommandHandler::handlePRIVMSG() {
 			return;
 		}
 		// ! \\ handle envoi du message 
-		server.channelMap[msgtarget].broadcast(msg);
+		// server.channelMap[msgtarget].broadcast(msg);
 		// ! \\ handle envoi du message 
+		server.setBroadcast(msg); // this will add all users fds to the `send_fd_pool` and send the message to all users in the channel
 	}
 	else  // <msgtarget> is a nickname
 	{
@@ -378,8 +382,9 @@ void	CommandHandler::handlePRIVMSG() {
 			return;
 		}
 		// ! \\ handle envoi du message 
-		server.usersMap[nick_fd].userMessageBuffer = msg;
+		// server.usersMap[nick_fd].userMessageBuffer = msg;
 		// ! \\ handle envoi du message 
+		server.setBroadcast(msg, nick_fd); // this will add the fd to the send_fd_pool and send the message to the user
 	}
 }
 
