@@ -114,7 +114,7 @@ void IrcBot::handleServerRequest() {
 
 void IrcBot::handleResponse() {
 
-	std::cout << "Request from the server, RAW: " << _serverRequestBuffer << std::endl;
+	std::cout << "Request, RAW: " << _serverRequestBuffer << std::endl;
 
 	/* DEBUG */
 	// Check the string for (001 or 002, 003, 004).. if there means the bot is authenticated/registered on the server side
@@ -135,15 +135,26 @@ void IrcBot::handleResponse() {
 		std::cout << "Message from " << sender << ": " << message << std::endl;
 	}
 	else if (request.find("PING") != std::string::npos) {
+		/* DEBUG */
+		std::cout << "..ping received.. sending pong.." << std::endl;
+		/* ***** */
 		sendIrcMessage("PONG " + request.substr(5));
 	}
 	else if (request.find("DO_THE_THING") != std::string::npos) {
+
+		/* DEBUG */
+		std::cout << "DO_THE_THING request received.." << std::endl;
+		/* ***** */
 
 		std::string toErase = "DO_THE_THING:";
 		size_t pos = _serverRequestBuffer.find(toErase);
 		if (pos != std::string::npos) {
 			_serverRequestBuffer.erase(pos, toErase.length());
 		}
+
+		/* DEBUG */
+		std::cout << "..to process by GPT: " << _serverRequestBuffer << std::endl;
+		/* ***** */
 
 		// handleGPT();
 
