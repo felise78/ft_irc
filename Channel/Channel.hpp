@@ -7,6 +7,9 @@
 
 	class User;
 	class Operator;
+	
+	#include "../Server/ServerManager.hpp"
+	class ServerManager;
 
 	class Channel {
 
@@ -23,8 +26,11 @@
 
 		public :
 			Channel() {}
+			//Channel(ServerManager &_server) : server(_server) {}
+			//Channel(ServerManager& _server, const std::string& name);
 			Channel(const std::string& name);
 			~Channel();
+			//ServerManager&			server;
 			std::map<std::string, User> 	_users;
 			std::vector<std::string>		_ops;
 			// setters 
@@ -56,7 +62,7 @@
 			void	removeOp(const std::string& opNickname);
 			void	removeTopic();
 			void	removeLimit();
-			void	broadcast(std::string msg);
+			//void	broadcast(std::string msg);
 			void	printUsers( void ) const; // for debug
 			void	printOps( void) const; // for debug
 	};

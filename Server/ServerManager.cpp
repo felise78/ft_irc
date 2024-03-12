@@ -433,13 +433,14 @@ int	noCRLFinBuffer(std::string const& buffer)
 ** and calls `_respond` to send the message user by user.
 ** The `responseBuffer` of each user is set to the message to be sent in `Channel::broadcast()`.
 */
-void	ServerManager::setBroadcast(std::string msg) {
+void	ServerManager::setBroadcast(std::string channelName, std::string sender_nick, std::string msg) {
 
-	std::map<int, User>::iterator it;
+	std::map<string, User>::iterator it;
 
-	for (it = usersMap.begin(); it != usersMap.end(); it++) {
+	for (it = channelMap[channelName]._users.begin(); it != channelMap[channelName]._users.end(); it++) {
 
-		setBroadcast(msg, it->first);
+		if (it->second.getNickName() != sender_nick)
+			setBroadcast(msg, it->second.getSocket());
 	}
 }
 

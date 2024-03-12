@@ -195,15 +195,16 @@ void	Channel::removeLimit()
 	_limited = false;
 }
 
-void	Channel::broadcast(std::string msg)
-{
-	std::map<std::string, User>::iterator it;
+// void	Channel::broadcast(std::string msg)
+// {
+// 	std::map<std::string, User>::iterator it;
 
-	for(it = _users.begin(); it != _users.end(); ++it)
-		it->second.userMessageBuffer = msg;
-
+// 	for(it = _users.begin(); it != _users.end(); ++it)
+// 	{
+// 		server.setBroadcast(msg, it->second.getSocket());
+// 	}
 	
-}
+// }
 
 void Channel::printUsers( void) const
 {

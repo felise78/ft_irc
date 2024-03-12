@@ -346,7 +346,7 @@ void	CommandHandler::handlePRIVMSG() {
 			return;
 		}
 		reply = RPL_PRIVMSG(user.getPrefix(), msgtarget, msg);
-		server.setBroadcast(reply); // this will add all users fds to the `send_fd_pool` and send the message to all users in the channel
+		server.setBroadcast(msgtarget, user.getNickName(), reply); // this will add all users fds to the `send_fd_pool` and send the message to all users in the channel
 	}
 	else  // <msgtarget> is a nickname
 	{
@@ -475,8 +475,16 @@ void	CommandHandler::handleKICK()
 	// format de la commande : /KICK #channel nickname
 
 	std::vector<std::string> params = split(commandsFromClient["params"], " ");
-	if (params.begin() + 2 != params.end())
+	if (params.begin() + 1 != params.end() && params.begin() + 2 != params.end())
 	{
+		/*DEBUG*/
+		int i = 0;
+		vector<string>::iterator it = params.begin();
+		for ( ; it != params.end(); ++it)
+		{
+			std::cout << i << std::endl;
+			i++;
+		}
 		user.responseBuffer = ERR_TOOMANYTARGETS(*(params.end() - 1));
 		return;
 	}
@@ -512,10 +520,10 @@ void	CommandHandler::handleKICK()
 		user.responseBuffer = ERR_USERNOTINCHANNEL(nickname, channelName); 
 		return;
 	}
+	server.channelMap[channelName].getUser(nickname).getChannel(channelName).removeUser(nickname);
 	server.channelMap[channelName].getUser(nickname).removeChannel(channelName);
 	server.channelMap[channelName].removeUser(nickname);
-	server.channelMap[channelName].removeUser(nickname);
-	user.responseBuffer = RPL_KICK(user.getNickName(), channelName, nickname, "");
+	user.responseBuffer += RPL_KICK(user.getNickName(), channelName, nickname, "");
 }
 
 void	CommandHandler::handleMODE()

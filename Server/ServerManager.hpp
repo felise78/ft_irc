@@ -66,7 +66,7 @@ class ServerManager {
 		int 						getFdbyNickName( const std::string& nickname ) const;
 
 		// These two functions are used to set the broadcast message and send it to the users
-		void						setBroadcast(std::string msg); // this will be used to broadcast messages to all users in a channel
+		void						setBroadcast(std::string channelName, std::string sender_nick, std::string msg); // this will be used to broadcast messages to all users in a channel
 		void						setBroadcast(std::string msg, int fd); // to send message to a specific user given fd
 
 		// All this is necessary for the signal handling (to be able to close the socket and exit properly)

@@ -4,7 +4,9 @@
 	#include <string>
 	#include <sstream>
 	#include <map>
-	#include "../Channel/Channel.hpp"
+	//#include "../Channel/Channel.hpp"
+
+	class Channel;
 
 	class User {
 
