@@ -151,13 +151,6 @@ void	ServerManager::_handle(int fd) {
 	// UsersMap[fd].requestBuffer.append(buffer, bytes_read);
 	usersMap[fd].userMessageBuffer += std::string(buffer, bytes_read);
 
-	if (usersMap[fd].getPassword().empty() && usersMap[fd].userMessageBuffer.find("PASS") == std::string::npos)
-	{
-		std::string msg = ERR_PASSWDMISMATCH;
-		write(fd, msg.c_str(), msg.size());
-		_closeConnection(fd);
-		return ;
-	}
 	/* DEBUG */
 	std::cout << std::endl << MAGENTA << "USER MESSAGE BUFFER: " << usersMap[fd].userMessageBuffer << std::endl;
 	std::cout << "Size of user msg buffer: " << usersMap[fd].userMessageBuffer.size() << std::endl;
@@ -171,21 +164,30 @@ void	ServerManager::_handle(int fd) {
 	{
 		return ; // if no `\n` found in the buffer, we wait for the next read from this client fd
 	}
+	if (bytes_read > 1 && usersMap[fd].getPassword().empty() && usersMap[fd].userMessageBuffer.find("PASS") == std::string::npos)
+	{
+		std::string msg = ERR_PASSWDMISMATCH;
+		write(fd, msg.c_str(), msg.size());
+		_closeConnection(fd);
+		return ;
+	}
 	vector<string> splitMessageBuffer = split(user.userMessageBuffer, "\n");
+	for (vector<string>::iterator it = splitMessageBuffer.begin(); it != splitMessageBuffer.end(); it++)
+	{	
+		if ((*it).find("PASS ") == 0 || (*it).find("pass ") == 0 || (*it).find("/pass ") == 0 || (*it).find("/PASS ") == 0)
+		{
+			Request	userRequest(*this, *it);
+			map<string, string> input_map = userRequest.getRequestMap();
+			CommandHandler cmdHandler(*this, user, input_map);
+			splitMessageBuffer.erase(it);
+			break ;
+		}
+	}
 	for (vector<string>::iterator it = splitMessageBuffer.begin(); it != splitMessageBuffer.end(); it++)
 	{	
 		std::cout << MAGENTA << *it << RESET << std::endl;
 		Request	userRequest(*this, *it);
-		
-		/* DEBUG */
 		map<string, string> input_map = userRequest.getRequestMap();
-		map<string, string>::iterator it2 = input_map.begin();
-		for (; it2 != input_map.end(); it2++)
-		{
-			std::cout << MAGENTA << it2->first << ": " << it2->second << RESET << std::endl;
-		}
-		/* ***** */
-
 		CommandHandler cmdHandler(*this, user, input_map);
 	}
 	user.userMessageBuffer.clear();
