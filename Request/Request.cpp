@@ -41,7 +41,7 @@ void	Request::parse_args()
 	check_command_valid(_input_map["command"]);
 	if (_input_map.find("params") == _input_map.end() || _input_map["params"].empty())
 	{
-		_server.error = 461;    // ERR_NEEDMOREPARAMS
+		//user.responseBuffer = ERR_NEEDMOREPARAMS(_input_map["command"]); /// pas de user dans Request
 		return;
 	}
 	if (DEBUG)

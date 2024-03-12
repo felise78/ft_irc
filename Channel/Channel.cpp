@@ -1,4 +1,5 @@
 #include "Channel.hpp"
+#include "../Request/server_replies.h"
 
 #include "../User/User.hpp"
 #include <iostream>
@@ -44,15 +45,16 @@ void	Channel::setUser(User& user)
 
 void	Channel::setOp(const std::string& nickname)
 {
-	// protection si le nickname n'existe pas dans le channel
 	if (_users.find(nickname) == _users.end())
-		return; 
-
+		return;
 	// Les opérateurs du canal sont généralement désignés par un symbole "@" 
 	// devant leur nom d'utilisateur dans la liste des utilisateurs du canal.
-	std::string opNickname = "@" + nickname;
-	getUser(nickname).setNickName(opNickname);
-	_ops.push_back(opNickname);
+	//std::string opNickname = "@" + nickname;
+	//getUser(nickname).setNickName(opNickname);
+
+	_ops.push_back(nickname);
+	getUser(nickname).responseBuffer = RPL_YOUREOPER(getUser(nickname).getPrefix());
+	
 }
 
 void	Channel::setNb(const int& nb)
