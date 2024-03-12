@@ -30,7 +30,7 @@ class ServerManager {
 		int							_serverFd; // The server's socket FD
 		int							_max_fd; // To track the max value of the socket FD, needed for `select()` function and for loop in `run()`
 		bool						_sigInt; // To control the main loop of the server
-
+		std::string					_password;
 		// Main logic to run the servers, receive, handle and respond to the requests
 		void						_run();
 		void						_accept(int UserFd);
@@ -65,7 +65,8 @@ class ServerManager {
 		void						setChannel(const Channel& channel);
 		Channel& 					getChannel( const std::string& name );
 		int 						getFdbyNickName( const std::string& nickname ) const;
-
+		std::string const&			getPassword() const;
+	
 		// All this is necessary for the signal handling (to be able to close the socket and exit properly)
 		// `signaHandler()` must be static, as well as anything it operates on.
 		// `SM_instance` is a pointer to the ServerManager instance, so that the `signalHandler` can call `handleSignal()`.

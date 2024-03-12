@@ -8,6 +8,11 @@
 
 #define PING(servername) ("PING :" + servername)
 #define ERR_UNKNOWNCOMMAND(command) (":localhost 421 " + command " :Unknown command")
+#define ERR_NOTREGISTERED ":localhost 451 :You have not registered"
+
+/*PASS / USER*/
+#define ERR_ALREADYREGISTRED ":localhost 462 ::Unauthorized command (already registered)"
+#define ERR_PASSWDMISMATCH ":localhost 464 :Password incorrect"
 
 /*PRIVMSG*/
 #define ERR_NOSUCHNICK(nickname) (":localhost 401 " + nickname + " :No such nick")

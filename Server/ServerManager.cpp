@@ -10,7 +10,7 @@ ServerManager::ServerManager() {
 	_serverFd = _server.getServerFd();
 	_max_fd = _serverFd;
 	_sigInt = false;
-
+	_password = "pass";
 	// DEBUG PRINT SERVERS DATA
 	_server.printServerData();
 
@@ -184,10 +184,10 @@ void	ServerManager::_handle(int fd) {
 	user.userMessageBuffer.clear();
 
 	// We add the client's fd to the send_fd_pool once the client is authenticated (received NICK, USER, PASS..)
-	if (user.authenticated()) {
+	// if (user.authenticated()) {
 		_removeFromSet(fd, &_recv_fd_pool);
 		_addToSet(fd, &_send_fd_pool);
-	}
+	// }
 
 }
 
@@ -451,4 +451,9 @@ void	ServerManager::handleSignal() {
 	}
 
 	_sigInt = true;
+}
+
+std::string const&	ServerManager::getPassword() const
+{
+	return _password;
 }

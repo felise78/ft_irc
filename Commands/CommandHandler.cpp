@@ -71,22 +71,15 @@ e_cmd	CommandHandler::getCMD(const std::string & str) {
 	return NONE;
 }
 
-#include <stdio.h>
 const std::string	CommandHandler::parse_channelName(std::string& channelName)
 {
-	std::cout << channelName << std::endl;
 	if (channelName[0] != '#')
 		return "";
-	printf("channel name is %s\nADD\n", channelName.c_str());
 	string::iterator it = channelName.begin() + 1;
 	for ( ; it != channelName.end(); ++it)
 	{
 		if (std::isalnum(*it) == false)
-		{
-			/*DEBUG*/
-			std::cout << "ASCII code of char that is not alnum: " << (int)(*it) << std::endl;
 			return "";
-		}
 	}
 	return channelName;
 }
@@ -119,13 +112,16 @@ void	CommandHandler::authenticateUser() {
 	// NEED to add the PASS check as well !!!
 	if (!user.getNickName().empty() && !user.getUserName().empty() && !user.getPassword().empty()) {
 		user.setAuthenticated(true);
-		std::cout << "user authenticated " << std::endl;
-
 		// Identifying if te user is a BOT ?!
 		if (user.getNickName() == "NeoBot") { // (or any other condition/name to identify the bot)
 			std::cout << CYAN << ".. this user is a BOT.. aha !!!" << std::endl;
 			user.setAsBot();
 		}
+	}
+	else
+	{
+		user.responseBuffer += "\r\n";
+		user.responseBuffer += ERR_NOTREGISTERED;
 	}
 }
 
@@ -166,7 +162,22 @@ void	CommandHandler::handleCAP() {
 void	CommandHandler::handlePASS() {
 	std::cout << YELLOW << "PASS command received.." << RESET << std::endl;
 
-	user.setPassword(commandsFromClient["params"]);
+	if (commandsFromClient.find("params") == commandsFromClient.end())
+	{
+		std::string pass = "PASS";
+		user.responseBuffer = ERR_NEEDMOREPARAMS(pass);
+		return;
+	}
+	if (!(user.getPassword().empty()))
+	{
+		user.responseBuffer = ERR_ALREADYREGISTRED;
+		return ;
+	}
+	std::string pass = commandsFromClient["params"];
+	if (pass == server.getPassword())
+		user.setPassword(commandsFromClient["params"]);
+	else
+		user.responseBuffer = ERR_PASSWDMISMATCH;
 }
 
 void	CommandHandler::handleNICK() {
@@ -193,7 +204,6 @@ void	CommandHandler::handleNICK() {
 	}
 	if (server.getFdbyNickName(nickname) != -1)
 	{
-		server.error = 433; // ERR_NICKNAMEINUSE
 		user.responseBuffer = ERR_NICKNAMEINUSE(nickname);
 		return; 
 	}
@@ -203,6 +213,11 @@ void	CommandHandler::handleNICK() {
 void	CommandHandler::handleUSER() {
 	std::cout << YELLOW << "USER command received.." << RESET << std::endl;
 
+	if (!(user.getUserName().empty()))
+	{
+		user.responseBuffer = ERR_ALREADYREGISTRED;
+		return ;
+	}
 	std::vector<std::string> params = split(commandsFromClient["params"], " ");
 	vector<string>::iterator hostnameIt = params.begin() + 1;
 	vector<string>::iterator realnameIt = params.begin() + 3;
@@ -245,7 +260,9 @@ void	CommandHandler::handleJOIN() {
 		;
 	else
 	{
-		user.responseBuffer = ERR_TOOMANYTARGETS(*(params.begin()));
+		server.error = 407;
+		if (params.begin() != params.end())
+			user.responseBuffer = ERR_TOOMANYTARGETS(*(params.end() - 1));
 		return;
 	}
 	std::string channelName = parse_channelName(*params.begin());
@@ -302,7 +319,7 @@ void	CommandHandler::handleJOIN() {
 			user.setChannel(server.getChannel(channelName));
 			server.channelMap[channelName].setUser(user);
 			std::string topic = server.channelMap[channelName].getTheme();
-			user.responseBuffer = ":localhost JOIN " + channelName + "\r\n";
+			user.responseBuffer = user.getPrefix() + " JOIN " + channelName + "\r\n";
 			user.responseBuffer += RPL_TOPIC(channelName, topic);
 		}
 		else
