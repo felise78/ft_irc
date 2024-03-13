@@ -13,6 +13,7 @@
 #include <stdlib.h> // For exit()
 #include <fcntl.h> // For fcntl()
 #include <arpa/inet.h> // For inet_addr() and inet_pton() ..converts IP addresses from text to binary form
+#include <fstream> // For file handling
 
 // SOME COLORS FOR MAKING THE LIFE BRIGTHER !!!
 #define RED		"\033[1;31m"
@@ -67,6 +68,7 @@ public:
 	void		handleSignal();
 
 	void		checkErrorAndExit(int returnValue, const std::string& message);
+	bool 		fileExists(const std::string& fileName);
 
 };
 
