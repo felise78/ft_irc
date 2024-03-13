@@ -329,9 +329,10 @@ void	CommandHandler::handleJOIN() {
 			new_channel.setKey(*(params.begin() + 1));
 		server.setChannel(new_channel);
 		user.setChannel(new_channel);
+		user.responseBuffer += user.getPrefix() + " JOIN " + channelName + "\r\n";
 		std::string topic = server.channelMap[channelName].getTheme();
-		user.responseBuffer = user.getPrefix() + " JOIN " + channelName + "\r\n";
-		user.responseBuffer += RPL_TOPIC(channelName, topic);
+		if (!topic.empty())
+			user.responseBuffer += RPL_TOPIC(channelName, topic);
 	}
 	// if channel already exists
 	else
@@ -362,9 +363,10 @@ void	CommandHandler::handleJOIN() {
 			// add the user
 			user.setChannel(server.getChannel(channelName));
 			server.channelMap[channelName].setUser(user);
+			user.responseBuffer += user.getPrefix() + " JOIN " + channelName + "\r\n";
 			std::string topic = server.channelMap[channelName].getTheme();
-			user.responseBuffer = user.getPrefix() + " JOIN " + channelName + "\r\n";
-			user.responseBuffer += RPL_TOPIC(channelName, topic);
+			if (!topic.empty())
+				user.responseBuffer += RPL_TOPIC(channelName, topic);
 		}
 		else
 		{
