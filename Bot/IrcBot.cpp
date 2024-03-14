@@ -114,7 +114,7 @@ void IrcBot::handleServerRequest() {
 
 void IrcBot::handleResponse() {
 
-	std::cout << "Request, RAW: " << _serverRequestBuffer << std::endl;
+	std::cout << YELLOW << "Request, RAW: " << MAGENTA << _serverRequestBuffer << RESET << std::endl;
 
 	/* DEBUG */
 	// Check the string for (001 or 002, 003, 004).. if there means the bot is authenticated/registered on the server side
@@ -132,33 +132,93 @@ void IrcBot::handleResponse() {
 	if (request.find("PRIVMSG") != std::string::npos) {
 		std::string sender = request.substr(1, request.find("!") - 1);
 		std::string message = request.substr(request.find("PRIVMSG") + 8);
-		std::cout << "Message from " << sender << ": " << message << std::endl;
+		std::cout << YELLOW << "Message from " << sender << ": " << MAGENTA << message << RESET << std::endl;
 	}
-	else if (request.find("PING") != std::string::npos) {
+	if (request.find("PING") != std::string::npos) {
 		/* DEBUG */
-		std::cout << "..ping received.. sending pong.." << std::endl;
+		std::cout << YELLOW << "..ping received.. sending pong.." << YELLOW << std::endl;
 		/* ***** */
 		sendIrcMessage("PONG " + request.substr(5));
 	}
-	else if (request.find("DO_THE_THING") != std::string::npos) {
+	if (request.find("DO_THE_THING") != std::string::npos) {
 
 		/* DEBUG */
-		std::cout << "DO_THE_THING request received.." << std::endl;
+		std::cout << YELLOW << "DO_THE_THING request received.." << RESET << std::endl;
 		/* ***** */
 
 		std::string toErase = "DO_THE_THING:";
 		size_t pos = _serverRequestBuffer.find(toErase);
 		if (pos != std::string::npos) {
-			_serverRequestBuffer.erase(pos, toErase.length());
+			_serverRequestBuffer.erase(0, pos + toErase.length());
+
+			pos = _serverRequestBuffer.find_first_not_of(" ");
+			if (pos != std::string::npos) {
+				_serverRequestBuffer.erase(0, pos);
+			}
+
+			pos = _serverRequestBuffer.find_last_not_of(" ");
+			if (pos != std::string::npos) {
+				_serverRequestBuffer.erase(pos + 1);
+			}
 		}
 
-		/* DEBUG */
-		std::cout << "..to process by GPT: " << _serverRequestBuffer << std::endl;
-		/* ***** */
+		handleGPT();
 
-		// handleGPT();
+		std::cout << BLUE << "GPT response: " << CYAN << _responseGPT << RESET << std::endl;
 
+		sendMessage("#helpdesk", _responseGPT);
 	}
+}
+
+/*
+** Here we use so called `named pipes` to communicate with the GPT container.
+** Also known as `FIFO` (First In First Out).
+** The host_to_container.fifo is used to send/write the request string to the container.
+** The container_to_host.fifo is used to receive/read the response from the container.
+** Inside the container environment we have a python app that handles the requests to 
+** and responce from OpenAI's GPT via API.
+*/
+void IrcBot::handleGPT() {
+	/* DEBUG */
+	std::cout << YELLOW << "..to process by GPT: " << MAGENTA << _serverRequestBuffer << std::endl;
+	/* ***** */
+
+	std::ofstream outfile("./Bot/GPT/host_to_container.txt");
+	if (outfile.is_open()) {
+		outfile << _serverRequestBuffer;
+	}
+	else {
+		std::cerr << RED << "Error opening host_to_container for writing" << RESET << std::endl;
+		return;
+	}
+	outfile.close();
+
+	// making sure the responce is complete before reading it
+	while (fileExists("./Bot/GPT/lock")) {
+		// waiting for the lock file to be removed by the container
+	}
+
+	std::ifstream infile("./Bot/GPT/container_to_host.txt");
+	if (infile.is_open()) {
+		
+		std::string line;
+		_responseGPT.clear();
+
+		while (std::getline(infile, line)) {
+			_responseGPT += line;
+		}
+	}
+	else {
+		std::cerr << RED << "Error opening container_to_host for reading" << RESET << std::endl;
+		return;
+	}
+	infile.close();
+
+}
+
+bool IrcBot::fileExists(const std::string& fileName) {
+	std::ifstream infile(fileName.c_str());
+	return infile.good();
 }
 
 void IrcBot::checkErrorAndExit(int returnValue, const std::string& message) {
@@ -189,28 +249,6 @@ void IrcBot::handleSignal() {
 	
 } 
 
-/*
-** Here we use so called `named pipes` to communicate with the GPT container.
-** Also known as `FIFO` (First In First Out).
-** The host_to_container.fifo is used to send/write the request string to the container.
-** The container_to_host.fifo is used to receive/read the response from the container.
-** Inside the container environment we have a python app that handles the requests to 
-** and responce from OpenAI's GPT via API.
-*/
-void IrcBot::handleGPT() {
-
-	std::ofstream host_to_container("./GPT/host_to_container.fifo");
-	host_to_container << _serverRequestBuffer;
-	host_to_container.close();
-
-	std::ifstream container_to_host("./GPT/container_to_host.fifo");
-	std::getline(container_to_host, _responseGPT);
-	container_to_host.close();
-
-	// _responseGPT must be sent back to the server..
-	std::cout << "GPT response: " << _responseGPT << std::endl;
-
-}
 
 /*
 ** This function is used to establish a connection to the server.

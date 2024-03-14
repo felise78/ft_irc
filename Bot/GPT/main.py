@@ -17,19 +17,12 @@ def interactive_chat(
 	test: Optional[str] = typer.Option(None, "--text", "-t", help="Start with text to chat with the model."),
 	temperature: float = typer.Option(0.7, help="Controls Randomness: Lower value means more predictable text.."),
 	max_tokens: int = typer.Option(
-		150, help="Controls the length of the response."
+		240, help="Controls the length of the response."
 	),
 	model: str = typer.Option(
 		"gpt-3.5-turbo", help="The model to use for generating the response."
 	),
 ):
-	fifo_in = "/usr/src/app/host_to_container.fifo"
-	fifo_out = "/usr/src/app/container_to_host.fifo"
-	if not os.path.exists(fifo_in):
-		os.mkfifo(fifo_in)
-	if not os.path.exists(fifo_out):
-		os.mkfifo(fifo_out)
-
 	# """ Interactive CLI chat with Chat GPT via API """
 	# typer.echo(
 	# 	"Welcome to the interactive chat with Chat GPT! Type 'exit' to end the chat."
@@ -39,16 +32,19 @@ def interactive_chat(
 
 	# start the chat loop
 	while True:
-		# get user input
-		with open('/usr/src/app/host_to_container.fifo', 'r') as host_to_container:
+		# getting the prompt from the host
+		with open('/usr/src/app/host_to_container.txt', 'r') as host_to_container:
 			prompt = host_to_container.readline().strip()
+			# print(f"Received from host: {prompt}")
 
+		# saving each prompt to the messages list
 		messages.append({"role": "user", "content": prompt})
 
 		if prompt.lower() == "exit":
 			# typer.echo("Goodbye!")
 			break
 
+		# getting the response from the model via the OpenAI API
 		response = client.chat.completions.create(
 			model=model,
 			messages=messages,
@@ -56,11 +52,17 @@ def interactive_chat(
 			max_tokens=max_tokens,
 		)
 
-		with open('/usr/src/app/container_to_host.fifo', 'w') as container_to_host:
-			container_to_host.write(response.choices[0].message.content)
+		# Creating a lock file for the host to wait for the response to be completed
+		with open('/usr/src/app/lock', 'w') as lock:
+			pass
 
-		# print the chatbot response
-		# typer.echo(f'ChatGPT: {response.choices[0].message.content}')
+		with open('/usr/src/app/container_to_host.txt', 'w') as container_to_host:
+			container_to_host.write(response.choices[0].message.content)
+			# print(f"Sending to host: {response.choices[0].message.content}")
+
+		os.remove('/usr/src/app/lock') # Removing the lock file
+
+		# saving each response to the messages list
 		messages.append({"role": "assistant", "content": response.choices[0].message.content})
 
 if __name__ == "__main__":
