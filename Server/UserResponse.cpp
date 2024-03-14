@@ -21,8 +21,6 @@ UserResponse::~UserResponse() {
 void UserResponse::handshakeResponse() {
 
 	// std::string serverName = _server.getServerName();
-	if (_user.authenticated() == false)
-		return ;
 	// std::string serverVersion = "_server.getServerVersion()";
 	// std::string serverCreated = "_server.getCreationDate()";
 	// std::string hostName = _user.getHostName();
@@ -34,7 +32,8 @@ void UserResponse::handshakeResponse() {
 	// reply_buffer << RPL_WELCOME(nickName, hostName) << RPL_YOURHOST(nickName)
 	// << RPL_CREATED(nickName, serverCreated) << RPL_MYINFO(nickName);
 	// _user.responseBuffer = reply_buffer.str();
-	_user.setHandshaked(true);
+	// std::cout << _user.responseBuffer;
+	// _user.setHandshaked(true);
 }
 
 void UserResponse::responseBuilder() {

@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
 #include <cstdio> // perror()
 #include <cstdlib> // exit()
 #include <unistd.h> // close()
@@ -50,6 +51,7 @@ class Server {
 		int					getServerFd() const;
 		int					getPort() const;
 		std::string const &	getServerName() const;
+		std::string const&	getServerPassword() const;
 
 		// SOCKET HANDLING
 		void				initSocket(); // socket():

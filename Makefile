@@ -13,6 +13,7 @@ VPATH = Server \
 SRCS = main.cpp \
 	Server.cpp \
 	ServerManager.cpp \
+	server_utils.cpp \
 	UserRequestParsing.cpp \
 	CommandHandler.cpp \
 	ModeHandler.cpp \

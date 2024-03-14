@@ -53,6 +53,10 @@ std::string const &	Server::getServerName() const {
 	return _serverName;
 }
 
+std::string const&	Server::getServerPassword() const {
+	return _serverPassword;
+}
+
 bool Server::passwordVerified(std::string const & pass) const {
 
 	return (pass == _serverPassword);
