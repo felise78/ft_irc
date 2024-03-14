@@ -71,22 +71,15 @@ e_cmd	CommandHandler::getCMD(const std::string & str) {
 	return NONE;
 }
 
-#include <stdio.h>
 const std::string	CommandHandler::parse_channelName(std::string& channelName)
 {
-	std::cout << channelName << std::endl;
-	if (channelName[0] != '#')
+	if (channelName[0] != '#') // ADD && channelName[0] != '&' ?
 		return "";
-	printf("channel name is %s\nADD\n", channelName.c_str());
 	string::iterator it = channelName.begin() + 1;
 	for ( ; it != channelName.end(); ++it)
 	{
 		if (std::isalnum(*it) == false)
-		{
-			/*DEBUG*/
-			std::cout << "ASCII code of char that is not alnum: " << (int)(*it) << std::endl;
 			return "";
-		}
 	}
 	return channelName;
 }
@@ -117,16 +110,17 @@ void	CommandHandler::authenticateUser() {
 	}
 	// setting authenticated to true if the user has sent NICK, USER and PASS
 	// NEED to add the PASS check as well !!!
-	if (!user.getNickName().empty() && !user.getUserName().empty() && !user.getPassword().empty()) {
+	if (!user.getNickName().empty() && !user.getUserName().empty() && user.getPassword() == server.getPassword()) {
 		user.setAuthenticated(true);
-		std::cout << "user authenticated " << std::endl;
-
+		sendHandshake();
 		// Identifying if te user is a BOT ?!
 		if (user.getNickName() == "NeoBot") { // (or any other condition/name to identify the bot)
 			std::cout << CYAN << ".. this user is a BOT.. aha !!!" << std::endl;
 			user.setAsBot();
 		}
 	}
+	else
+		server.setBroadcast(ERR_NOTREGISTERED, user.getSocket());
 }
 
 void	CommandHandler::executeCommand() {
@@ -145,7 +139,7 @@ void	CommandHandler::executeCommand() {
 }
 
 /*
-** Command Hanlers
+** Command Handlers
 */
 void	CommandHandler::handleNONE() {
 	// do nothing or/and print error message
@@ -155,8 +149,6 @@ void	CommandHandler::handleNONE() {
 	user.responseBuffer = ":localhost 421 ";
 	user.responseBuffer += commandsFromClient["command"];
 	user.responseBuffer += " :Unknown command";
-	// std::string command = commandsFromClient["command"];
-	// user.responseBuffer = ERR_UNKNOWNCOMMAND(command); //Doesn't compile? Mystery
 }
 
 void	CommandHandler::handleCAP() {
@@ -165,8 +157,21 @@ void	CommandHandler::handleCAP() {
 
 void	CommandHandler::handlePASS() {
 	std::cout << YELLOW << "PASS command received.." << RESET << std::endl;
-
+	if (user.getPassword() == server.getPassword())
+	{
+		server.setBroadcast(ERR_ALREADYREGISTRED, user.getSocket());
+		return ;
+	}
+	if (commandsFromClient.find("params") == commandsFromClient.end())
+	{
+		std::string pass = "PASS";
+		server.setBroadcast(ERR_NEEDMOREPARAMS(pass), user.getSocket());
+		return;
+	}
 	user.setPassword(commandsFromClient["params"]);
+	if (user.getPassword() != server.getPassword())
+		server.setBroadcast(ERR_PASSWDMISMATCH, user.getSocket());
+	std::cout << "Seg fault after this\n";
 }
 
 void	CommandHandler::handleNICK() {
@@ -197,6 +202,7 @@ void	CommandHandler::handleNICK() {
 	std::map<std::string, Channel>::iterator it2 = user._channels.begin();
 	for( ; it2 != user._channels.end(); ++it2)
 		it2->second.getUser(user.getNickName()).setNickName(nickname);
+	server.usersMap.find(server.getFdbyNickName(nickname))->second.setNickName(nickname);
 	user.setNickName(nickname);
 }
 
@@ -569,4 +575,18 @@ void	CommandHandler::handlePART()
 	user.removeChannel(channelName);
 	if (msg.empty())
 		user.responseBuffer = user.getPrefix() + " PART " + channelName + "\r\n";
+}
+
+void	CommandHandler::sendHandshake()
+{
+	std::string serverCreated = "_server.getCreationDate()";
+	std::string hostName = user.getHostName();
+	std::string nickName = user.getNickName();
+
+	std::stringstream reply_buffer;
+	reply_buffer << RPL_WELCOME(nickName, hostName) << RPL_YOURHOST(nickName)
+	<< RPL_CREATED(nickName, serverCreated) << RPL_MYINFO(nickName);
+	// user.responseBuffer = reply_buffer.str();
+	server.setBroadcast(reply_buffer.str(), user.getSocket());
+	user.setHandshaked(true);
 }

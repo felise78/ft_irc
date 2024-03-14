@@ -20,19 +20,19 @@ UserResponse::~UserResponse() {
 void UserResponse::handshakeResponse() {
 
 	// std::string serverName = _server.getServerName();
-	std::string serverVersion = "_server.getServerVersion()";
-	std::string serverCreated = "_server.getCreationDate()";
-	std::string hostName = _user.getHostName();
-	std::string nickName = _user.getNickName();
-	std::string userName = _user.getUserName();
-	std::string serverName = _server.getServerName();
+	// std::string serverVersion = "_server.getServerVersion()";
+	// std::string serverCreated = "_server.getCreationDate()";
+	// std::string hostName = _user.getHostName();
+	// std::string nickName = _user.getNickName();
+	// std::string userName = _user.getUserName();
+	// std::string serverName = _server.getServerName();
 
-	std::stringstream reply_buffer;
-	reply_buffer << RPL_WELCOME(nickName, hostName) << RPL_YOURHOST(nickName)
-	<< RPL_CREATED(nickName, serverCreated) << RPL_MYINFO(nickName);
-	_user.responseBuffer = reply_buffer.str();
-	std::cout << _user.responseBuffer;
-	_user.setHandshaked(true);
+	// std::stringstream reply_buffer;
+	// reply_buffer << RPL_WELCOME(nickName, hostName) << RPL_YOURHOST(nickName)
+	// << RPL_CREATED(nickName, serverCreated) << RPL_MYINFO(nickName);
+	// _user.responseBuffer = reply_buffer.str();
+	// std::cout << _user.responseBuffer;
+	// _user.setHandshaked(true);
 }
 
 void UserResponse::responseBuilder() {

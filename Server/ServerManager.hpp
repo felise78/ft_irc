@@ -2,6 +2,7 @@
 #define SERVERMANAGER_HPP
 
 #include "Server.hpp"
+#include "server_utils.hpp"
 #include "../Commands/CommandHandler.hpp"
 #include "../Request/UserRequestParsing.hpp"
 #include "../Request/Request.hpp"
@@ -30,7 +31,7 @@ class ServerManager {
 		int							_serverFd; // The server's socket FD
 		int							_max_fd; // To track the max value of the socket FD, needed for `select()` function and for loop in `run()`
 		bool						_sigInt; // To control the main loop of the server
-
+		
 		// Main logic to run the servers, receive, handle and respond to the requests
 		void						_run();
 		void						_accept(int UserFd);
@@ -64,6 +65,7 @@ class ServerManager {
 		void						setChannel(const Channel& channel);
 		Channel& 					getChannel( const std::string& name );
 		int 						getFdbyNickName( const std::string& nickname ) const;
+		std::string const&			getPassword() const;
 
 		// These two functions are used to set the broadcast message and send it to the users
 		void						setBroadcast(std::string channelName, std::string sender_nick, std::string msg); // this will be used to broadcast messages to all users in a channel
@@ -75,11 +77,6 @@ class ServerManager {
 		static 	ServerManager*	SM_instance;
 		static void	signalhandler(int signal);
 		void		handleSignal();
-
 };
-
-std::vector<std::string> split(const std::string& input, const std::string& delimiter);
-void	trim(std::string &str, std::string delimiter);
-int		noCRLFinBuffer(std::string const& buffer);
 
 #endif

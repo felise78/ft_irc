@@ -6,6 +6,10 @@
 #define RPL_CREATED(nick, date) (":localhost 003 " + nick + " :This server was created " + date + "\r\n")
 #define RPL_MYINFO(nick) (":localhost 004 " + nick + " : ircserv.1 modes itkol\r\n")
 
+/*PASS / USER*/
+#define ERR_NOTREGISTERED ":localhost 451 :You have not registered\r\n"
+#define ERR_ALREADYREGISTRED ":localhost 462 ::Unauthorized command (already registered)\r\n"
+#define ERR_PASSWDMISMATCH ":localhost 464 :Password incorrect\r\n"
 #define PING(servername) ("PING :" + servername + "\r\n")
 #define ERR_UNKNOWNCOMMAND(command) (":localhost 421 " + command " :Unknown command\r\n")
 

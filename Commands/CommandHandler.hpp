@@ -3,6 +3,8 @@
 
 #include "../Channel/Channel.hpp"
 #include "../Server/ServerManager.hpp"
+#include "../Server/server_utils.hpp"
+
 #include "ModeHandler.hpp"
 
 using namespace std;
@@ -44,6 +46,9 @@ typedef enum requestCMD {
 }	e_cmd;
 
 class CommandHandler {
+
+	private:
+		void				sendHandshake();
 
 	public:
 
