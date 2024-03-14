@@ -45,16 +45,16 @@ CommandHandler::CommandHandler(ServerManager& srv, User &usr, map<string, string
 	cmdToHandler["PART"] = &CommandHandler::handlePART;
 	// .. and so on
 
-	executeCommand();
+	// executeCommand();
 
-	// if (user.authenticated()) {
-	// 	// process the commands directly
-	// 	executeCommand();
-	// }
-	// else {
-	// 	// if user is not authenticated, we search for the PASS, NICK and USER commands first
-	// 	authenticateUser();
-	// }
+	if (user.authenticated()) {
+		// process the commands directly
+		executeCommand();
+	}
+	else {
+		// if user is not authenticated, we search for the PASS, NICK and USER commands first
+		authenticateUser();
+	}
 }
 
 CommandHandler::~CommandHandler() {
@@ -119,17 +119,7 @@ void	CommandHandler::authenticateUser() {
 			std::cout << CYAN << ".. this user is a BOT.. aha !!!" << std::endl;
 			user.setAsBot();
 		}
-		return ;
 	}
-	else if (!user.getNickName().empty() && !user.getUserName().empty() && user.getPassword().empty())
-	{
-		// server.setBroadcast(ERR_NEEDMOREPARAMS(pass), user.getSocket());
-		// server.setBroadcast(ERR_NOTREGISTERED, user.getSocket());
-		// user.responseBuffer += "\r\n";
-		// user.responseBuffer += ERR_NOTREGISTERED;
-	}
-	else
-		server.setBroadcast(ERR_NOTREGISTERED, user.getSocket());
 }
 
 void	CommandHandler::executeCommand() {
@@ -181,7 +171,6 @@ void	CommandHandler::handlePASS() {
 	user.setPassword(commandsFromClient["params"]);
 	if (user.getPassword() != server.getPassword())
 		server.setBroadcast(ERR_PASSWDMISMATCH, user.getSocket());
-	std::cout << "Seg fault after this\n";
 }
 
 void	CommandHandler::handleNICK() {
@@ -289,8 +278,9 @@ void	CommandHandler::handleJOIN() {
 		user.setChannel(new_channel);
 		user.responseBuffer += user.getPrefix() + " JOIN " + channelName + "\r\n";
 		std::string topic = server.channelMap[channelName].getTheme();
-		if (!topic.empty())
-			user.responseBuffer += RPL_TOPIC(channelName, topic);
+		// if (!topic.empty())
+		user.responseBuffer += RPL_TOPIC(channelName, topic);
+		user.responseBuffer += "\r\n";
 	}
 	// if channel already exists
 	else

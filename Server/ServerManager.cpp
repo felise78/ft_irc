@@ -10,7 +10,6 @@ ServerManager::ServerManager() {
 	_serverFd = _server.getServerFd();
 	_max_fd = _serverFd;
 	_sigInt = false;
-	_password = "password";
 	// DEBUG PRINT SERVERS DATA
 	_server.printServerData();
 
@@ -181,9 +180,10 @@ void	ServerManager::_handle(int fd) {
 			map<string, string> input_map = userRequest.getRequestMap();
 			CommandHandler cmdHandler(*this, user, input_map);
 			splitMessageBuffer.erase(it);
+			break ;
 		}
 	}
-	if (!(user.getPassword().empty()))
+	if (user.getPassword() == this->getPassword())
 	{
 		for (vector<string>::iterator it = splitMessageBuffer.begin(); it != splitMessageBuffer.end(); it++)
 		{	
@@ -193,6 +193,16 @@ void	ServerManager::_handle(int fd) {
 			CommandHandler cmdHandler(*this, user, input_map);
 		}
 	}
+	else
+	{
+		/*DEBUG*/
+		std::cerr << RED << "Password wrong\n" << RESET;
+		/**/
+		std::string str = ERR_PASSWDMISMATCH;
+		write(fd, str.c_str(), str.size());
+		_closeConnection(fd);
+		return ;
+	}
 	// user.userMessageBuffer.clear();
 
 	// We add the client's fd to the send_fd_pool once the client is authenticated (received NICK, USER, PASS..)
@@ -200,7 +210,6 @@ void	ServerManager::_handle(int fd) {
 		_removeFromSet(fd, &_recv_fd_pool);
 		_addToSet(fd, &_send_fd_pool);
 	// }
-
 }
 
 /*

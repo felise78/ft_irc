@@ -51,6 +51,10 @@ int	noPassInCmd(std::string const& messageBuffer)
 {
 	if (messageBuffer.find("\npass ") != std::string::npos)
 		return 0;
+	if (messageBuffer.find("pass ") == 0)
+		return 0;
+	if (messageBuffer.find("PASS ") == 0)
+		return 0;
 	if (messageBuffer.find("\nPASS ") != std::string::npos)
 		return 0;
 	return 1;
