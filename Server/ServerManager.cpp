@@ -203,13 +203,9 @@ void	ServerManager::_handle(int fd) {
 		_closeConnection(fd);
 		return ;
 	}
-	// user.userMessageBuffer.clear();
 
-	// We add the client's fd to the send_fd_pool once the client is authenticated (received NICK, USER, PASS..)
-	// if (user.authenticated()) {
-		_removeFromSet(fd, &_recv_fd_pool);
-		_addToSet(fd, &_send_fd_pool);
-	// }
+	_removeFromSet(fd, &_recv_fd_pool);
+	_addToSet(fd, &_send_fd_pool);
 }
 
 /*

@@ -120,8 +120,6 @@ void	CommandHandler::authenticateUser() {
 			user.setAsBot();
 		}
 	}
-	else
-		server.setBroadcast(ERR_NOTREGISTERED, user.getSocket());
 }
 
 void	CommandHandler::executeCommand() {
