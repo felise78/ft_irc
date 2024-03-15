@@ -55,6 +55,9 @@
 #define ERR_BADCHANNELKEY(channel) (":localhost 475 " + channel + " :Cannot join channel (+k)\r\n")
 //                 ERR_TOOMANYCHANNELS
 
+/*PART COMMAND*/
+# define RPL_PART(user_id, channel, reason) (user_id + " PART " + channel + " " + (reason.empty() ? "." : reason ) + "\r\n")
+
 /*OPERATOR REPLY*/
 # define RPL_YOUREOPER(nick) (":localhost 381 " + nick + " :You are now an IRC operator\r\n")
 
