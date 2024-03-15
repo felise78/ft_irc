@@ -578,12 +578,11 @@ void	CommandHandler::handlePART()
 		user.responseBuffer = ERR_USERNOTINCHANNEL(user.getNickName(), channelName); 
 		return;
 	}
-	if (msg.empty() == false)
-		handlePRIVMSG();
 	user._channels[channelName].removeUser(user.getNickName());
 	user.removeChannel(channelName);
-	if (msg.empty())
-		user.responseBuffer = user.getPrefix() + " PART " + channelName + "\r\n";
+	user.responseBuffer = RPL_PART(user.getPrefix(), channelName, msg);
+	server.setBroadcast(channelName, user.getNickName(), user.responseBuffer);
+	server.channelMap[channelName].removeUser(user.getNickName());
 }
 
 void	CommandHandler::sendHandshake()
