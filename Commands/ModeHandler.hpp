@@ -27,7 +27,7 @@ class ModeHandler
 		vector<string>			_extra_args;
 		int						n_flags;
 		int						n_channels;
-		Channel*				_channel;
+		string					_channel;
 
 		int		parse_errors();
 		void	exec_mode();
