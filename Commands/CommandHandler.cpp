@@ -94,9 +94,9 @@ const std::string	CommandHandler::parse_channelName(std::string& channelName)
 void	CommandHandler::authenticateUser() {
 
 	// if user is not authenticated, we search for the PASS, NICK and USER commands first
-	if (commandsFromClient["command"] == "CAP") {
-		handleCAP(); // this one might not be needed
-	}
+	// if (commandsFromClient["command"] == "CAP") {
+	// 	handleCAP(); // this one might not be needed
+	// }
 	// if (commandsFromClient.find("NICK") != commandsFromClient.end()) {
 	if (commandsFromClient["command"] == "NICK") {
 		handleNICK();
@@ -120,6 +120,8 @@ void	CommandHandler::authenticateUser() {
 			user.setAsBot();
 		}
 	}
+	else
+		server.setBroadcast(ERR_NOTREGISTERED, user.getSocket());
 }
 
 void	CommandHandler::executeCommand() {
@@ -152,7 +154,7 @@ void	CommandHandler::handleNONE() {
 
 void	CommandHandler::handleCAP() {
 	std::cout << YELLOW << "CAP command received.." << RESET << std::endl;
-	user._cap = true;
+	// user._cap = true;
 }
 
 void	CommandHandler::handlePASS() {
@@ -255,7 +257,7 @@ void	CommandHandler::handleJOIN() {
 		;
 	else
 	{
-		if (params.begin() != params.end())
+		if (!params.empty())
 			user.responseBuffer = ERR_TOOMANYTARGETS(*(params.end() - 1));
 		return;
 	}
@@ -276,11 +278,12 @@ void	CommandHandler::handleJOIN() {
 			new_channel.setKey(*(params.begin() + 1));
 		server.setChannel(new_channel);
 		user.setChannel(new_channel);
-		user.responseBuffer += user.getPrefix() + " JOIN " + channelName + "\r\n";
+		user.responseBuffer = user.getPrefix() + " JOIN " + channelName + "\r\n";
 		std::string topic = server.channelMap[channelName].getTheme();
-		// if (!topic.empty())
-		user.responseBuffer += RPL_TOPIC(channelName, topic);
-		user.responseBuffer += "\r\n";
+		if (topic.empty())
+			user.responseBuffer += RPL_NOTOPIC(channelName);
+		else
+			user.responseBuffer += RPL_TOPIC(channelName, topic);
 	}
 	// if channel already exists
 	else
@@ -311,9 +314,11 @@ void	CommandHandler::handleJOIN() {
 			// add the user
 			user.setChannel(server.getChannel(channelName));
 			server.channelMap[channelName].setUser(user);
-			user.responseBuffer += user.getPrefix() + " JOIN " + channelName + "\r\n";
+			user.responseBuffer = user.getPrefix() + " JOIN " + channelName + "\r\n";
 			std::string topic = server.channelMap[channelName].getTheme();
-			if (!topic.empty())
+			if (topic.empty())
+				user.responseBuffer += RPL_NOTOPIC(channelName);
+			else
 				user.responseBuffer += RPL_TOPIC(channelName, topic);
 		}
 		else
