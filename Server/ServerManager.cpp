@@ -1,7 +1,6 @@
 #include "ServerManager.hpp"
 
 ServerManager::ServerManager() {
-	// std::cout << MAGENTA << "\tServersManager default constructor called" << RESET << std::endl;
 
 	SM_instance = this; // This is needed for the signal handling
 
@@ -21,7 +20,6 @@ ServerManager::ServerManager() {
 }
 
 ServerManager::~ServerManager() {
-	// std::cout << RED << "\tServersManager destructor called" << RESET << std::endl;
 }
 
 /*
@@ -189,6 +187,9 @@ void	ServerManager::_handle(int fd) {
 		{	
 			std::cout << MAGENTA << *it << RESET << std::endl;
 			Request	userRequest(*this, *it);
+			if ((userRequest.getCommand() != "NICK" && userRequest.getCommand() != "USER" && user.getNickName().empty()) || 
+				(userRequest.getCommand() != "NICK" && userRequest.getCommand() != "USER" && user.getUserName().empty()))
+				this->setBroadcast(ERR_NOTREGISTERED, user.getSocket());
 			map<string, string> input_map = userRequest.getRequestMap();
 			CommandHandler cmdHandler(*this, user, input_map);
 		}
@@ -425,7 +426,7 @@ void	ServerManager::setBroadcast(std::string msg, int fd) {
 	// it->second.responseBuffer = it->second.getPrefix() + " PRIVMSG " + it->second.getChannel() + " :" + msg + "\r\n";
 	it->second.responseBuffer += msg;
 
-	_addToSet(fd, &_send_fd_pool);
+	// _addToSet(fd, &_send_fd_pool);
 }
 
 /*

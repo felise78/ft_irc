@@ -3,16 +3,13 @@
 /* CONSTRUCTOR/DESTRUCTOR */
 ModeHandler::ModeHandler(map<string, string>& commands, ServerManager& srv, User& user) : _commandsFromClient(commands), _server(srv), _user(user), n_flags(0), n_channels(0)
 {
-	cout << "ModeHandler constructor called" << endl;
-
-	if (parse_errors() != 0) //within parse_errors, need to call a method in ServerManager to send_error_msg to client. 
+	if (parse_errors() != 0)
 		return ;
 	exec_mode();	
 }
 
 ModeHandler::~ModeHandler()
 {
-	cout << "ModeHandler destructor called" << endl;
 }
 
 int	ModeHandler::parse_errors()

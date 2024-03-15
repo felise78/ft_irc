@@ -212,8 +212,12 @@ void	CommandHandler::handleUSER() {
 		return ;
 	}
 	std::vector<std::string> params = split(commandsFromClient["params"], " ");
-	vector<string>::iterator hostnameIt = params.begin() + 1;
-	vector<string>::iterator realnameIt = params.begin() + 3;
+	vector<string>::iterator hostnameIt = params.end();
+	vector<string>::iterator realnameIt = params.end();
+	if (params.size() >= 2)
+		hostnameIt = params.begin() + 1;
+	if (params.size() >= 4)
+		realnameIt = params.begin() + 3;
 	for (vector<string>::iterator it = params.begin(); it != params.end(); it++)
 	{
 		if (it == params.begin()) {
@@ -544,17 +548,11 @@ void	CommandHandler::handleKICK()
 void	CommandHandler::handleMODE()
 {
 	std::cout << YELLOW << "MODE command received.." << RESET << std::endl;
-	
-	/*DEBUG*/
-	typedef map<string, string>::const_iterator mapIt;
-	for (mapIt i = commandsFromClient.begin(); i != commandsFromClient.end(); i++)
-		cout << "Key: " << i->first << ", value: " << i->second << std::endl;
-	/**/
+
 	try {
 		ModeHandler	mode_handler(commandsFromClient, server, user);
 	}
 	catch (std::exception &e) {
-		cout << "Can be caught here \n";
 	}
 }
 
