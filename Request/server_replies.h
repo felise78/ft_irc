@@ -11,7 +11,7 @@
 #define ERR_ALREADYREGISTRED ":localhost 462 ::Unauthorized command (already registered)\r\n"
 #define ERR_PASSWDMISMATCH ":localhost 464 :Password incorrect\r\n"
 #define PING(servername) ("PING :" + servername + "\r\n")
-#define ERR_UNKNOWNCOMMAND(command) (":localhost 421 " + command " :Unknown command\r\n")
+#define ERR_UNKNOWNCOMMAND(command) (":localhost 421 " + command + " :Unknown command\r\n")
 
 /*PRIVMSG*/
 #define ERR_NOSUCHNICK(nickname) (":localhost 401 " + nickname + " :No such nick\r\n")

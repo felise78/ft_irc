@@ -44,11 +44,6 @@ void	Request::parse_args()
 		//user.responseBuffer = ERR_NEEDMOREPARAMS(_input_map["command"]); /// pas de user dans Request
 		return;
 	}
-	if (DEBUG)
-	{
-		print_map();
-		std::cout << std::endl;
-	}
 }
 
 /* UTILS */
@@ -71,22 +66,15 @@ void	Request::check_command_valid(std::string& command)
     allCommands.push_back("PRIVMSG");
     allCommands.push_back("PART");
 	allCommands.push_back("PING");
-	if (DEBUG)
-		std::cout << command << std::endl;
 	vector<string>::iterator it = allCommands.begin();
 	for (; it != allCommands.end(); it++)
 	{
 		if (command == *it)
 		{
 			_request_valid = true;
-			if (DEBUG)
-				std::cout << "_request_valid is set as " << std::boolalpha << _request_valid << std::endl;
 			return ;
 		}
 	}
-	// command = "NONE";
-	if (DEBUG)
-		std::cout << "_request_valid is set as " << std::boolalpha << _request_valid << std::endl;
 }
 
 /*GETTERS*/
@@ -127,20 +115,3 @@ void	Request::print_vector(std::vector<std::string> const& split_buffer)
 		std::cout << *it << std::endl;
 }
 
-// int	main(void)
-// {
-// 	try {
-// 		Request test("KICK #general,#channel1 johndoe,johndoe1,johndoe2 :johndoes are idiots");
-// 		Request test2("JOIN #t1,#t2\r\n");
-// 		Request test3("NICK       nickname");
-// 		Request test4("mode #general +t");
-// 		Request rubbish("Not a command");
-// 		Request nospacing("MODE   +k      something");
-// 		Request empty("");
-// 	}
-// 	catch (std::exception const& e)
-// 	{
-// 		std::cerr << e.what() << std::endl;
-// 		return (1);
-// 	}
-// }

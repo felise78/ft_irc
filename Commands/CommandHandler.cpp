@@ -147,9 +147,7 @@ void	CommandHandler::handleNONE() {
 	std::cout << RED << "[-] command not found.." << RESET << std::endl;
 	if (commandsFromClient.find("command") == commandsFromClient.end())
 		return ;
-	user.responseBuffer = ":localhost 421 ";
-	user.responseBuffer += commandsFromClient["command"];
-	user.responseBuffer += " :Unknown command";
+	server.setBroadcast(ERR_UNKNOWNCOMMAND(commandsFromClient["command"]), user.getSocket());
 }
 
 void	CommandHandler::handleCAP() {
@@ -549,7 +547,17 @@ void	CommandHandler::handleMODE()
 {
 	std::cout << YELLOW << "MODE command received.." << RESET << std::endl;
 	
-	ModeHandler	mode_handler(commandsFromClient, server, user);
+	/*DEBUG*/
+	typedef map<string, string>::const_iterator mapIt;
+	for (mapIt i = commandsFromClient.begin(); i != commandsFromClient.end(); i++)
+		cout << "Key: " << i->first << ", value: " << i->second << std::endl;
+	/**/
+	try {
+		ModeHandler	mode_handler(commandsFromClient, server, user);
+	}
+	catch (std::exception &e) {
+		cout << "Can be caught here \n";
+	}
 }
 
 void	CommandHandler::handlePING()
