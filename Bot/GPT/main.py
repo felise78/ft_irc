@@ -33,9 +33,15 @@ def interactive_chat(
 	# start the chat loop
 	while True:
 		# getting the prompt from the host
+		while not os.path.exists('/usr/src/app/host_to_container.txt'):
+			pass
+
 		with open('/usr/src/app/host_to_container.txt', 'r') as host_to_container:
 			prompt = host_to_container.readline().strip()
 			# print(f"Received from host: {prompt}")
+
+		# removing the file after reading the prompt
+		os.remove('/usr/src/app/host_to_container.txt')
 
 		# saving each prompt to the messages list
 		messages.append({"role": "user", "content": prompt})
@@ -52,15 +58,8 @@ def interactive_chat(
 			max_tokens=max_tokens,
 		)
 
-		# Creating a lock file for the host to wait for the response to be completed
-		with open('/usr/src/app/lock', 'w') as lock:
-			pass
-
 		with open('/usr/src/app/container_to_host.txt', 'w') as container_to_host:
 			container_to_host.write(response.choices[0].message.content)
-			# print(f"Sending to host: {response.choices[0].message.content}")
-
-		os.remove('/usr/src/app/lock') # Removing the lock file
 
 		# saving each response to the messages list
 		messages.append({"role": "assistant", "content": response.choices[0].message.content})

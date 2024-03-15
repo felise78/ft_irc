@@ -58,7 +58,7 @@ public:
 
     void		handleServerRequest();	
 	void		handleResponse();
-	void		handleGPT();
+	void		handleGPT(const std::string& prompt);
 
 	// The following declarations are needed for the signal handling (to be able to close the socket and exit properly)
 	// ..the signalHandler() must be static, as well as anything it operates on.
