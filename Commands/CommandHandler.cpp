@@ -86,10 +86,9 @@ const std::string	CommandHandler::parse_channelName(std::string& channelName)
 }
 
 /*
-** This function verifies if user is authenticated by checking if the user has sent NICK, USER and PASS 
-** set in `User` class. If so, the user is authenticated and can send other Commands to the server.
+** SUGGEST TO CHANGE THIS LOGIC !!!!
 **
-** This logic might be changed .. TO DISCUSS !!
+** PASS handling, missmatch, etc. TO DO IN `handlePASS`
 */
 void	CommandHandler::authenticateUser() {
 
@@ -153,8 +152,50 @@ void	CommandHandler::handleCAP() {
 	// user._cap = true;
 }
 
+/*
+** 
+*/
 void	CommandHandler::handlePASS() {
 	std::cout << YELLOW << "PASS command received.." << RESET << std::endl;
+
+	// format : /PASS <password>
+
+	// if already registered
+	if (user.getStatus() == REGISTERED) {
+		user.responseBuffer = ERR_ALREADYREGISTRED;
+		return;
+	}
+
+	// first check is the PASS is not empty
+	if (commandsFromClient["params"].empty() == true) {
+		user.responseBuffer = ERR_NEEDMOREPARAMS("PASS");
+		return;
+	}
+
+	// missmatch check
+	if (user.getPassword() != server.getPassword()) {
+		user.responseBuffer = ERR_PASSWDMISMATCH;
+		return;
+	}
+
+	// if the password is correct
+	user.setStatus(PASS_MATCHED);
+
+	// if ther is NICK and USER set:
+	if (!user.getNickName().empty() && !user.getUserName().empty()) {
+		sendHandshake();
+		user.setStatus(REGISTERED);
+	}
+	// if there is NICK and no USER:
+	else if (!user.getNickName().empty() && user.getUserName().empty()) {
+		user.responseBuffer = ERR_NEEDMOREPARAMS("USER");
+	}
+	// if there is USER and no NICK:
+	else if (user.getNickName().empty() && !user.getUserName().empty()) {
+		user.responseBuffer = ERR_NEEDMOREPARAMS("NICK");
+	}
+
+/*
 	if (user.getPassword() == server.getPassword())
 	{
 		server.setBroadcast(ERR_ALREADYREGISTRED, user.getSocket());
@@ -169,11 +210,66 @@ void	CommandHandler::handlePASS() {
 	user.setPassword(commandsFromClient["params"]);
 	if (user.getPassword() != server.getPassword())
 		server.setBroadcast(ERR_PASSWDMISMATCH, user.getSocket());
+*/
 }
 
 void	CommandHandler::handleNICK() {
 	std::cout << YELLOW << "NICK command received.." << RESET << std::endl;
 
+	// format : /NICK <nickname>
+	std::string nickname = commandsFromClient["params"];
+	trim(nickname, " \t\r");
+	
+	// first check if NICK is valid
+	if (nickname.empty()) {
+		user.responseBuffer = ERR_NONICKNAMEGIVEN;
+		return;
+	} // check the length and the characters
+	if (nickname.length() > 9) {
+		user.responseBuffer = ERR_ERRONEUSNICKNAME(nickname);
+		return;
+	}
+	// check forbidden characters
+	string::const_iterator it;
+	for(it = nickname.begin(); it != nickname.end(); ++it) {
+		if (std::isalnum(*it) == false) {
+			user.responseBuffer = ERR_ERRONEUSNICKNAME(nickname);
+			return;
+		}
+	}
+
+	// if the nickname is already in use:
+	if (server.getFdbyNickName(commandsFromClient["params"]) != -1) {
+		user.responseBuffer = ERR_NICKNAMEINUSE(commandsFromClient["params"]);
+		return;
+	}
+
+	// setting nickname and updating it in all channels
+	std::string oldNick = user.getNickName();
+	user.setNickName(nickname);
+
+	std::map<std::string, Channel>::iterator it2 = user._channels.begin();
+	for ( ; it2 != user._channels.end(); ++it2) {
+		it2->second.getUser(oldNick).setNickName(nickname);
+	}
+
+	// if the user is already registered
+	if (user.getStatus() == REGISTERED) {
+		return;
+	} // if there is no PASS:
+	else if (user.getStatus() == PASS_NEEDED) {
+		user.responseBuffer = "PASS needed first\r\n";
+		return;
+	}
+	else if (user.getStatus() == PASS_MATCHED && !user.getUserName().empty()) {
+		sendHandshake();
+		user.setStatus(REGISTERED);
+	}
+	else if (user.getStatus() == PASS_MATCHED && user.getUserName().empty()) {
+		user.responseBuffer = ERR_NEEDMOREPARAMS("USER");
+	}
+
+/*
 	std::string nickname = commandsFromClient["params"];
 	trim(nickname, " \t\r");
 	// parsing nickname;
@@ -201,6 +297,7 @@ void	CommandHandler::handleNICK() {
 		it2->second.getUser(user.getNickName()).setNickName(nickname);
 	server.usersMap.find(server.getFdbyNickName(nickname))->second.setNickName(nickname);
 	user.setNickName(nickname);
+*/
 }
 
 void	CommandHandler::handleUSER() {

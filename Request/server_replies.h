@@ -48,6 +48,7 @@
 /*NICK COMMAND*/
 #define ERR_ERRONEUSNICKNAME(nick) (":localhost 432 " + nick + " :Erroneous nickname\r\n")
 #define ERR_NICKNAMEINUSE(nick) (":localhost 433 " + nick + " :Nickname is already in use\r\n")
+#define ERR_NONICKNAMEGIVEN ":localhost 431 :No nickname given\r\n"
 
 /*JOIN COMMAND*/
 #define ERR_CHANNELISFULL(channel) (":localhost 471 " + channel + " :Cannot join channel (+l)\r\n")

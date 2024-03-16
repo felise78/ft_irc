@@ -131,7 +131,7 @@ void	ServerManager::_handle(int fd) {
 
 	/* DEBUG */
 	std::cout << timeStamp();
-	std::cout << std::endl << MAGENTA << "bytes read:" << bytes_read << " Buffer: " << buffer << std::endl;
+	std::cout << MAGENTA << "bytes read:" << bytes_read << " Buffer: " << buffer << std::endl;
 	/* ****** */
 
 	if (bytes_read == 0) {

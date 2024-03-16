@@ -10,6 +10,7 @@ User::User() :
 	_userName(""), 
 	_realName(""),
 	_password(""), 
+	_status(PASS_NEEDED),
 	userMessageBuffer(""),
 	responseBuffer(""),
 	_authenticated(false), 
@@ -57,6 +58,8 @@ User::~User()
 }
 
 // --------------------------------------- SETTERS ---------------------------------------- // 
+
+void	User::setStatus(e_status status) { _status = status; }
 
 void	User::setAuthenticated(bool authenticated)
 { this->_authenticated = authenticated; }
@@ -116,6 +119,8 @@ void	User::setPinged(bool pinged)
 }
 
 // ---------------------------------------- GETTERS ----------------------------------------- // 
+
+User::e_status	User::getStatus() { return _status; }
 
 bool	User::authenticated() { return this->_authenticated; }
 

@@ -6,6 +6,14 @@
 	#include <map>
 	//#include "../Channel/Channel.hpp"
 
+	typedef enum Status {
+		PASS_NEEDED,
+		PASS_MATCHED, // pass correct no nick or user
+		REGISTERED, // pass correct nick and user ok
+		DELETED
+	}	e_status;
+
+
 	class Channel;
 
 	class User {
@@ -18,9 +26,12 @@
 		std::string 					_userName; // ..parsed in `UserRequestParsing` class..
 		std::string						_realName; // ..parsed in `UserRequestParsing` class..
 		std::string 					_password; // ..parsed in `UserRequestParsing` class..
+		e_status						_status;
 		// ..to use for composing the first response message to the client (RPL_WELCOME, RPL_YOURHOST, RPL_CREATED, RPL_MYINFO..)
 
 		public :
+
+		// user status enum
 		User();
 		// User(const User& copy);
 		// User& operator=(const User& src);
@@ -36,6 +47,7 @@
 		bool							isBot;
 
 		// Setters //
+		void	setStatus(e_status status);
 		void	setPort(const int& port);
 		void	setSocket(const int& socket);
 		void 	setNickName(const std::string& nickname);
@@ -49,6 +61,7 @@
 		void	setAsBot();
 		void	setPinged(bool pinged);
 		// Getters //
+		e_status getStatus();
 		const int& getPort( void ) const;
 		const int& getSocket( void ) const;
 		const std::string& getNickName( void ) const;
