@@ -120,7 +120,7 @@ void	User::setPinged(bool pinged)
 
 // ---------------------------------------- GETTERS ----------------------------------------- // 
 
-User::e_status	User::getStatus() { return _status; }
+e_status	User::getStatus() { return _status; }
 
 bool	User::authenticated() { return this->_authenticated; }
 

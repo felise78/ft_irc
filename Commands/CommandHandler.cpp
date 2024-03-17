@@ -43,6 +43,7 @@ CommandHandler::CommandHandler(ServerManager& srv, User &usr, map<string, string
 	cmdToHandler["MODE"] = &CommandHandler::handleMODE;
 	cmdToHandler["PING"] = &CommandHandler::handlePING;
 	cmdToHandler["PART"] = &CommandHandler::handlePART;
+	cmdToHandler["QUIT"] = &CommandHandler::handleQUIT;
 	// .. and so on
 
 	// executeCommand();
@@ -168,18 +169,22 @@ void	CommandHandler::handlePASS() {
 
 	// first check is the PASS is not empty
 	if (commandsFromClient["params"].empty() == true) {
-		user.responseBuffer = ERR_NEEDMOREPARAMS("PASS");
+		std::string str = "PASS";
+		user.responseBuffer = ERR_NEEDMOREPARAMS(str);
 		return;
 	}
 
-	// missmatch check
+	std::string pass = commandsFromClient["params"];
+	user.setPassword(pass);
+
+	// missmatch check. At this point parced pass string shall be available
 	if (user.getPassword() != server.getPassword()) {
 		user.responseBuffer = ERR_PASSWDMISMATCH;
 		return;
 	}
-
 	// if the password is correct
 	user.setStatus(PASS_MATCHED);
+	user.responseBuffer = "PASS OK !\r\n";
 
 	// if ther is NICK and USER set:
 	if (!user.getNickName().empty() && !user.getUserName().empty()) {
@@ -188,11 +193,13 @@ void	CommandHandler::handlePASS() {
 	}
 	// if there is NICK and no USER:
 	else if (!user.getNickName().empty() && user.getUserName().empty()) {
-		user.responseBuffer = ERR_NEEDMOREPARAMS("USER");
+		std::string str = "USER";
+		user.responseBuffer = ERR_NEEDMOREPARAMS(str);
 	}
 	// if there is USER and no NICK:
 	else if (user.getNickName().empty() && !user.getUserName().empty()) {
-		user.responseBuffer = ERR_NEEDMOREPARAMS("NICK");
+		std::string str = "NICK";
+		user.responseBuffer = ERR_NEEDMOREPARAMS(str);
 	}
 
 /*
@@ -213,10 +220,12 @@ void	CommandHandler::handlePASS() {
 */
 }
 
+/*
+** format : /NICK <nickname>
+*/
 void	CommandHandler::handleNICK() {
 	std::cout << YELLOW << "NICK command received.." << RESET << std::endl;
 
-	// format : /NICK <nickname>
 	std::string nickname = commandsFromClient["params"];
 	trim(nickname, " \t\r");
 	
@@ -225,7 +234,7 @@ void	CommandHandler::handleNICK() {
 		user.responseBuffer = ERR_NONICKNAMEGIVEN;
 		return;
 	} // check the length and the characters
-	if (nickname.length() > 9) {
+	if (nickname.length() > 9 || nickname.length() < 1) {
 		user.responseBuffer = ERR_ERRONEUSNICKNAME(nickname);
 		return;
 	}
@@ -244,7 +253,7 @@ void	CommandHandler::handleNICK() {
 		return;
 	}
 
-	// setting nickname and updating it in all channels
+	// Once all the above passed setting nickname and updating it in all channels
 	std::string oldNick = user.getNickName();
 	user.setNickName(nickname);
 
@@ -253,8 +262,10 @@ void	CommandHandler::handleNICK() {
 		it2->second.getUser(oldNick).setNickName(nickname);
 	}
 
+	// the following part is to handle the initial registration of the user
 	// if the user is already registered
 	if (user.getStatus() == REGISTERED) {
+		user.responseBuffer = "NICK set to " + nickname + "\r\n";
 		return;
 	} // if there is no PASS:
 	else if (user.getStatus() == PASS_NEEDED) {
@@ -266,7 +277,9 @@ void	CommandHandler::handleNICK() {
 		user.setStatus(REGISTERED);
 	}
 	else if (user.getStatus() == PASS_MATCHED && user.getUserName().empty()) {
-		user.responseBuffer = ERR_NEEDMOREPARAMS("USER");
+		// std::string str = "USER";
+		// user.responseBuffer = ERR_NEEDMOREPARAMS(str);
+		user.responseBuffer = "NICK is set to " + nickname + ". Also need USER.\r\n";
 	}
 
 /*
@@ -300,8 +313,77 @@ void	CommandHandler::handleNICK() {
 */
 }
 
+/*
+** format : /USER <username> <hostname> <servername> <realname>
+*/
 void	CommandHandler::handleUSER() {
 	std::cout << YELLOW << "USER command received.." << RESET << std::endl;
+
+	// if there is no PASS:
+	if (user.getStatus() == PASS_NEEDED) {
+		user.responseBuffer = "PASS needed first\r\n";
+		return;
+	} // PASS is correct, but no NICK:
+	else if (user.getStatus() == PASS_MATCHED && user.getNickName().empty()) {
+		std::string str = "NICK";
+		user.responseBuffer = ERR_NEEDMOREPARAMS(str);
+	} // PASS is ok and NICK is set, but no USER:
+	else if (user.getStatus() == PASS_MATCHED && !user.getNickName().empty()) {
+
+		// check if thre are enough parameters return
+		std::vector<std::string> params = split(commandsFromClient["params"], " ");
+		// if (params.size() < 4) {
+		// 	user.responseBuffer = ERR_NEEDMOREPARAMS("USER");
+		// 	return;
+		// }
+		vector<string>::iterator hostnameIt = params.end();
+		vector<string>::iterator realnameIt = params.end();
+		if (params.size() >= 2)
+			hostnameIt = params.begin() + 1;
+		if (params.size() >= 4)
+			realnameIt = params.begin() + 3;
+
+		for (vector<string>::iterator it = params.begin(); it != params.end(); it++)
+		{
+			if (it == params.begin()) {
+				user.setUserName(*it);
+			}
+			if (it == hostnameIt) {
+				string hostname = "localhost";
+				user.setHostName(hostname);
+			}
+			if (it == realnameIt)
+			{
+				string realName = *it;
+				if (realName[0] == ':')
+				{
+					realName = (realName).substr(1);
+					it++;
+					for (; it != params.end(); it++)
+					{
+						realName += " ";
+						realName += (*it);
+					}
+				}
+				user.setRealName(realName);
+				// return ;
+			}
+		}
+		sendHandshake();
+		user.setStatus(REGISTERED);
+	}
+	
+	// if the user is already registered, return
+	// if (user.getStatus() == REGISTERED) {
+	// 	user.responseBuffer = ERR_ALREADYREGISTRED;
+	// 	return;
+	// }
+	// user.setUserName(params[0]);
+	// user.setHostName(params[1]);
+	// user.setRealName(params[3]);
+	// user MODE ?!
+
+/*
 
 	if (!(user.getUserName().empty()))
 	{
@@ -341,6 +423,7 @@ void	CommandHandler::handleUSER() {
 			return ;
 		}
 	}
+*/
 }
 
 void	CommandHandler::handleJOIN() {
@@ -662,7 +745,7 @@ void	CommandHandler::handlePING()
 
 void	CommandHandler::handlePART()
 {
-	std::cout << YELLOW << "PING command received.." << RESET << std::endl;
+	std::cout << YELLOW << "PART command received.." << RESET << std::endl;
 	
 	// format: /PART #channel [message]
 	std::string channelName;
@@ -689,6 +772,30 @@ void	CommandHandler::handlePART()
 	user.responseBuffer = RPL_PART(user.getPrefix(), channelName, msg);
 	server.setBroadcast(channelName, user.getNickName(), user.responseBuffer);
 	server.channelMap[channelName].removeUser(user.getNickName());
+}
+
+void	CommandHandler::handleQUIT()
+{
+	std::cout << YELLOW << "QUIT command received.." << RESET << std::endl;
+
+	// format : /QUIT [message]
+	std::string msg;
+	if (commandsFromClient["params"].empty() == false) {
+		msg = commandsFromClient["params"];
+	}
+	if (user.getStatus() == DELETED) {
+		return;
+	}
+	// if the user is in a channel, remove him from all channels
+	// broadcast the QUIT message to all users in the channels
+	std::map<std::string, Channel>::iterator it = user._channels.begin();
+	for ( ; it != user._channels.end(); ++it) {
+		user.removeChannel(it->first);
+		server.channelMap[it->first].removeUser(user.getNickName());
+		server.setBroadcast(it->first, user.getNickName(), msg);
+	}
+	// set the user status to DELETED (do not delete here..)
+	user.setStatus(DELETED);
 }
 
 void	CommandHandler::sendHandshake()
