@@ -39,7 +39,7 @@
 		// attributs publics
 		std::string						userMessageBuffer;
 		std::string						responseBuffer;
-		std::map<std::string, Channel>	_channels;
+		std::map<std::string, Channel *>_channels;
 		bool							_authenticated;
 		bool							_handshaked;
 		bool							_pinged;

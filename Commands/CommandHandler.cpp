@@ -210,9 +210,9 @@ void	CommandHandler::handleNICK() {
 	std::string oldNick = user.getNickName();
 	user.setNickName(nickname);
 
-	std::map<std::string, Channel>::iterator it2 = user._channels.begin();
+	std::map<std::string, Channel *>::iterator it2 = user._channels.begin();
 	for ( ; it2 != user._channels.end(); ++it2) {
-		it2->second.getUser(oldNick).setNickName(nickname);
+		it2->second->getUser(oldNick).setNickName(nickname);
 	}
 
 	// the following part is to handle the initial registration of the user
@@ -629,7 +629,7 @@ void	CommandHandler::handlePART()
 		user.responseBuffer = ERR_USERNOTINCHANNEL(user.getNickName(), channelName); 
 		return;
 	}
-	user._channels[channelName].removeUser(user.getNickName());
+	user._channels[channelName]->removeUser(user.getNickName());
 	user.removeChannel(channelName);
 	user.responseBuffer = RPL_PART(user.getPrefix(), channelName, msg);
 	server.setBroadcast(channelName, user.getNickName(), user.responseBuffer);
@@ -653,7 +653,7 @@ void	CommandHandler::handleQUIT()
 
 	// if the user is in a channel, remove him from all channels
 	// broadcast the QUIT message to all users in the channels
-	std::map<std::string, Channel>::iterator it = user._channels.begin();
+	std::map<std::string, Channel*>::iterator it = user._channels.begin();
 	for ( ; it != user._channels.end(); ++it) {
 		// server.channelMap[it->first].removeUser(user.getNickName());
 
