@@ -17,7 +17,6 @@ SRCS = main.cpp \
 	UserRequestParsing.cpp \
 	CommandHandler.cpp \
 	ModeHandler.cpp \
-	UserResponse.cpp \
 	Channel.cpp \
 	Request.cpp \
 	User.cpp
