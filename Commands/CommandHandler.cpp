@@ -154,37 +154,42 @@ void	CommandHandler::handleCAP() {
 }
 
 /*
-** 
+** format : /PASS <password>
 */
 void	CommandHandler::handlePASS() {
 	std::cout << YELLOW << "PASS command received.." << RESET << std::endl;
 
-	// format : /PASS <password>
+	std::string pass = commandsFromClient["params"];
 
 	// if already registered
 	if (user.getStatus() == REGISTERED) {
 		user.responseBuffer = ERR_ALREADYREGISTRED;
+		/* DEBUG */
+		std::cout << RED << "[-]" << ERR_ALREADYREGISTRED << RESET << std::endl;
 		return;
 	}
-
 	// first check is the PASS is not empty
-	if (commandsFromClient["params"].empty() == true) {
+	if (pass.empty() == true) {
 		std::string str = "PASS";
 		user.responseBuffer = ERR_NEEDMOREPARAMS(str);
+		/* DEBUG */
+		std::cout << RED << "[-] " << ERR_NEEDMOREPARAMS(str) << RESET << std::endl;
 		return;
 	}
-
-	std::string pass = commandsFromClient["params"];
-	user.setPassword(pass);
-
-	// missmatch check. At this point parced pass string shall be available
-	if (user.getPassword() != server.getPassword()) {
+	// pass missmatch check
+	if (pass != server.getPassword()) {
 		user.responseBuffer = ERR_PASSWDMISMATCH;
+		/* DEBUG */
+		std::cout << RED << "[-] " << ERR_PASSWDMISMATCH << RESET << std::endl;
 		return;
 	}
 	// if the password is correct
+	user.setPassword(pass);
 	user.setStatus(PASS_MATCHED);
-	user.responseBuffer = "PASS OK !\r\n";
+	/* DEBUG */
+	// user.responseBuffer = "PASS OK !\r\n";
+	std::cout << GREEN << "[+] PASS OK !" << RESET << std::endl;
+	/* ***** */
 
 	// if ther is NICK and USER set:
 	if (!user.getNickName().empty() && !user.getUserName().empty()) {
@@ -201,23 +206,6 @@ void	CommandHandler::handlePASS() {
 		std::string str = "NICK";
 		user.responseBuffer = ERR_NEEDMOREPARAMS(str);
 	}
-
-/*
-	if (user.getPassword() == server.getPassword())
-	{
-		server.setBroadcast(ERR_ALREADYREGISTRED, user.getSocket());
-		return ;
-	}
-	if (commandsFromClient.find("params") == commandsFromClient.end())
-	{
-		std::string pass = "PASS";
-		server.setBroadcast(ERR_NEEDMOREPARAMS(pass), user.getSocket());
-		return;
-	}
-	user.setPassword(commandsFromClient["params"]);
-	if (user.getPassword() != server.getPassword())
-		server.setBroadcast(ERR_PASSWDMISMATCH, user.getSocket());
-*/
 }
 
 /*
@@ -232,10 +220,16 @@ void	CommandHandler::handleNICK() {
 	// first check if NICK is valid
 	if (nickname.empty()) {
 		user.responseBuffer = ERR_NONICKNAMEGIVEN;
+		/* DEBUG */
+		std::cout << RED << "[-] " << ERR_NONICKNAMEGIVEN << RESET << std::endl;
+
 		return;
 	} // check the length and the characters
 	if (nickname.length() > 9 || nickname.length() < 1) {
 		user.responseBuffer = ERR_ERRONEUSNICKNAME(nickname);
+		/* DEBUG */
+		std::cout << RED << "[-] " << ERR_ERRONEUSNICKNAME(nickname) << RESET << std::endl;
+
 		return;
 	}
 	// check forbidden characters
@@ -243,6 +237,9 @@ void	CommandHandler::handleNICK() {
 	for(it = nickname.begin(); it != nickname.end(); ++it) {
 		if (std::isalnum(*it) == false) {
 			user.responseBuffer = ERR_ERRONEUSNICKNAME(nickname);
+			/* DEBUG */
+			std::cout << RED << "[-] " << ERR_ERRONEUSNICKNAME(nickname) << RESET << std::endl;
+
 			return;
 		}
 	}
@@ -263,54 +260,28 @@ void	CommandHandler::handleNICK() {
 	}
 
 	// the following part is to handle the initial registration of the user
-	// if the user is already registered
+	// if the user is already registered return
 	if (user.getStatus() == REGISTERED) {
 		user.responseBuffer = "NICK set to " + nickname + "\r\n";
 		return;
 	} // if there is no PASS:
 	else if (user.getStatus() == PASS_NEEDED) {
+		user.setNickName("");
+		/* DEBUG */
 		user.responseBuffer = "PASS needed first\r\n";
+		std::cout << RED << "[-] PASS needed first" << RESET << std::endl;
+
 		return;
 	}
 	else if (user.getStatus() == PASS_MATCHED && !user.getUserName().empty()) {
 		sendHandshake();
 		user.setStatus(REGISTERED);
 	}
-	else if (user.getStatus() == PASS_MATCHED && user.getUserName().empty()) {
-		// std::string str = "USER";
-		// user.responseBuffer = ERR_NEEDMOREPARAMS(str);
-		user.responseBuffer = "NICK is set to " + nickname + ". Also need USER.\r\n";
-	}
-
-/*
-	std::string nickname = commandsFromClient["params"];
-	trim(nickname, " \t\r");
-	// parsing nickname;
-	if (nickname.length() > 9)
-	{
-		user.responseBuffer = ERR_ERRONEUSNICKNAME(nickname);
-		return; 
-	}
-	string::const_iterator it;
-	for(it = nickname.begin() ; it != nickname.end(); ++it)
-	{
-		if (std::isalnum(*it) == false)
-		{
-			user.responseBuffer = ERR_ERRONEUSNICKNAME(nickname);
-			return;
-		}
-	}
-	if (server.getFdbyNickName(nickname) != -1)
-	{
-		user.responseBuffer = ERR_NICKNAMEINUSE(nickname);
-		return; 
-	}
-	std::map<std::string, Channel>::iterator it2 = user._channels.begin();
-	for( ; it2 != user._channels.end(); ++it2)
-		it2->second.getUser(user.getNickName()).setNickName(nickname);
-	server.usersMap.find(server.getFdbyNickName(nickname))->second.setNickName(nickname);
-	user.setNickName(nickname);
-*/
+	// else if (user.getStatus() == PASS_MATCHED && user.getUserName().empty()) {
+	// 	// std::string str = "USER";
+	// 	// user.responseBuffer = ERR_NEEDMOREPARAMS(str);
+	// 	// user.responseBuffer = "NICK is set to " + nickname + ". Also need USER.\r\n";
+	// }
 }
 
 /*
@@ -321,109 +292,44 @@ void	CommandHandler::handleUSER() {
 
 	// if there is no PASS:
 	if (user.getStatus() == PASS_NEEDED) {
+		/* DEBUG */
 		user.responseBuffer = "PASS needed first\r\n";
+		std::cout << RED << "[-] PASS needed first" << RESET << std::endl;
+
 		return;
 	} // PASS is correct, but no NICK:
 	else if (user.getStatus() == PASS_MATCHED && user.getNickName().empty()) {
 		std::string str = "NICK";
-		user.responseBuffer = ERR_NEEDMOREPARAMS(str);
+		/* DEBUG */
+		// user.responseBuffer = ERR_NEEDMOREPARAMS(str);
+		std::cout << RED << "[-] " << ERR_NEEDMOREPARAMS(str) << RESET << std::endl;
 	} // PASS is ok and NICK is set, but no USER:
 	else if (user.getStatus() == PASS_MATCHED && !user.getNickName().empty()) {
 
-		// check if thre are enough parameters return
 		std::vector<std::string> params = split(commandsFromClient["params"], " ");
-		// if (params.size() < 4) {
-		// 	user.responseBuffer = ERR_NEEDMOREPARAMS("USER");
-		// 	return;
-		// }
-		vector<string>::iterator hostnameIt = params.end();
-		vector<string>::iterator realnameIt = params.end();
-		if (params.size() >= 2)
-			hostnameIt = params.begin() + 1;
-		if (params.size() >= 4)
-			realnameIt = params.begin() + 3;
 
-		for (vector<string>::iterator it = params.begin(); it != params.end(); it++)
-		{
-			if (it == params.begin()) {
-				user.setUserName(*it);
-			}
-			if (it == hostnameIt) {
-				string hostname = "localhost";
-				user.setHostName(hostname);
-			}
-			if (it == realnameIt)
-			{
-				string realName = *it;
-				if (realName[0] == ':')
-				{
-					realName = (realName).substr(1);
-					it++;
-					for (; it != params.end(); it++)
-					{
-						realName += " ";
-						realName += (*it);
-					}
-				}
-				user.setRealName(realName);
-				// return ;
-			}
+		// check if there are not enough parameters return
+		if (!(params.size() == 1 || params.size() >= 4)) {
+			std::string str = "USER";
+			user.responseBuffer = ERR_NEEDMOREPARAMS(str);
+			/* DEBUG */
+			std::cout << RED << "[-] " << ERR_NEEDMOREPARAMS(str) << RESET << std::endl;
+			/* ***** */
+			return;
+		}
+		if (params.size() == 1) {
+			user.setUserName(params[0]);
+			user.setHostName("localhost");
+			user.setRealName("localhost");
+		}
+		else if (params.size() >= 4) {
+			user.setUserName(params[0]);
+			user.setHostName(params[1]);
+			user.setRealName(params[3]);
 		}
 		sendHandshake();
 		user.setStatus(REGISTERED);
 	}
-	
-	// if the user is already registered, return
-	// if (user.getStatus() == REGISTERED) {
-	// 	user.responseBuffer = ERR_ALREADYREGISTRED;
-	// 	return;
-	// }
-	// user.setUserName(params[0]);
-	// user.setHostName(params[1]);
-	// user.setRealName(params[3]);
-	// user MODE ?!
-
-/*
-
-	if (!(user.getUserName().empty()))
-	{
-		user.responseBuffer = ERR_ALREADYREGISTRED;
-		return ;
-	}
-	std::vector<std::string> params = split(commandsFromClient["params"], " ");
-	vector<string>::iterator hostnameIt = params.end();
-	vector<string>::iterator realnameIt = params.end();
-	if (params.size() >= 2)
-		hostnameIt = params.begin() + 1;
-	if (params.size() >= 4)
-		realnameIt = params.begin() + 3;
-	for (vector<string>::iterator it = params.begin(); it != params.end(); it++)
-	{
-		if (it == params.begin()) {
-			user.setUserName(*it);
-		}
-		if (it == hostnameIt) {
-			string hostname = "localhost";
-			user.setHostName(hostname);
-		}
-		if (it == realnameIt)
-		{
-			string realName = *it;
-			if (realName[0] == ':')
-			{
-				realName = (realName).substr(1);
-				it++;
-				for (; it != params.end(); it++)
-				{
-					realName += " ";
-					realName += (*it);
-				}
-			}
-			user.setRealName(realName);
-			return ;
-		}
-	}
-*/
 }
 
 void	CommandHandler::handleJOIN() {
