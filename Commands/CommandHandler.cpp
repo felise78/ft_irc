@@ -46,16 +46,8 @@ CommandHandler::CommandHandler(ServerManager& srv, User &usr, map<string, string
 	cmdToHandler["QUIT"] = &CommandHandler::handleQUIT;
 	// .. and so on
 
-	// executeCommand();
+	executeCommand();
 
-	if (user.authenticated()) {
-		// process the commands directly
-		executeCommand();
-	}
-	else {
-		// if user is not authenticated, we search for the PASS, NICK and USER commands first
-		authenticateUser();
-	}
 }
 
 CommandHandler::~CommandHandler() {
@@ -84,42 +76,6 @@ const std::string	CommandHandler::parse_channelName(std::string& channelName)
 			return "";
 	}
 	return channelName;
-}
-
-/*
-** SUGGEST TO CHANGE THIS LOGIC !!!!
-**
-** PASS handling, missmatch, etc. TO DO IN `handlePASS`
-*/
-void	CommandHandler::authenticateUser() {
-
-	// if user is not authenticated, we search for the PASS, NICK and USER commands first
-	// if (commandsFromClient["command"] == "CAP") {
-	// 	handleCAP(); // this one might not be needed
-	// }
-	// if (commandsFromClient.find("NICK") != commandsFromClient.end()) {
-	if (commandsFromClient["command"] == "NICK") {
-		handleNICK();
-	}
-	// if (commandsFromClient.find("PASS") != commandsFromClient.end()) {
-	if (commandsFromClient["command"] == "PASS") {
-		handlePASS();
-	}
-	// if (commandsFromClient.find("USER") != commandsFromClient.end()) {
-	if (commandsFromClient["command"] == "USER") {
-		handleUSER();
-	}
-	// setting authenticated to true if the user has sent NICK, USER and PASS
-	// NEED to add the PASS check as well !!!
-	if (!user.getNickName().empty() && !user.getUserName().empty() && user.getPassword() == server.getPassword()) {
-		user.setAuthenticated(true);
-		sendHandshake();
-		// Identifying if te user is a BOT ?!
-		if (user.getNickName() == "NeoBot") { // (or any other condition/name to identify the bot)
-			std::cout << CYAN << ".. this user is a BOT.. aha !!!" << std::endl;
-			user.setAsBot();
-		}
-	}
 }
 
 void	CommandHandler::executeCommand() {
@@ -196,7 +152,7 @@ void	CommandHandler::handlePASS() {
 
 	// if ther is NICK and USER set:
 	if (!user.getNickName().empty() && !user.getUserName().empty()) {
-		sendHandshake();
+		// sendHandshake();
 		user.setStatus(REGISTERED);
 	}
 	// if there is NICK and no USER:
@@ -263,9 +219,9 @@ void	CommandHandler::handleNICK() {
 	std::string oldNick = user.getNickName();
 	user.setNickName(nickname);
 
-	std::map<std::string, Channel>::iterator it2 = user._channels.begin();
+	std::map<std::string, Channel *>::iterator it2 = user._channels.begin();
 	for ( ; it2 != user._channels.end(); ++it2) {
-		it2->second.getUser(oldNick).setNickName(nickname);
+		it2->second->getUser(oldNick).setNickName(nickname);
 	}
 
 	// the following part is to handle the initial registration of the user
@@ -283,7 +239,7 @@ void	CommandHandler::handleNICK() {
 		return;
 	}
 	else if (user.getStatus() == PASS_MATCHED && !user.getUserName().empty()) {
-		sendHandshake();
+		// sendHandshake();
 		user.setStatus(REGISTERED);
 	}
 	// else if (user.getStatus() == PASS_MATCHED && user.getUserName().empty()) {
@@ -732,7 +688,7 @@ void	CommandHandler::handlePART()
 		// user.responseBuffer = ERR_USERNOTINCHANNEL(user.getNickName(), channelName); 
 		return;
 	}
-	user._channels[channelName].removeUser(user.getNickName());
+	user._channels[channelName]->removeUser(user.getNickName());
 	user.removeChannel(channelName);
 	server.setBroadcast(RPL_PART(user.getPrefix(), channelName, msg), user.getSocket());
 	// user.responseBuffer = RPL_PART(user.getPrefix(), channelName, msg);
@@ -752,16 +708,19 @@ void	CommandHandler::handleQUIT()
 	if (user.getStatus() == DELETED) {
 		return;
 	}
-	// if the user is in a channel, remove him from all channels
-	// broadcast the QUIT message to all users in the channels
-	std::map<std::string, Channel>::const_iterator it = user._channels.begin();
-	for ( ; it != user._channels.end(); ++it) {
-		user.removeChannel(it->first);
-		server.channelMap[it->first].removeUser(user.getNickName());
-		server.setBroadcast(it->first, user.getNickName(), msg);
-	}
 	// set the user status to DELETED (do not delete here..)
 	user.setStatus(DELETED);
+
+	// if the user is in a channel, remove him from all channels
+	// broadcast the QUIT message to all users in the channels
+	std::map<std::string, Channel*>::iterator it = user._channels.begin();
+	for ( ; it != user._channels.end(); ++it) {
+		// server.channelMap[it->first].removeUser(user.getNickName());
+
+		server.setBroadcast(it->first, user.getNickName(), msg);
+
+		// user.removeChannel(it->first); // this SEGFAULTS
+	}
 }
 
 void	CommandHandler::sendHandshake()

@@ -38,7 +38,10 @@ void	Channel::setKey(const std::string & key)
 
 void	Channel::setUser(User& user)
 {
-	_users[user.getNickName()] = user;
+	/* DEBUG */
+	_users[user.getNickName()] = &user;
+	/* ***** */
+	// _users[user.getNickName()] = user;
 	user.setChannel(*this);
 	_nb++;
 }
@@ -102,7 +105,8 @@ const std::string&	Channel::getKey( void ) const
 
 User& Channel::getUser( const std::string & nickname )
 {
-	return _users.at(nickname);
+	// return _users.at(nickname);
+	return *_users.at(nickname);
 }
 
 const std::string& Channel::getOp( const std::string & nickname ) const
@@ -163,7 +167,8 @@ bool	Channel::isOp(const std::string& nickname)
 
 void	Channel::removeUser(const std::string& nickname)
 {
-	std::map<std::string, User>::iterator it;
+	// std::map<std::string, User>::iterator it;
+	std::map<std::string, User* >::iterator it;
 	it = _users.find(nickname);
     if (it != _users.end())
 	{
@@ -208,11 +213,13 @@ void	Channel::removeLimit()
 
 void Channel::printUsers( void) const
 {
-	std::map<std::string, User>::const_iterator it;
+	// std::map<std::string, User>::const_iterator it;
+	std::map<std::string, User* >::const_iterator it;
 
     std::cout << "Users in this channel:" << std::endl;
     for ( it = _users.begin(); it != _users.end(); ++it)
-        std::cout << it->second.getNickName() << std::endl;
+        std::cout << it->second->getNickName() << std::endl;
+        // std::cout << it->second.getNickName() << std::endl;
 }
 
 void Channel::printOps( void) const

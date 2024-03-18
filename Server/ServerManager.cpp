@@ -372,12 +372,18 @@ int ServerManager::getFdbyNickName( const std::string& nickname ) const
 */
 void	ServerManager::setBroadcast(std::string channelName, std::string sender_nick, std::string msg) {
 
-	std::map<string, User>::iterator it;
+	std::map<string, User* >::iterator it = channelMap[channelName]._users.begin();
 
-	for (it = channelMap[channelName]._users.begin(); it != channelMap[channelName]._users.end(); it++) {
+	/* DEBUG */
+	// std::cout << RED << "\t[-] sender_nick: " << sender_nick << RESET << std::endl;
+	/* ***** */
 
-		if (it->second.getNickName() != sender_nick)
-			setBroadcast(msg, it->second.getSocket());
+	for ( ; it != channelMap[channelName]._users.end(); it++) {
+	/* DEBUG */
+	// std::cout << RED << "\t[-] it->second.getNickName(): [" << it->second->getNickName() << "] vs [" << sender_nick << "] sender_nick" << RESET << std::endl;
+	/* ***** */
+		if (it->second->getNickName() != sender_nick)
+			setBroadcast(msg, it->second->getSocket());
 	}
 }
 
@@ -391,7 +397,9 @@ void	ServerManager::setBroadcast(std::string msg, int fd) {
 		return ;
 	// THE MESSAGE `msg` TO BE SENT MUST BE ALREADY PROPERLY FORMATTED..
 	// it->second.responseBuffer = it->second.getPrefix() + " PRIVMSG " + it->second.getChannel() + " :" + msg + "\r\n";
-	it->second.responseBuffer += msg;
+	if (it != usersMap.end()) {
+		it->second.responseBuffer += msg;
+	}
 
 	_removeFromSet(fd, &_recv_fd_pool);
 	_addToSet(fd, &_send_fd_pool);
