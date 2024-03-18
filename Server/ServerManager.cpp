@@ -48,11 +48,11 @@ void	ServerManager::_run() {
 
 				_accept(fd);
 			}
-			if (FD_ISSET(fd, &recv_fd_pool_copy) && isClient(fd)) {
+			else if (FD_ISSET(fd, &recv_fd_pool_copy) && isClient(fd)) {
 
 				_handle(fd);
 			}
-			if (FD_ISSET(fd, &send_fd_pool_copy)) {
+			else if (FD_ISSET(fd, &send_fd_pool_copy)) {
 
 				_respond(fd);
 			}
@@ -159,16 +159,16 @@ void	ServerManager::_handle(int fd) {
 	// this way one string in this vector is a command with its parameters
 	// The COMMANDS handled in CommandHandler so we just need to check if 
 	// the passed string is a valid command (exist in cmdToHandler map in CommandHandler)
-	for (vector<string>::iterator it = splitMessageBuffer.begin(); it != splitMessageBuffer.end(); it++) {
+	for (size_t i = 0; i < splitMessageBuffer.size(); i++) {
 
-		std::cout << MAGENTA << *it << RESET << std::endl;
-		Request	userRequest(*this, *it);
+		std::cout << MAGENTA << splitMessageBuffer[i] << RESET << std::endl;
+		Request	userRequest(*this, splitMessageBuffer[i]);
 		map<string, string> input_map = userRequest.getRequestMap();
 		CommandHandler cmdHandler(*this, user, input_map);
 	}
 
-	_removeFromSet(fd, &_recv_fd_pool);
-	_addToSet(fd, &_send_fd_pool);
+	// _removeFromSet(fd, &_recv_fd_pool);
+	// _addToSet(fd, &_send_fd_pool);
 }
 
 /*
@@ -227,6 +227,7 @@ void	ServerManager::_fcntl() {
 
 	fcntl_ret = fcntl(_serverFd, F_SETFL, O_NONBLOCK);
 	checkErrorAndExit(fcntl_ret, "fcntl() failed. Exiting..");
+
 
 	_addToSet(_serverFd, &_recv_fd_pool);
 }
@@ -386,12 +387,14 @@ void	ServerManager::setBroadcast(std::string channelName, std::string sender_nic
 void	ServerManager::setBroadcast(std::string msg, int fd) {
 
 	std::map<int, User>::iterator it = usersMap.find(fd);
-
+	if (it == usersMap.end())
+		return ;
 	// THE MESSAGE `msg` TO BE SENT MUST BE ALREADY PROPERLY FORMATTED..
 	// it->second.responseBuffer = it->second.getPrefix() + " PRIVMSG " + it->second.getChannel() + " :" + msg + "\r\n";
 	it->second.responseBuffer += msg;
 
-	// _addToSet(fd, &_send_fd_pool);
+	_removeFromSet(fd, &_recv_fd_pool);
+	_addToSet(fd, &_send_fd_pool);
 }
 
 /*
