@@ -31,7 +31,7 @@
 			Channel(const std::string& name);
 			~Channel();
 			//ServerManager&			server;
-			std::map<std::string, User> 	_users;
+			std::map<std::string, User * > 	_users;
 			std::vector<std::string>		_ops;
 			// setters 
 			void	setName(const std::string & name);

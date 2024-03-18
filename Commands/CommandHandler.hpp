@@ -68,7 +68,6 @@ class CommandHandler {
 		// This method will return enum representation of the string command..
 		e_cmd				getCMD(const std::string & str); // enum requestCMD
 
-		void				authenticateUser();
 		void				executeCommand();
 
 		// COMMAND HANDLERS
