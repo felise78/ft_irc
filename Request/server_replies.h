@@ -31,12 +31,13 @@
 #define RPL_KICK(user_id, channel, kicked, reason) (user_id + " KICK " + channel + " " + kicked + " " + reason + "\r\n")
 
 /*INVITE COMMAND*/
-#define RPL_INVITING(channel, nick) (":localhost 341 " + channel + " " + nick + "\r\n")
+#define RPL_INVITE(user, invited, channel) (user + " INVITE " + invited + " " + channel + "\r\n")
+#define RPL_INVITING(user, channel, nick) (":localhost 341 " + user + " " + nick + " " + channel + "\r\n")
 #define ERR_USERONCHANNEL(user, channel) (":localhost 442 " + user + " " + channel + " :is already on channel\r\n")
 
 /* TOPIC COMMAND: */
 #define RPL_NOTOPIC(channel) (":localhost 331 " + channel + " :No topic is set\r\n")
-#define RPL_TOPIC(channel, topic) (":localhost 332 " + channel + " :" + topic + "\r\n")
+#define RPL_TOPIC(nick, channel, topic) (":localhost 332 " + nick + " " + channel + " " + topic + "\r\n")
 #define ERR_NOCHANMODES(channel) (":localhost 477 " + channel + " :Channel doesn't support modes\r\n")
 
 /*MODE COMMAND*/
@@ -61,5 +62,6 @@
 
 /*OPERATOR REPLY*/
 # define RPL_YOUREOPER(nick) (":localhost 381 " + nick + " :You are now an IRC operator\r\n")
+# define MODE_USERMSG(client, mode) (":" + client + " MODE " + client + " :" + mode + "\r\n")
 
 #endif

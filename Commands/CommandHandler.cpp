@@ -309,17 +309,14 @@ void	CommandHandler::handleJOIN() {
 		;
 	else
 	{
-		if (!params.empty()) {
+		if (!params.empty())
 			server.setBroadcast(ERR_TOOMANYTARGETS(*(params.end() - 1)), user.getSocket());
-			// user.responseBuffer = ERR_TOOMANYTARGETS(*(params.end() - 1));
-		}
 		return;
 	}
 	std::string channelName = parse_channelName(*params.begin());
 	if (channelName.empty() == true)
 	{
 		server.setBroadcast(ERR_NOSUCHCHANNEL(channelName), user.getSocket());
-		// user.responseBuffer = ERR_NOSUCHCHANNEL(channelName);
 		return; 
 	}
 	// check if the channel doesn't exist, creates it
@@ -333,14 +330,7 @@ void	CommandHandler::handleJOIN() {
 			new_channel.setKey(*(params.begin() + 1));
 		server.setChannel(new_channel);
 		user.setChannel(new_channel);
-		// user.responseBuffer = user.getPrefix() + " JOIN " + channelName + "\r\n";
-		// std::string reply = user.getPrefix() + user.userMessageBuffer;
-		// std::string topic = server.channelMap[channelName].getTheme();
-		// if (topic.empty())
-		// 	reply += RPL_NOTOPIC(channelName);
-		// else
-		// 	reply += RPL_TOPIC(channelName, topic);
-		// server.setBroadcast(reply, user.getSocket());
+		server.setBroadcast(MODE_USERMSG(user.getNickName(), "+o"), user.getSocket());
 	}
 	// if channel already exists
 	else
@@ -348,7 +338,6 @@ void	CommandHandler::handleJOIN() {
 		if (server.channelMap[channelName].getInvit() == true)
 		{
 			server.setBroadcast(ERR_INVITEONLYCHAN(channelName), user.getSocket());
-			// user.responseBuffer = ERR_INVITEONLYCHAN(channelName);
 			return; 
 		}
 		if (server.channelMap[channelName].getProtected() == true)
@@ -356,7 +345,6 @@ void	CommandHandler::handleJOIN() {
 			if (server.channelMap[channelName].getKey() != *(params.begin() + 1))
 			{
 				server.setBroadcast(ERR_BADCHANNELKEY(channelName), user.getSocket());
-				// user.responseBuffer = ERR_BADCHANNELKEY(channelName);
 				return;
 			}
 		}
@@ -367,30 +355,28 @@ void	CommandHandler::handleJOIN() {
 				if (server.channelMap[channelName].getNb() == server.channelMap[channelName].getLimit())
 				{
 					server.setBroadcast(ERR_CHANNELISFULL(channelName), user.getSocket());
-					// user.responseBuffer = ERR_CHANNELISFULL(channelName);
 					return; 
 				}
 			}
 			// add the user
 			user.setChannel(server.getChannel(channelName));
 			server.channelMap[channelName].setUser(user);
-			// user.responseBuffer = user.getPrefix() + " JOIN " + channelName + "\r\n";
 		}
 		else
 		{
 			std::string nickName = user.getNickName();
 			server.setBroadcast(ERR_USERONCHANNEL(nickName, channelName), user.getSocket());
-			// user.responseBuffer = ERR_USERONCHANNEL(nickName, channelName);
 			return ; 
 		}
 	}
+	// send response to client
 	std::string reply = user.getPrefix() + " " + user.userMessageBuffer;
 	server.setBroadcast(channelName, user.getNickName(), reply);
 	std::string topic = server.channelMap[channelName].getTheme();
 	if (topic.empty())
 		reply += RPL_NOTOPIC(channelName);
 	else
-		reply += RPL_TOPIC(channelName, topic);
+		reply += RPL_TOPIC(user.getNickName(), channelName, topic);
 	server.setBroadcast(reply, user.getSocket());
 }
 
@@ -404,16 +390,14 @@ void	CommandHandler::handlePRIVMSG() {
 	if (i == std::string::npos)
 	{
 		server.setBroadcast(ERR_NOTEXTTOSEND, user.getSocket());
-		// user.responseBuffer = ERR_NOTEXTTOSEND;
 		return;
 	}
 	std::string msgtarget = commandsFromClient["params"].substr(0, i - 1);
-	std::string msg = commandsFromClient["params"].substr(i + 1);
+	std::string msg = ":" + commandsFromClient["params"].substr(i + 1);
 	std::string reply;
 	if (msgtarget.find(' ') != std::string::npos)
 	{
 		server.setBroadcast(ERR_NOSUCHNICK(msgtarget), user.getSocket());
-		// user.responseBuffer = ERR_NOSUCHNICK(msgtarget);
 		return;
 	}
 	// <msgtarget> is a Channel : 
@@ -422,17 +406,15 @@ void	CommandHandler::handlePRIVMSG() {
 		if (server.channelMap.find(msgtarget) == server.channelMap.end())
 		{
 			server.setBroadcast(ERR_NOSUCHCHANNEL(msgtarget), user.getSocket());
-			// user.responseBuffer = ERR_NOSUCHCHANNEL(msgtarget);
 			return;
 		}
 		if (server.channelMap[msgtarget]._users.find(user.getNickName()) == server.channelMap[msgtarget]._users.end())
 		{
 			server.setBroadcast(ERR_USERNOTINCHANNEL(user.getNickName(), msgtarget), user.getSocket());
-			// user.responseBuffer = ERR_USERNOTINCHANNEL(user.getNickName(), msgtarget);
 			return;
 		}
 		reply = RPL_PRIVMSG(user.getPrefix(), msgtarget, msg);
-		server.setBroadcast(msgtarget, user.getNickName(), reply); // this will add all users fds to the `send_fd_pool` and send the message to all users in the channel
+		server.setBroadcast(msgtarget, user.getNickName(), reply);
 	}
 	else  // <msgtarget> is a nickname
 	{
@@ -440,19 +422,11 @@ void	CommandHandler::handlePRIVMSG() {
 		if(nick_fd == -1)
 		{
 			server.setBroadcast(ERR_NOSUCHNICK(msgtarget), user.getSocket());
-			// user.responseBuffer = ERR_NOSUCHNICK(msgtarget);
 			return;
 		}
-		// ! \\ handle envoi du message 
-		// server.usersMap[nick_fd].userMessageBuffer = msg;
-		// ! \\ handle envoi du message
 		reply = RPL_PRIVMSG(user.getPrefix(), msgtarget, msg);
-		server.setBroadcast(reply, nick_fd); // this will add the fd to the send_fd_pool and send the message to the user
+		server.setBroadcast(reply, nick_fd);
 	}
-	//NEW from Pia 18/03 17:00 
-	// std::string replySender;
-	// replySender = user.getPrefix() + user.userMessageBuffer;
-	// server.setBroadcast(replySender, user.getSocket());
 }
 
  void	CommandHandler::handleINVITE() {
@@ -465,24 +439,21 @@ void	CommandHandler::handlePRIVMSG() {
 	if (params.begin() + 2 != params.end())
 	{
 		server.setBroadcast(ERR_TOOMANYTARGETS(*(params.end() - 1)), user.getSocket());
-		// user.responseBuffer = ERR_TOOMANYTARGETS(*(params.end() - 1));
 		return;
 	}
 	int nick_fd = server.getFdbyNickName(*params.begin());
 	if(nick_fd == -1)
 	{
 		server.setBroadcast(ERR_NOSUCHNICK(*params.begin()), user.getSocket());
-		// user.responseBuffer = ERR_NOSUCHNICK(*params.begin());
 		return;
 	}
 	std::string channelName = parse_channelName(*(params.begin() + 1));
 	if (channelName.empty() == true)
 	{
 		server.setBroadcast(ERR_NOSUCHCHANNEL(channelName), user.getSocket());
-		// user.responseBuffer = ERR_NOSUCHCHANNEL(channelName);
 		return; 
 	}
-	// creates the channelName if it doesn't exists
+	// creates the channel if it does not exists
 	if(server.channelMap.find(channelName) == server.channelMap.end())
 	{
 		Channel new_channel(channelName);
@@ -493,12 +464,12 @@ void	CommandHandler::handlePRIVMSG() {
 		server.usersMap[nick_fd].setChannel(new_channel);
 		user.setChannel(new_channel);
 	}
-	else // channel already exists
+	// if channel already exists
+	else 
 	{
 		if (user._channels.find(channelName) == user._channels.end())
 		{
 			server.setBroadcast(ERR_USERNOTINCHANNEL(user.getNickName(), channelName), user.getSocket());
-			// user.responseBuffer = ERR_USERNOTINCHANNEL(user.getNickName(), channelName);
 			return;
 		}
 		if (server.channelMap[channelName].getLimited() == true)
@@ -506,19 +477,19 @@ void	CommandHandler::handlePRIVMSG() {
 			if (server.channelMap[channelName].getNb() == server.channelMap[channelName].getLimit())
 			{
 				server.setBroadcast(ERR_CHANNELISFULL(channelName), user.getSocket());
-				// user.responseBuffer = ERR_CHANNELISFULL(channelName);
 				return; 
 			}
 		}
 		if (server.channelMap[channelName]._users.find(*params.begin()) != server.channelMap[channelName]._users.end())
 		{
 			server.setBroadcast(ERR_USERONCHANNEL(*params.begin(), channelName), user.getSocket());
-			// user.responseBuffer = ERR_USERONCHANNEL(*params.begin(), channelName);
 			return ; 
 		}
 		server.usersMap[nick_fd].setChannel(server.getChannel(channelName));
 		server.channelMap[channelName].setUser(server.usersMap[nick_fd]);
 	}
+	server.setBroadcast(RPL_INVITING(user.getNickName(), channelName, *params.begin()), user.getSocket());
+	server.setBroadcast(RPL_INVITE(user.getNickName(), *params.begin(), channelName), server.getFdbyNickName(*params.begin()));
 }
 
 void	CommandHandler::handleTOPIC()	{
@@ -529,46 +500,45 @@ std::cout << YELLOW << "TOPIC command received.." << RESET << std::endl;
 
 	size_t i = commandsFromClient["params"].find_first_of(' ');
 	std::string channelName = commandsFromClient["params"].substr(0, i);
+	// if the channel does not exist
 	if (server.channelMap.find(channelName) == server.channelMap.end())
 	{
 		server.setBroadcast(ERR_NOSUCHCHANNEL(channelName), user.getSocket());
-		// user.responseBuffer = ERR_NOSUCHCHANNEL(channelName);
 		return;
 	}
+	// if the user is not on the channel
 	if (server.channelMap[channelName]._users.find(user.getNickName()) == server.channelMap[channelName]._users.end())
 	{
 		server.setBroadcast(ERR_USERNOTINCHANNEL(user.getNickName(), channelName), user.getSocket());
-		// user.responseBuffer = ERR_USERNOTINCHANNEL(user.getNickName(), channelName);
 		return;
 	}
+	// if the user just wants to print the topic
 	if (i == std::string::npos)
 	{
-		if (server.channelMap[channelName].getTheme().empty() == true){
+		if (server.channelMap[channelName].getTheme().empty() == true)
 			server.setBroadcast(RPL_NOTOPIC(channelName), user.getSocket());
-			// user.responseBuffer = RPL_NOTOPIC(channelName);
-		}
-		else {
-			server.setBroadcast(RPL_TOPIC(channelName, server.channelMap[channelName].getTheme()), user.getSocket());
-			// user.responseBuffer = RPL_TOPIC(channelName, server.channelMap[channelName].getTheme());
-		}
+		else 
+			server.setBroadcast(RPL_TOPIC(user.getNickName(), channelName, server.channelMap[channelName].getTheme()), user.getSocket());
 		return;
 	}
-	else 	// si il y a un 2e param apr le channel
+	// if the user wants to change the topic
+	else
 	{
 		std::string topic = commandsFromClient["params"].substr(i + 1);
+		
 		if (server.channelMap[channelName].getTopicRestricted() == true)
 		{
 			if(server.channelMap[channelName].isOp(user.getNickName()) == false)
 			{
 				server.setBroadcast(ERR_CHANOPRIVSNEEDED(channelName), user.getSocket());
-				// user.responseBuffer = ERR_CHANOPRIVSNEEDED(channelName);
 				return;
 			}
 		}
 		if (topic.empty())
 			server.channelMap[channelName].removeTopic();
-		// et pour le cas ou topic est une string d'espaces ?
-		server.channelMap[channelName].setTheme(topic);  
+		server.channelMap[channelName].setTheme(topic);
+		server.setBroadcast(RPL_TOPIC(user.getNickName(), channelName, topic), user.getSocket());
+		server.setBroadcast(channelName, user.getNickName(), RPL_TOPIC(user.getNickName(), channelName, topic));
 	}
 }
 
