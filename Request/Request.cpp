@@ -39,11 +39,11 @@ void	Request::parse_args()
 		_input_map.insert(std::make_pair("command", _input_buffer));
 	
 	check_command_valid(_input_map["command"]);
-	if (_input_map.find("params") == _input_map.end() || _input_map["params"].empty())
-	{
-		//user.responseBuffer = ERR_NEEDMOREPARAMS(_input_map["command"]); /// pas de user dans Request
-		return;
-	}
+	// if (_input_map.find("params") == _input_map.end() || _input_map["params"].empty())
+	// {
+	// 	//user.responseBuffer = ERR_NEEDMOREPARAMS(_input_map["command"]); /// pas de user dans Request
+	// 	return;
+	// }
 }
 
 /* UTILS */
