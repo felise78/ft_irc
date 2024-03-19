@@ -612,11 +612,7 @@ void	CommandHandler::handleMODE()
 {
 	std::cout << YELLOW << "MODE command received.." << RESET << std::endl;
 
-	try {
-		ModeHandler	mode_handler(commandsFromClient, server, user);
-	}
-	catch (std::exception &e) {
-	}
+	ModeHandler	mode_handler(commandsFromClient, server, user);
 }
 
 void	CommandHandler::handlePING()
