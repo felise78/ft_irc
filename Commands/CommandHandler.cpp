@@ -86,6 +86,8 @@ void	CommandHandler::executeCommand() {
 	/* DEBUG */
 	std::cout << YELLOW << "Executing command: " << RESET << "[" << cmdStr << "]" << std::endl;
 	/* ***** */
+	e_cmd num = getCMD(cmdStr);
+	cmdStr = mapEnumToString[num];
 
 	// The synax is important here !! (`cmdToHandler[cmdStr]()` - won't work)
 	// first we get the pointer to the handler method and then we call it on `this` object
@@ -99,8 +101,6 @@ void	CommandHandler::executeCommand() {
 void	CommandHandler::handleNONE() {
 	// do nothing or/and print error message
 	std::cout << RED << "[-] command not found.." << RESET << std::endl;
-	if (commandsFromClient.find("command") == commandsFromClient.end())
-		return ;
 	server.setBroadcast(ERR_UNKNOWNCOMMAND(commandsFromClient["command"]), user.getSocket());
 }
 
