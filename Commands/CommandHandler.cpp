@@ -334,13 +334,13 @@ void	CommandHandler::handleJOIN() {
 		server.setChannel(new_channel);
 		user.setChannel(new_channel);
 		// user.responseBuffer = user.getPrefix() + " JOIN " + channelName + "\r\n";
-		std::string reply = user.getPrefix() + user.userMessageBuffer;
-		std::string topic = server.channelMap[channelName].getTheme();
-		if (topic.empty())
-			reply += RPL_NOTOPIC(channelName);
-		else
-			reply += RPL_TOPIC(channelName, topic);
-		server.setBroadcast(reply, user.getSocket());
+		// std::string reply = user.getPrefix() + user.userMessageBuffer;
+		// std::string topic = server.channelMap[channelName].getTheme();
+		// if (topic.empty())
+		// 	reply += RPL_NOTOPIC(channelName);
+		// else
+		// 	reply += RPL_TOPIC(channelName, topic);
+		// server.setBroadcast(reply, user.getSocket());
 	}
 	// if channel already exists
 	else
@@ -375,13 +375,6 @@ void	CommandHandler::handleJOIN() {
 			user.setChannel(server.getChannel(channelName));
 			server.channelMap[channelName].setUser(user);
 			// user.responseBuffer = user.getPrefix() + " JOIN " + channelName + "\r\n";
-			std::string reply = user.getPrefix() + user.userMessageBuffer;
-			std::string topic = server.channelMap[channelName].getTheme();
-			if (topic.empty())
-				reply += RPL_NOTOPIC(channelName);
-			else
-				reply += RPL_TOPIC(channelName, topic);
-			server.setBroadcast(reply, user.getSocket());
 		}
 		else
 		{
@@ -391,7 +384,14 @@ void	CommandHandler::handleJOIN() {
 			return ; 
 		}
 	}
-
+	std::string reply = user.getPrefix() + " " + user.userMessageBuffer;
+	server.setBroadcast(channelName, user.getNickName(), reply);
+	std::string topic = server.channelMap[channelName].getTheme();
+	if (topic.empty())
+		reply += RPL_NOTOPIC(channelName);
+	else
+		reply += RPL_TOPIC(channelName, topic);
+	server.setBroadcast(reply, user.getSocket());
 }
 
 void	CommandHandler::handlePRIVMSG() {
@@ -655,9 +655,12 @@ void	CommandHandler::handlePING()
 	user.setPinged(true);
 	std::string ping = "PING";
 	size_t ping_pos = user.userMessageBuffer.find(ping);
-	if (ping_pos != std::string::npos)
-		user.userMessageBuffer.replace(ping_pos, ping.length(), "PONG");
-	std::string reply = user.getPrefix() + " " + user.userMessageBuffer;
+	std::string substr_ping; 
+	if (ping_pos != std::string::npos) {
+		substr_ping = user.userMessageBuffer.substr(ping_pos);
+		substr_ping.replace(0, ping.length(), "PONG");
+	}
+	std::string reply = user.getPrefix() + " " + substr_ping;
 	server.setBroadcast(reply, user.getSocket());
 	// user.responseBuffer = user.getPrefix() + " PONG localhost";
 }

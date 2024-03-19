@@ -48,11 +48,11 @@ void	ServerManager::_run() {
 
 				_accept(fd);
 			}
-			else if (FD_ISSET(fd, &recv_fd_pool_copy) && isClient(fd)) {
+			if (FD_ISSET(fd, &recv_fd_pool_copy) && isClient(fd)) {
 
 				_handle(fd);
 			}
-			else if (FD_ISSET(fd, &send_fd_pool_copy)) {
+			if (FD_ISSET(fd, &send_fd_pool_copy)) {
 
 				_respond(fd);
 			}
@@ -167,6 +167,7 @@ void	ServerManager::_handle(int fd) {
 		CommandHandler cmdHandler(*this, user, input_map);
 	}
 
+	user.userMessageBuffer.clear();
 	// _removeFromSet(fd, &_recv_fd_pool);
 	// _addToSet(fd, &_send_fd_pool);
 }
