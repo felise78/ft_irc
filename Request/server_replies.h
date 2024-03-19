@@ -58,7 +58,8 @@
 //                 ERR_TOOMANYCHANNELS
 
 /*PART COMMAND*/
-# define RPL_PART(user_id, channel, reason) (user_id + " PART " + channel + " " + (reason.empty() ? "." : reason ) + "\r\n")
+#define RPL_PART(user_id, channel, reason) (user_id + " PART " + channel + " " + (reason.empty() ? "." : reason ) + "\r\n")
+#define RPL_QUIT(user_id, reason) (user_id + " QUIT : " + reason + "\r\n")
 
 /*OPERATOR REPLY*/
 # define RPL_YOUREOPER(nick) (":localhost 381 " + nick + " :You are now an IRC operator\r\n")
