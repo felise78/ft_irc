@@ -309,17 +309,14 @@ void	CommandHandler::handleJOIN() {
 		;
 	else
 	{
-		if (!params.empty()) {
+		if (!params.empty())
 			server.setBroadcast(ERR_TOOMANYTARGETS(*(params.end() - 1)), user.getSocket());
-			// user.responseBuffer = ERR_TOOMANYTARGETS(*(params.end() - 1));
-		}
 		return;
 	}
 	std::string channelName = parse_channelName(*params.begin());
 	if (channelName.empty() == true)
 	{
 		server.setBroadcast(ERR_NOSUCHCHANNEL(channelName), user.getSocket());
-		// user.responseBuffer = ERR_NOSUCHCHANNEL(channelName);
 		return; 
 	}
 	// check if the channel doesn't exist, creates it
@@ -396,7 +393,7 @@ void	CommandHandler::handlePRIVMSG() {
 		return;
 	}
 	std::string msgtarget = commandsFromClient["params"].substr(0, i - 1);
-	std::string msg = commandsFromClient["params"].substr(i + 1);
+	std::string msg = ":" + commandsFromClient["params"].substr(i + 1);
 	std::string reply;
 	if (msgtarget.find(' ') != std::string::npos)
 	{
@@ -430,10 +427,6 @@ void	CommandHandler::handlePRIVMSG() {
 		reply = RPL_PRIVMSG(user.getPrefix(), msgtarget, msg);
 		server.setBroadcast(reply, nick_fd);
 	}
-	//NEW from Pia 18/03 17:00 
-	// std::string replySender;
-	// replySender = user.getPrefix() + user.userMessageBuffer;
-	// server.setBroadcast(replySender, user.getSocket());
 }
 
  void	CommandHandler::handleINVITE() {
@@ -446,21 +439,18 @@ void	CommandHandler::handlePRIVMSG() {
 	if (params.begin() + 2 != params.end())
 	{
 		server.setBroadcast(ERR_TOOMANYTARGETS(*(params.end() - 1)), user.getSocket());
-		// user.responseBuffer = ERR_TOOMANYTARGETS(*(params.end() - 1));
 		return;
 	}
 	int nick_fd = server.getFdbyNickName(*params.begin());
 	if(nick_fd == -1)
 	{
 		server.setBroadcast(ERR_NOSUCHNICK(*params.begin()), user.getSocket());
-		// user.responseBuffer = ERR_NOSUCHNICK(*params.begin());
 		return;
 	}
 	std::string channelName = parse_channelName(*(params.begin() + 1));
 	if (channelName.empty() == true)
 	{
 		server.setBroadcast(ERR_NOSUCHCHANNEL(channelName), user.getSocket());
-		// user.responseBuffer = ERR_NOSUCHCHANNEL(channelName);
 		return; 
 	}
 	// creates the channelName if it doesn't exists
@@ -479,7 +469,6 @@ void	CommandHandler::handlePRIVMSG() {
 		if (user._channels.find(channelName) == user._channels.end())
 		{
 			server.setBroadcast(ERR_USERNOTINCHANNEL(user.getNickName(), channelName), user.getSocket());
-			// user.responseBuffer = ERR_USERNOTINCHANNEL(user.getNickName(), channelName);
 			return;
 		}
 		if (server.channelMap[channelName].getLimited() == true)
@@ -487,14 +476,12 @@ void	CommandHandler::handlePRIVMSG() {
 			if (server.channelMap[channelName].getNb() == server.channelMap[channelName].getLimit())
 			{
 				server.setBroadcast(ERR_CHANNELISFULL(channelName), user.getSocket());
-				// user.responseBuffer = ERR_CHANNELISFULL(channelName);
 				return; 
 			}
 		}
 		if (server.channelMap[channelName]._users.find(*params.begin()) != server.channelMap[channelName]._users.end())
 		{
 			server.setBroadcast(ERR_USERONCHANNEL(*params.begin(), channelName), user.getSocket());
-			// user.responseBuffer = ERR_USERONCHANNEL(*params.begin(), channelName);
 			return ; 
 		}
 		server.usersMap[nick_fd].setChannel(server.getChannel(channelName));
@@ -525,14 +512,10 @@ std::cout << YELLOW << "TOPIC command received.." << RESET << std::endl;
 	// if the user just wants to print the topic
 	if (i == std::string::npos)
 	{
-		if (server.channelMap[channelName].getTheme().empty() == true){
+		if (server.channelMap[channelName].getTheme().empty() == true)
 			server.setBroadcast(RPL_NOTOPIC(channelName), user.getSocket());
-			// user.responseBuffer = RPL_NOTOPIC(channelName);
-		}
-		else {
+		else 
 			server.setBroadcast(RPL_TOPIC(user.getNickName(), channelName, server.channelMap[channelName].getTheme()), user.getSocket());
-			// user.responseBuffer = RPL_TOPIC(channelName, server.channelMap[channelName].getTheme());
-		}
 		return;
 	}
 	// if the user wants to change the topic
@@ -550,11 +533,7 @@ std::cout << YELLOW << "TOPIC command received.." << RESET << std::endl;
 		}
 		if (topic.empty())
 			server.channelMap[channelName].removeTopic();
-		// et pour le cas ou topic est une string d'espaces ?
 		server.channelMap[channelName].setTheme(topic);
-		// DEBUG
-		// std::cout << "Goes here\n" << topic << "\n";
-		std::cout << topic << std::endl;
 		server.setBroadcast(RPL_TOPIC(user.getNickName(), channelName, topic), user.getSocket());
 		server.setBroadcast(channelName, user.getNickName(), RPL_TOPIC(user.getNickName(), channelName, topic));
 	}
