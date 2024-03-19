@@ -691,7 +691,6 @@ void	CommandHandler::handlePART()
 		// user.responseBuffer = ERR_USERNOTINCHANNEL(user.getNickName(), channelName); 
 		return;
 	}
-	user._channels[channelName]->removeUser(user.getNickName());
 	user.removeChannel(channelName);
 	server.setBroadcast(RPL_PART(user.getPrefix(), channelName, msg), user.getSocket());
 	// user.responseBuffer = RPL_PART(user.getPrefix(), channelName, msg);
