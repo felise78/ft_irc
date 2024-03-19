@@ -31,7 +31,8 @@
 #define RPL_KICK(user_id, channel, kicked, reason) (user_id + " KICK " + channel + " " + kicked + " " + reason + "\r\n")
 
 /*INVITE COMMAND*/
-#define RPL_INVITING(channel, nick) (":localhost 341 " + channel + " " + nick + "\r\n")
+#define RPL_INVITE(user, invited, channel) (user + " INVITE " + invited + " " + channel + "\r\n")
+#define RPL_INVITING(user, channel, nick) (":localhost 341 " + user + " " + nick + " " + channel + "\r\n")
 #define ERR_USERONCHANNEL(user, channel) (":localhost 442 " + user + " " + channel + " :is already on channel\r\n")
 
 /* TOPIC COMMAND: */

@@ -453,7 +453,7 @@ void	CommandHandler::handlePRIVMSG() {
 		server.setBroadcast(ERR_NOSUCHCHANNEL(channelName), user.getSocket());
 		return; 
 	}
-	// creates the channelName if it doesn't exists
+	// creates the channel if it does not exists
 	if(server.channelMap.find(channelName) == server.channelMap.end())
 	{
 		Channel new_channel(channelName);
@@ -464,7 +464,8 @@ void	CommandHandler::handlePRIVMSG() {
 		server.usersMap[nick_fd].setChannel(new_channel);
 		user.setChannel(new_channel);
 	}
-	else // channel already exists
+	// if channel already exists
+	else 
 	{
 		if (user._channels.find(channelName) == user._channels.end())
 		{
@@ -487,6 +488,8 @@ void	CommandHandler::handlePRIVMSG() {
 		server.usersMap[nick_fd].setChannel(server.getChannel(channelName));
 		server.channelMap[channelName].setUser(server.usersMap[nick_fd]);
 	}
+	server.setBroadcast(RPL_INVITING(user.getNickName(), channelName, *params.begin()), user.getSocket());
+	server.setBroadcast(RPL_INVITE(user.getNickName(), *params.begin(), channelName), server.getFdbyNickName(*params.begin()));
 }
 
 void	CommandHandler::handleTOPIC()	{
