@@ -3,6 +3,11 @@
 /* CONSTRUCTOR/DESTRUCTOR */
 ModeHandler::ModeHandler(map<string, string>& commands, ServerManager& srv, User& user) : _commandsFromClient(commands), _server(srv), _user(user), n_flags(0), n_channels(0)
 {
+	if (_user.getStatus() != REGISTERED)
+	{
+		srv.setBroadcast(ERR_NOTREGISTERED, _user.getSocket());
+		return ;
+	}
 	if (parse_errors() != 0)
 		return ;
 	exec_mode();	
@@ -18,7 +23,6 @@ int	ModeHandler::parse_errors()
 		return 1;
 	stringstream params;
 	params.str(_commandsFromClient["params"]);
-	std::cout << params << std::endl;
 	vector<string> args;
 	string			tmp;
 	while (getline(params, tmp, ' '))
@@ -26,39 +30,36 @@ int	ModeHandler::parse_errors()
 		if (!tmp.empty())
 			args.push_back(tmp);
 	}
-	typedef vector<string>::const_iterator stringVecIt;
-
-	stringVecIt it = args.begin();
-	for (; it != args.end(); it++)
+	for (size_t i = 0; i < args.size(); i++)
 	{
-		if ((*it)[0] == '#' || (*it)[0] == '&')
+		if (args[i][0] == '#' || args[i][0] == '&')
 		{
 			n_channels++;
-			if (_server.channelMap.find(*it) != _server.channelMap.end())
-				_channel = *it;
+			if (_server.channelMap.find(args[i]) != _server.channelMap.end())
+				_channel = args[i];
 			else
 			{
-				_server.setBroadcast(ERR_NOSUCHCHANNEL(*it), _user.getSocket());
+				_server.setBroadcast(ERR_NOSUCHCHANNEL(args[i]), _user.getSocket());
 				return 1;
 			}
 		}
-		else if ((*it)[0] == '+' || (*it)[0] == '-')
+		if (args[i][0] == '+' || args[i][0] == '-')
 		{
-			_flag = *it;
+			_flag = args[i];
 			for (size_t i = 1; i < _flag.size(); i++)
 			{
 				const string modes = "itkol";
 				if (_flag.size() < 2 || modes.find(_flag[i]) == string::npos)
 				{
-					_server.setBroadcast(ERR_UMODEUNKNOWNFLAG(*it), _user.getSocket());
+					_server.setBroadcast(ERR_UMODEUNKNOWNFLAG(args[i]), _user.getSocket());
 					return 1;
 				}
 			}
 			n_flags++;
 		}
-		else
+		if (i > 2)
 		{
-			_extra_args.push_back(*it);
+			_extra_args.push_back(args[i]);
 		}
 	}
 	if (n_flags < 1 || n_channels < 1)
@@ -72,7 +73,8 @@ int	ModeHandler::parse_errors()
 		return 1;
 	}
 	Channel &c_tmp = _server.channelMap[_channel];
-	if (c_tmp.isOp(_user.getNickName()))
+	std::string nickname = _user.getNickName();
+	if (c_tmp.isOp(nickname) == true)
 		return 0;
 	else
 	{
@@ -91,7 +93,8 @@ void	ModeHandler::exec_mode()
 	if (!(_flag.empty()) && _flag[0] == '+')
 		set_flag = true;
 	if (!(_flag.empty()) && _flag[0] == '-')
-		set_flag = false;
+		set_flag = false;	
+	std::cout << "Flag is " << _flag << ".\n";
 	for (size_t i = 1; i < _flag.size(); i++)
 	{
 		if (_flag[i] == 'i')
@@ -106,10 +109,23 @@ void	ModeHandler::exec_mode()
 		}
 		if (_flag[i] == 'o')
 		{
-			if (set_flag)
-				channel.setOp(_extra_args[0]);
-			else
-				channel.removeOp(_extra_args[0]);
+			if (_extra_args.empty())
+			{
+				std::string cmd = "MODE";
+				_server.setBroadcast(ERR_NEEDMOREPARAMS(cmd), _user.getSocket());
+				return ;
+			}
+			else if (channel._users.find(_extra_args[0]) == channel._users.end())
+			{
+				_server.setBroadcast(ERR_NOTONCHANNEL(_channel), _user.getSocket());
+				return ;
+			}
+			else {
+				if (set_flag)
+					channel.setOp(_extra_args[0]);
+				else
+					channel.removeOp(_extra_args[0]);
+			}
 		}
 		if (_flag[i] == 'l')
 		{
