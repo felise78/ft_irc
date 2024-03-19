@@ -24,7 +24,7 @@
 
 /* THE FOLLOWING DATA SHALL BE PARSED FROM MAIN argv ..*/
 #define PORT 		55555
-#define SERVER_NAME	"localhost"
+#define SERVER_NAME	"ircserv"
 #define SERVER_PASS "password"
 
 
@@ -39,7 +39,7 @@ class Server {
 		std::string			_serverPassword;
 
 	public:
-		Server();
+		Server(int port, std::string const& password);
 		~Server();
 
 		// SET

@@ -1,12 +1,12 @@
 #include "Server.hpp"
 
-Server::Server() : 
+Server::Server(int port, std::string const& password) : 
 	_socket_fd(-1) {
 	
 	// THIS MUST BE PARSED FROM MAIN argv
-	setPort(PORT);
+	setPort(port);
 	setServerName(SERVER_NAME);
-	setServerPassword(SERVER_PASS);
+	setServerPassword(password);
 
 	// std::cout << MAGENTA << "\tServer constructor called" << RESET << std::endl;
 	std::cout << YELLOW << "\tinitializing server socket [ listen ].." << RESET << std::endl;

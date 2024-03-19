@@ -50,7 +50,7 @@ class ServerManager {
 		// Add Channel map here of all created channels
 		std::map<std::string, Channel>	channelMap;
 
-		ServerManager();
+		ServerManager(int port, std::string const& password);
 		~ServerManager();
 
 		// Initializing User's data. Command Passing.

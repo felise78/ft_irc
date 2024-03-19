@@ -1,6 +1,6 @@
 #include "ServerManager.hpp"
 
-ServerManager::ServerManager() {
+ServerManager::ServerManager(int port, std::string const& password) : _server(Server(port, password)) {
 
 	SM_instance = this; // This is needed for the signal handling
 
