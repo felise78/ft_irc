@@ -36,7 +36,7 @@
 
 /* TOPIC COMMAND: */
 #define RPL_NOTOPIC(channel) (":localhost 331 " + channel + " :No topic is set\r\n")
-#define RPL_TOPIC(channel, topic) (":localhost 332 " + channel + " :" + topic + "\r\n")
+#define RPL_TOPIC(nick, channel, topic) (":localhost 332 " + nick + " " + channel + " " + topic + "\r\n")
 #define ERR_NOCHANMODES(channel) (":localhost 477 " + channel + " :Channel doesn't support modes\r\n")
 
 /*MODE COMMAND*/
@@ -61,5 +61,6 @@
 
 /*OPERATOR REPLY*/
 # define RPL_YOUREOPER(nick) (":localhost 381 " + nick + " :You are now an IRC operator\r\n")
+# define MODE_USERMSG(client, mode) (":" + client + " MODE " + client + " :" + mode + "\r\n")
 
 #endif
