@@ -19,8 +19,7 @@
 #define ERR_TOOMANYTARGETS(target) (":localhost 407 " + target + ":407 recipients. Use one target only.\r\n")
 #define ERR_NORECIPIENT(command) (":localhost 411 :No recipient given " + command + "\r\n")
 #define ERR_NOTEXTTOSEND ":localhost 412 :No text to send\r\n"
-# define RPL_PRIVMSG(nick, target, message) (nick + " PRIVMSG " + target + " " + message + "\r\n") // nick is with prefix
-
+#define RPL_PRIVMSG(nick, target, message) (nick + " PRIVMSG " + target + " " + message + "\r\n") // nick is with prefix
 
 /*KICK COMMAND*/
 #define ERR_NOSUCHCHANNEL(channel) (":localhost 403 " + channel + " :No such channel\r\n")
