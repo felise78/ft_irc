@@ -25,11 +25,15 @@ int	ModeHandler::parse_errors()
 	params.str(_commandsFromClient["params"]);
 	vector<string> args;
 	string			tmp;
+	// DEBUG //
+	std::cout << "params : " << params.str() << std::endl;
 	while (getline(params, tmp, ' '))
 	{
 		if (!tmp.empty())
 			args.push_back(tmp);
 	}
+	// DEBUG //
+	std::cout << "arg[0] : " << args[0] << " arg[1] : " << args[1] << " arg[2] : " << args[2] << std::endl;
 	for (size_t i = 0; i < args.size(); i++)
 	{
 		if (args[i][0] == '#' || args[i][0] == '&')
@@ -43,7 +47,7 @@ int	ModeHandler::parse_errors()
 				return 1;
 			}
 		}
-		if (args[i][0] == '+' || args[i][0] == '-')
+		else if (args[i][0] == '+' || args[i][0] == '-')
 		{
 			_flag = args[i];
 			for (size_t i = 1; i < _flag.size(); i++)
@@ -57,8 +61,10 @@ int	ModeHandler::parse_errors()
 			}
 			n_flags++;
 		}
-		if (i > 2)
+		else
 		{
+			// DEBUG //
+			std::cout << "ca rentre bien la? \n";
 			_extra_args.push_back(args[i]);
 		}
 	}
@@ -109,20 +115,41 @@ void	ModeHandler::exec_mode()
 		}
 		if (_flag[i] == 'o')
 		{
+			// DEBUG //
+			std::cout << "args : " << _extra_args[0] << std::endl;
 			if (_extra_args.empty())
 			{
+				// DEBUG //
+				std::cout << "rentre ici ? \n";
 				std::string cmd = "MODE";
 				_server.setBroadcast(ERR_NEEDMOREPARAMS(cmd), _user.getSocket());
 				return ;
 			}
+			else if (_server.usersMap.find(_server.getFdbyNickName(_extra_args[0])) == _server.usersMap.end())
+			{
+				_server.setBroadcast(ERR_NOSUCHNICK(_extra_args[0]), _user.getSocket());
+				return;
+			}
 			else if (channel._users.find(_extra_args[0]) == channel._users.end())
 			{
-				_server.setBroadcast(ERR_NOTONCHANNEL(_channel), _user.getSocket());
+				// DEBUG //
+				std::cout << "ne rentre pas ici ? \n";
+				_server.setBroadcast(ERR_USERNOTINCHANNEL(_extra_args[0],_channel), _user.getSocket());
 				return ;
 			}
-			else {
+			else
+			{
+				// if (channel.isOp(_user.getNickName()) == false)
+				// 	_server.setBroadcast(ERR_CHANOPRIVSNEEDED(_channel), _user.getSocket());
 				if (set_flag)
-					channel.setOp(_extra_args[0]);
+				{
+					if (channel.isOp(_extra_args[0]) == true)
+						{;} // erreur is already op 
+					channel.setOp(_extra_args[0]);                      //
+					// _server.setBroadcast(ERR_CHANOPRIVSNEEDED(_channel), _user.getSocket()); // 
+					// getUser(nickname).responseBuffer = RPL_YOUREOPER(getUser(nickname).getPrefix()); // 
+					_server.setBroadcast(MODE_USERMSG(_extra_args[0], "+o"), _server.getFdbyNickName(_extra_args[0]));
+				}
 				else
 					channel.removeOp(_extra_args[0]);
 			}

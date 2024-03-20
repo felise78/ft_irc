@@ -48,16 +48,13 @@ void	Channel::setUser(User& user)
 
 void	Channel::setOp(const std::string& nickname)
 {
-	if (_users.find(nickname) == _users.end())
-		return;
-	// Les opérateurs du canal sont généralement désignés par un symbole "@" 
-	// devant leur nom d'utilisateur dans la liste des utilisateurs du canal.
-	//std::string opNickname = "@" + nickname;
-	//getUser(nickname).setNickName(opNickname);
-
+	// if (_users.find(nickname) == _users.end())
+	// 	return;
+	// // Les opérateurs du canal sont généralement désignés par un symbole "@" 
+	// // devant leur nom d'utilisateur dans la liste des utilisateurs du canal.
+	// //std::string opNickname = "@" + nickname;
+	// //getUser(nickname).setNickName(opNickname);
 	_ops.push_back(nickname);
-	getUser(nickname).responseBuffer = RPL_YOUREOPER(getUser(nickname).getPrefix());
-	
 }
 
 void	Channel::setNb(const int& nb)
