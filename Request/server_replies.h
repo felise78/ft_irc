@@ -15,34 +15,34 @@
 
 /*PRIVMSG*/
 #define ERR_NOSUCHNICK(nickname) (":localhost 401 " + nickname + " :No such nick\r\n")
-#define ERR_CANNOTSENDTOCHAN(channel) (":localhost 404 " channel + " :Cannot send to channel\r\n")
+#define ERR_CANNOTSENDTOCHAN(channelName) (":localhost 404 " channelName + " :Cannot send to channel\r\n")
 #define ERR_TOOMANYTARGETS(target) (":localhost 407 " + target + ":407 recipients. Use one target only.\r\n")
 #define ERR_NORECIPIENT(command) (":localhost 411 :No recipient given " + command + "\r\n")
 #define ERR_NOTEXTTOSEND ":localhost 412 :No text to send\r\n"
 #define RPL_PRIVMSG(nick, target, message) (nick + " PRIVMSG " + target + " " + message + "\r\n") // nick is with prefix
 
 /*KICK COMMAND*/
-#define ERR_NOSUCHCHANNEL(channel) (":localhost 403 " + channel + " :No such channel\r\n")
-#define ERR_USERNOTINCHANNEL(nick, channel) (":localhost 441 " + nick + " " + channel + " :They aren't on that channel\r\n")
-#define ERR_NOTONCHANNEL(channel) (":localhost 442 " + channel + " :You're not on that channel\r\n")
+#define ERR_NOSUCHCHANNEL(channelName) (":localhost 403 " + channelName + " :No such channel\r\n")
+#define ERR_USERNOTINCHANNEL(nick, channelName) (":localhost 441 " + nick + " " + channelName + " :They aren't on that channel\r\n")
+#define ERR_NOTONCHANNEL(channelName) (":localhost 442 " + channelName + " :You're not on that channel\r\n")
 #define ERR_NEEDMOREPARAMS(command) (":localhost 461 " + command + " :Not enough parameters\r\n")
-#define ERR_CHANOPRIVSNEEDED(channel) (":localhost 482 " + channel + " :You're not channel operator\r\n")
-#define RPL_KICK(user_id, channel, kicked, reason) (user_id + " KICK " + channel + " " + kicked + " " + reason + "\r\n")
+#define ERR_CHANOPRIVSNEEDED(channelName) (":localhost 482 " + channelName + " :You're not channel operator\r\n")
+#define RPL_KICK(user_id, channelName, kicked, reason) (user_id + " KICK " + channelName + " " + kicked + " " + reason + "\r\n")
 
 /*INVITE COMMAND*/
-#define RPL_INVITE(user, invited, channel) (user + " INVITE " + invited + " " + channel + "\r\n")
-#define RPL_INVITING(user, channel, nick) (":localhost 341 " + user + " " + nick + " " + channel + "\r\n")
-#define ERR_USERONCHANNEL(user, channel) (":localhost 442 " + user + " " + channel + " :is already on channel\r\n")
+#define RPL_INVITE(user, invited, channelName) (user + " INVITE " + invited + " " + channelName + "\r\n")
+#define RPL_INVITING(user, channelName, nick) (":localhost 341 " + user + " " + nick + " " + channelName + "\r\n")
+#define ERR_USERONCHANNEL(user, channelName) (":localhost 442 " + user + " " + channelName + " :is already on channel\r\n")
 
 /* TOPIC COMMAND: */
-#define RPL_NOTOPIC(channel) (":localhost 331 " + channel + " :No topic is set\r\n")
-#define RPL_TOPIC(nick, channel, topic) (":localhost 332 " + nick + " " + channel + " " + topic + "\r\n")
-#define ERR_NOCHANMODES(channel) (":localhost 477 " + channel + " :Channel doesn't support modes\r\n")
+#define RPL_NOTOPIC(channelName) (":localhost 331 " + channelName + " :No topic is set\r\n")
+#define RPL_TOPIC(nick, channelName, topic) (":localhost 332 " + nick + " " + channelName + " " + topic + "\r\n")
+#define ERR_NOCHANMODES(channelName) (":localhost 477 " + channelName + " :Channel doesn't support modes\r\n")
 
 /*MODE COMMAND*/
-#define RPL_CHANNELMODEIS(channel, mode, mode_params) (":localhost 324 " + channel + " " + mode + " " + mode_params + "\r\n")
-#define ERR_KEYSET(channel) (":localhost 467 " + channel + " :Channel key already set\r\n")
-#define ERR_UNKNOWNMODE(char, channel) (":localhost 472 " + char + " :is unknown mode char to me for " + channel + "\r\n")
+#define RPL_CHANNELMODEIS(channelName, mode, mode_params) (":localhost 324 " + channelName + " " + mode + " " + mode_params + "\r\n")
+#define ERR_KEYSET(channelName) (":localhost 467 " + channelName + " :Channel key already set\r\n")
+#define ERR_UNKNOWNMODE(char, channelName) (":localhost 472 " + char + " :is unknown mode char to me for " + channelName + "\r\n")
 #define ERR_UMODEUNKNOWNFLAG(client) (":localhost 501 " + client + " :Unknown MODE flag\r\n") // client is with prefix 
 // RPL_UMODEIS
 
@@ -52,13 +52,13 @@
 #define ERR_NONICKNAMEGIVEN ":localhost 431 :No nickname given\r\n"
 
 /*JOIN COMMAND*/
-#define ERR_CHANNELISFULL(channel) (":localhost 471 " + channel + " :Cannot join channel (+l)\r\n")
-#define ERR_INVITEONLYCHAN(channel) (":localhost 473 " + channel + " :Cannot join channel (+i)\r\n")
-#define ERR_BADCHANNELKEY(channel) (":localhost 475 " + channel + " :Cannot join channel (+k)\r\n")
+#define ERR_CHANNELISFULL(channelName) (":localhost 471 " + channelName + " :Cannot join channel (+l)\r\n")
+#define ERR_INVITEONLYCHAN(channelName) (":localhost 473 " + channelName + " :Cannot join channel (+i)\r\n")
+#define ERR_BADCHANNELKEY(channelName) (":localhost 475 " + channelName + " :Cannot join channel (+k)\r\n")
 //                 ERR_TOOMANYCHANNELS
 
 /*PART COMMAND*/
-# define RPL_PART(user_id, channel, reason) (user_id + " PART " + channel + " " + (reason.empty() ? "." : reason ) + "\r\n")
+# define RPL_PART(user_id, channelName, reason) (user_id + " PART " + channelName + " " + (reason.empty() ? "." : reason ) + "\r\n")
 
 /*OPERATOR REPLY*/
 # define RPL_YOUREOPER(nick) (":localhost 381 " + nick + " :You are now an IRC operator\r\n")
