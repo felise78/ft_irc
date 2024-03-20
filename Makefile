@@ -43,6 +43,7 @@ clean:
 
 fclean: clean
 	rm -f $(NAME) bot
+# $(MAKE) fclean -C Bot
 
 re: fclean all
 

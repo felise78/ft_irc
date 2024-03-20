@@ -19,11 +19,13 @@ build:
 
 run:
 	@echo "$(MAGENTA)Launching $(NAME) container...$(NC)"
-# docker run --detach -v .:/usr/src/app --rm --name $(NAME) --env-file .env $(NAME)
-	docker run --detach -v $(PWD):/usr/src/app --rm --name $(NAME) --env-file .env $(NAME)
+	docker run --detach -v .:/usr/src/app --rm --name $(NAME) --env-file .env $(NAME)
+# docker run --detach -v $(PWD):/usr/src/app --rm --name $(NAME) --env-file .env $(NAME)
 	@echo "$(GREEN)Container is UP and running! Container ID ^^^$(NC)"
 	@echo "$(GREEN)You can use the 'bot' in 'ircserv' by sending 'PRIVMSG' to 'NeoBot' in '#helpdesk' channel.$(NC)"
+# DEBUGGING:
 # docker run -it --rm --name $(NAME) --env-file .env $(NAME)
+# docker run -it -v .:/usr/src/app --rm --name bot-gpt --env-file .env bot-gpt
 
 down:
 	@echo "$(RED)Stopping and removing $(NAME) container...$(NC)"
@@ -41,7 +43,7 @@ log:
 	@docker logs $(NAME)
 	@echo "$(NC)"
 
-clean: down
+clean:
 	@echo "$(RED)Removing All Images...$(NC)"
 	@if [ -n "$$(docker images -q)" ]; then docker rmi $$(docker images -q); else echo "$(BLUE)No images to remove.$(NC)"; fi
 	rm -rf container_to_host* host_to_container*

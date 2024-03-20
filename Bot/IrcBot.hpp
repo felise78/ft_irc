@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <sstream> // For std::stringstream
 #include <string>
 #include <exception>
 #include <cstring> // For memset()
