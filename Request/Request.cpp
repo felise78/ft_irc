@@ -5,6 +5,9 @@ Request::Request(ServerManager& server, std::string buffer) : _server(server), _
 {
 	if (DEBUG)
 		std::cout << "Request constructor called" << std::endl;
+	// DEBUG // 
+	std::cout << "INPUT BUFFER : " << YELLOW << _input_buffer << std::endl;
+	//
 	parse_args();
 }
 

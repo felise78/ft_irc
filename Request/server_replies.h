@@ -22,7 +22,8 @@
 #define RPL_PRIVMSG(nick, target, message) (nick + " PRIVMSG " + target + " " + message + "\r\n") // nick is with prefix
 
 /*KICK COMMAND*/
-#define ERR_NOSUCHCHANNEL(channelName) (":localhost 403 " + channelName + " :No such channel\r\n")
+//ERR_NOSUCHCHANNEL(client, channel)(":localhost 403 " + client + " #" + channel + " :No such channel\r\n")
+#define ERR_NOSUCHCHANNEL(nick, channelName) (":localhost 403 " + nick + " " + channelName + " :No such channel\r\n")
 #define ERR_USERNOTINCHANNEL(nick, channelName) (":localhost 441 " + nick + " " + channelName + " :They aren't on that channel\r\n")
 #define ERR_NOTONCHANNEL(channelName) (":localhost 442 " + channelName + " :You're not on that channel\r\n")
 #define ERR_NEEDMOREPARAMS(command) (":localhost 461 " + command + " :Not enough parameters\r\n")

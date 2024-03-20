@@ -23,20 +23,25 @@ int	ModeHandler::parse_errors()
 		return 1;
 	stringstream params;
 	params.str(_commandsFromClient["params"]);
-	vector<string> args;
-	string			tmp;
+
 	// DEBUG //
 	std::cout << "params : " << params.str() << std::endl;
+	//
+
+	vector<string> args;
+	string			tmp;
 	while (getline(params, tmp, ' '))
 	{
 		if (!tmp.empty())
 			args.push_back(tmp);
 	}
+
 	// DEBUG //
 	for (size_t i = 0; i < args.size(); i++)
 		std::cout << "arg[" << i << "] : " << args[i] << " ";
 	std::cout << std::endl;
 	// 
+	
 	for (size_t i = 0; i < args.size(); i++)
 	{
 		if (args[i][0] == '#' || args[i][0] == '&')
@@ -46,17 +51,21 @@ int	ModeHandler::parse_errors()
 				_channel = args[i];
 			else
 			{
-				_server.setBroadcast(ERR_NOSUCHCHANNEL(args[i]), _user.getSocket());
+				_server.setBroadcast(ERR_NOSUCHCHANNEL(_user.getNickName(), args[i]), _user.getSocket());
 				return 1;
 			}
+			// ADD BY FELISE to handle the -o +o mode. format : /mode nickname +o #channel
+			// if (i == 2)
+			// 	_extra_args.push_back(args[i]);
 		}
 		else if (args[i][0] == '+' || args[i][0] == '-')
 		{
-			if (i != 1)
-			{
-				_server.setBroadcast(ERR_UMODEUNKNOWNFLAG(args[i]), _user.getSocket());
-				return 1;
-			}
+			// le comportement de irssi : il va concatener tout ce qui vient apres un + ou -
+			// if (i != 1)
+			// {
+			// 	_server.setBroadcast(ERR_UMODEUNKNOWNFLAG(args[i]), _user.getSocket());
+			// 	return 1;
+			// }
 			_flag = args[i];
 			for (size_t i = 1; i < _flag.size(); i++)
 			{
@@ -71,7 +80,6 @@ int	ModeHandler::parse_errors()
 		}
 		else
 		{
-			
 			_extra_args.push_back(args[i]);
 		}
 	}
@@ -101,18 +109,22 @@ int	ModeHandler::parse_errors()
 
 void	ModeHandler::exec_mode()
 {
+	// format  : /MODE #channel flag [param]
+	// ou
+	// format  : /MODE nickname flag [param]
+
 	bool	set_flag;
 	std::map<std::string, Channel>::iterator it = _server.channelMap.find(_channel);
 	if (it == _server.channelMap.end() || _flag.empty())
 		return ;
+	// DEBUG // 
+	std::cout << "flag : " << _flag << std::endl;
+	//
 	Channel &channel = it->second;
 	if (!(_flag.empty()) && _flag[0] == '+')
 		set_flag = true;
 	if (!(_flag.empty()) && _flag[0] == '-')
 		set_flag = false;
-	// DEBUG //
-	std::cout << "Flag is " << _flag << ".\n";
-	//
 	for (size_t i = 1; i < _flag.size(); i++)
 	{
 		if (_flag[i] == 'i')
@@ -121,6 +133,9 @@ void	ModeHandler::exec_mode()
 			channel.setTopicRestricted(set_flag);
 		if (_flag[i] == 'k')
 		{
+			// DEBUG // 
+			std::cout << MAGENTA << "MODE 'k'" << RESET << std::endl;
+			//
 			channel.setProtected(set_flag);
 			if (!_extra_args.empty())
 				channel.setKey(_extra_args[0]);
@@ -134,14 +149,13 @@ void	ModeHandler::exec_mode()
 		{
 			// DEBUG //
 			std::cout << MAGENTA << "MODE 'o'" << RESET << std::endl;
-			for (size_t i = 0; i < _extra_args.size(); i++)
-			std::cout << "_extra_args[" << i << "] : " << _extra_args[i] << " ";
-			std::cout << std::endl;
+			//
+			// for (size_t i = 0; i < _extra_args.size(); i++)
+			// std::cout << "_extra_args[" << i << "] : " << _extra_args[i] << " ";
+			// std::cout << std::endl;
 			// 
 			if (_extra_args.size() < 2)
 			{
-				// DEBUG //
-				//std::cout << "rentre ici ? \n";
 				std::string cmd = "MODE";
 				_server.setBroadcast(ERR_NEEDMOREPARAMS(cmd), _user.getSocket());
 				return ;
@@ -153,8 +167,6 @@ void	ModeHandler::exec_mode()
 			}
 			else if (channel._users.find(_extra_args[0]) == channel._users.end())
 			{
-				// DEBUG //
-				// std::cout << "ne rentre pas ici ? \n";
 				_server.setBroadcast(ERR_USERNOTINCHANNEL(_extra_args[0],_channel), _user.getSocket());
 				return ;
 			}
@@ -178,17 +190,15 @@ void	ModeHandler::exec_mode()
 		if (_flag[i] == 'l')
 		{
 			// DEBUG // 
-				std::cout << "rentre dans le l" << std::endl;
+				std::cout << MAGENTA << "MODE 'l'" << RESET << std::endl;
 			//
-
 			if (set_flag)
 			{
-				// DEBUG // 
 				if (!_extra_args[0].empty())
 					std::cout << _extra_args[0] << std::endl;
 				else
 					std::cout << "rien dans args[0]" << std::endl;
-				//
+				//////////////////
 				std::string::iterator it;
 				for (it = _extra_args[0].begin(); it != _extra_args[0].end(); ++it)
 				{

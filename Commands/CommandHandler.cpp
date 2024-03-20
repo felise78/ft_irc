@@ -51,6 +51,11 @@ CommandHandler::CommandHandler(ServerManager& srv, User &usr, map<string, string
 		server.setBroadcast(ERR_NEEDMOREPARAMS(commandsFromClient["command"]), user.getSocket());
 		return;
 	}
+
+	// DEBUG //
+	std::cout << "[CommandHandler] : " << commandsFromClient["params"] << std::endl;
+	//
+
 	executeCommand();
 
 }
@@ -321,7 +326,7 @@ void	CommandHandler::handleJOIN() {
 	std::string channelName = parse_channelName(*params.begin());
 	if (channelName.empty() == true)
 	{
-		server.setBroadcast(ERR_NOSUCHCHANNEL(channelName), user.getSocket());
+		server.setBroadcast(ERR_NOSUCHCHANNEL(user.getNickName(), channelName), user.getSocket());
 		return; 
 	}
 	// check if the channel doesn't exist, creates it
@@ -410,7 +415,7 @@ void	CommandHandler::handlePRIVMSG() {
 	{
 		if (server.channelMap.find(msgtarget) == server.channelMap.end())
 		{
-			server.setBroadcast(ERR_NOSUCHCHANNEL(msgtarget), user.getSocket());
+			server.setBroadcast(ERR_NOSUCHCHANNEL(user.getNickName(), msgtarget), user.getSocket());
 			return;
 		}
 		if (server.channelMap[msgtarget]._users.find(user.getNickName()) == server.channelMap[msgtarget]._users.end())
@@ -455,7 +460,7 @@ void	CommandHandler::handlePRIVMSG() {
 	std::string channelName = parse_channelName(*(params.begin() + 1));
 	if (channelName.empty() == true)
 	{
-		server.setBroadcast(ERR_NOSUCHCHANNEL(channelName), user.getSocket());
+		server.setBroadcast(ERR_NOSUCHCHANNEL(user.getNickName(), channelName), user.getSocket());
 		return; 
 	}
 
@@ -515,9 +520,14 @@ std::cout << YELLOW << "TOPIC command received.." << RESET << std::endl;
 	size_t i = commandsFromClient["params"].find_first_of(' ');
 	std::string channelName = commandsFromClient["params"].substr(0, i);
 	// if the channel does not exist
+
+	// DEBUG //
+	std::cout << "channelName : " << channelName << std::endl;
+	//
+
 	if (server.channelMap.find(channelName) == server.channelMap.end())
 	{
-		server.setBroadcast(ERR_NOSUCHCHANNEL(channelName), user.getSocket());
+		server.setBroadcast(ERR_NOSUCHCHANNEL(user.getNickName(), channelName), user.getSocket());
 		return;
 	}
 	// if the user is not on the channel
@@ -586,7 +596,7 @@ void	CommandHandler::handleKICK()
 	std::string channelName = parse_channelName(*params.begin());
 	if (channelName.empty() == true || server.channelMap.find(channelName) == server.channelMap.end())
 	{
-		server.setBroadcast(ERR_NOSUCHCHANNEL(channelName), user.getSocket());
+		server.setBroadcast(ERR_NOSUCHCHANNEL(user.getNickName(), channelName), user.getSocket());
 		// user.responseBuffer = ERR_NOSUCHCHANNEL(channelName);
 		return; 
 	}
@@ -626,6 +636,12 @@ void	CommandHandler::handleMODE()
 	std::cout << YELLOW << "MODE command received.." << RESET << std::endl;
 
 	// format  : /MODE #channel flag [param]
+	// ou
+	// format  : /MODE nickname flag [param]
+
+	// DEBUG //
+	std::cout << "handleMODE | commandsFromClient[params] : " << commandsFromClient["params"] << std::endl;
+	//
 	ModeHandler	mode_handler(commandsFromClient, server, user);
 }
 
@@ -661,7 +677,7 @@ void	CommandHandler::handlePART()
 		msg = commandsFromClient["params"].substr(i + 1, commandsFromClient["params"].size() - i + 1);
 	if (server.channelMap.find(channelName) == server.channelMap.end())
 	{
-		server.setBroadcast(ERR_NOSUCHCHANNEL(channelName), user.getSocket());
+		server.setBroadcast(ERR_NOSUCHCHANNEL(user.getNickName(), channelName), user.getSocket());
 		return; 
 	}
 	if (server.channelMap[channelName]._users.find(user.getNickName()) == server.channelMap[channelName]._users.end())
