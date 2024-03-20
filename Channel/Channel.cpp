@@ -1,10 +1,4 @@
 #include "Channel.hpp"
-#include "../Request/server_replies.h"
-
-#include "../User/User.hpp"
-#include <iostream>
-
-using namespace std;
 
 Channel::Channel(const std::string& name) : _name(name), _theme(""), _key(""), _nb(0), _limit(0), 
 _limited(false), _invit_only(false), _topic_restricted(false), _protected(false)
@@ -56,7 +50,8 @@ void	Channel::setOp(const std::string& nickname)
 	//getUser(nickname).setNickName(opNickname);
 
 	_ops.push_back(nickname);
-	getUser(nickname).responseBuffer = RPL_YOUREOPER(getUser(nickname).getPrefix());
+	// getUser(nickname).responseBuffer = RPL_YOUREOPER(getUser(nickname).getPrefix());
+	// getUser(nickname).responseBuffer = RPL_YOUREOPER(server.hostname, getUser(nickname).getPrefix());
 	
 }
 

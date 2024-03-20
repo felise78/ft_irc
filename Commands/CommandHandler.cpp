@@ -101,7 +101,8 @@ void	CommandHandler::executeCommand() {
 void	CommandHandler::handleNONE() {
 	// do nothing or/and print error message
 	std::cout << RED << "[-] command not found.." << RESET << std::endl;
-	server.setBroadcast(ERR_UNKNOWNCOMMAND(commandsFromClient["command"]), user.getSocket());
+	// server.setBroadcast(ERR_UNKNOWNCOMMAND(commandsFromClient["command"]), user.getSocket());
+	server.setBroadcast(ERR_UNKNOWNCOMMAND(server.hostname, commandsFromClient["command"]), user.getSocket());
 }
 
 void	CommandHandler::handleCAP() {
@@ -119,34 +120,35 @@ void	CommandHandler::handlePASS() {
 
 	// if already registered
 	if (user.getStatus() == REGISTERED) {
-		server.setBroadcast(ERR_ALREADYREGISTRED, user.getSocket()); //replacing all instances of assigning to user.responseBuffer with setBroadcast server method
-		// user.responseBuffer = ERR_ALREADYREGISTRED;
+		// server.setBroadcast(ERR_ALREADYREGISTRED, user.getSocket()); //replacing all instances of assigning to user.responseBuffer with setBroadcast server method
+		server.setBroadcast(ERR_ALREADYREGISTRED(server.hostname), user.getSocket());
 		/* DEBUG */
-		std::cout << RED << "[-]" << ERR_ALREADYREGISTRED << RESET << std::endl;
+		std::cout << RED << "[-]" << ERR_ALREADYREGISTRED(server.hostname) << RESET << std::endl;
+		/* ***** */	
 		return;
 	}
 	// first check is the PASS is not empty
 	if (pass.empty() == true) {
 		std::string str = "PASS";
-		server.setBroadcast(ERR_NEEDMOREPARAMS(str), user.getSocket());
-		// user.responseBuffer = ERR_NEEDMOREPARAMS(str);
+		server.setBroadcast(ERR_NEEDMOREPARAMS(server.hostname, str), user.getSocket());
 		/* DEBUG */
-		std::cout << RED << "[-] " << ERR_NEEDMOREPARAMS(str) << RESET << std::endl;
+		std::cout << RED << "[-] " << ERR_NEEDMOREPARAMS(server.hostname, str) << RESET << std::endl;
+		/* ***** */
 		return;
 	}
 	// pass missmatch check
 	if (pass != server.getPassword()) {
-		server.setBroadcast(ERR_PASSWDMISMATCH, user.getSocket());
-		// user.responseBuffer = ERR_PASSWDMISMATCH;
+		server.setBroadcast(ERR_PASSWDMISMATCH(server.hostname), user.getSocket());
+		// server.setBroadcast(ERR_PASSWDMISMATCH, user.getSocket());
 		/* DEBUG */
-		std::cout << RED << "[-] " << ERR_PASSWDMISMATCH << RESET << std::endl;
+		std::cout << RED << "[-] " << ERR_PASSWDMISMATCH(server.hostname) << RESET << std::endl;
+		/* ***** */
 		return;
 	}
 	// if the password is correct
 	user.setPassword(pass);
 	user.setStatus(PASS_MATCHED);
 	/* DEBUG */
-	// user.responseBuffer = "PASS OK !\r\n";
 	std::cout << GREEN << "[+] PASS OK !" << RESET << std::endl;
 	/* ***** */
 
@@ -158,14 +160,12 @@ void	CommandHandler::handlePASS() {
 	// if there is NICK and no USER:
 	else if (!user.getNickName().empty() && user.getUserName().empty()) {
 		std::string str = "USER";
-		server.setBroadcast(ERR_NEEDMOREPARAMS(str), user.getSocket());
-		// user.responseBuffer = ERR_NEEDMOREPARAMS(str);
+		server.setBroadcast(ERR_NEEDMOREPARAMS(server.hostname, str), user.getSocket());
 	}
 	// if there is USER and no NICK:
 	else if (user.getNickName().empty() && !user.getUserName().empty()) {
 		std::string str = "NICK";
-		server.setBroadcast(ERR_NEEDMOREPARAMS(str), user.getSocket());
-		// user.responseBuffer = ERR_NEEDMOREPARAMS(str);
+		server.setBroadcast(ERR_NEEDMOREPARAMS(server.hostname, str), user.getSocket());
 	}
 }
 
@@ -180,38 +180,35 @@ void	CommandHandler::handleNICK() {
 	
 	// first check if NICK is valid
 	if (nickname.empty()) {
-		server.setBroadcast(ERR_NONICKNAMEGIVEN, user.getSocket());
-		// user.responseBuffer = ERR_NONICKNAMEGIVEN;
+		server.setBroadcast(ERR_NONICKNAMEGIVEN(server.hostname), user.getSocket());
 		/* DEBUG */
-		std::cout << RED << "[-] " << ERR_NONICKNAMEGIVEN << RESET << std::endl;
+		std::cout << RED << "[-] " << ERR_NONICKNAMEGIVEN(server.hostname) << RESET << std::endl;
+		/* ***** */
 
 		return;
 	} // check the length and the characters
 	if (nickname.length() > 9 || nickname.length() < 1) {
-		server.setBroadcast(ERR_ERRONEUSNICKNAME(nickname), user.getSocket());
-		// user.responseBuffer = ERR_ERRONEUSNICKNAME(nickname);
+		server.setBroadcast(ERR_ERRONEUSNICKNAME(server.hostname, nickname), user.getSocket());
 		/* DEBUG */
-		std::cout << RED << "[-] " << ERR_ERRONEUSNICKNAME(nickname) << RESET << std::endl;
-
+		std::cout << RED << "[-] " << ERR_ERRONEUSNICKNAME(server.hostname, nickname) << RESET << std::endl;
+		/* ***** */
 		return;
 	}
 	// check forbidden characters
 	string::const_iterator it;
 	for(it = nickname.begin(); it != nickname.end(); ++it) {
 		if (std::isalnum(*it) == false) {
-			server.setBroadcast(ERR_ERRONEUSNICKNAME(nickname), user.getSocket());
-			// user.responseBuffer = ERR_ERRONEUSNICKNAME(nickname);
+			server.setBroadcast(ERR_ERRONEUSNICKNAME(server.hostname, nickname), user.getSocket());
 			/* DEBUG */
-			std::cout << RED << "[-] " << ERR_ERRONEUSNICKNAME(nickname) << RESET << std::endl;
-
+			std::cout << RED << "[-] " << ERR_ERRONEUSNICKNAME(server.hostname, nickname) << RESET << std::endl;
+			/* ***** */
 			return;
 		}
 	}
 
 	// if the nickname is already in use:
 	if (server.getFdbyNickName(commandsFromClient["params"]) != -1) {
-		server.setBroadcast(ERR_NICKNAMEINUSE(commandsFromClient["params"]), user.getSocket());
-		// user.responseBuffer = ERR_NICKNAMEINUSE(commandsFromClient["params"]);
+		server.setBroadcast(ERR_NICKNAMEINUSE(server.hostname, nickname), user.getSocket());
 		return;
 	}
 
@@ -264,11 +261,11 @@ void	CommandHandler::handleUSER() {
 		return;
 	} // PASS is correct, but no NICK:
 	else if (user.getStatus() == PASS_MATCHED && user.getNickName().empty()) {
-		std::string str = "NICK";
 		/* DEBUG */
-		// user.responseBuffer = ERR_NEEDMOREPARAMS(str);
-		std::cout << RED << "[-] " << ERR_NEEDMOREPARAMS(str) << RESET << std::endl;
-	} // PASS is ok and NICK is set, but no USER:
+		std::string str = "NICK";
+		std::cout << RED << "[-] " << ERR_NEEDMOREPARAMS(server.hostname, str) << RESET << std::endl;
+		/* ***** */
+	} // PASS is ok and NICK is set:
 	else if (user.getStatus() == PASS_MATCHED && !user.getNickName().empty()) {
 
 		std::vector<std::string> params = split(commandsFromClient["params"], " ");
@@ -276,10 +273,9 @@ void	CommandHandler::handleUSER() {
 		// check if there are not enough parameters return
 		if (!(params.size() == 1 || params.size() >= 4)) {
 			std::string str = "USER";
-			server.setBroadcast(ERR_NEEDMOREPARAMS(str), user.getSocket());
-			// user.responseBuffer = ERR_NEEDMOREPARAMS(str);
+			server.setBroadcast(ERR_NEEDMOREPARAMS(server.hostname, str), user.getSocket());
 			/* DEBUG */
-			std::cout << RED << "[-] " << ERR_NEEDMOREPARAMS(str) << RESET << std::endl;
+			std::cout << RED << "[-] " << ERR_NEEDMOREPARAMS(server.hostname, str) << RESET << std::endl;
 			/* ***** */
 			return;
 		}
@@ -295,6 +291,9 @@ void	CommandHandler::handleUSER() {
 		}
 		sendHandshake();
 		user.setStatus(REGISTERED);
+		/* DEBUG */
+		std::cout << GREEN << "[+] USER REGISTERED !" << RESET << std::endl;
+		/* ***** */
 	}
 }
 
@@ -305,18 +304,18 @@ void	CommandHandler::handleJOIN() {
 	// format : /join #channel (password)
 
 	std::vector<std::string> params = split(commandsFromClient["params"], " ");
-	if (params.begin() + 1 == params.end() || params.begin() + 2 == params.end())
-		;
+	if (params.begin() + 1 == params.end() || params.begin() + 2 == params.end()) { 
+	}
 	else
 	{
 		if (!params.empty())
-			server.setBroadcast(ERR_TOOMANYTARGETS(*(params.end() - 1)), user.getSocket());
+		 	server.setBroadcast(ERR_TOOMANYTARGETS(server.hostname, *(params.end() - 1)), user.getSocket());
 		return;
 	}
 	std::string channelName = parse_channelName(*params.begin());
 	if (channelName.empty() == true)
 	{
-		server.setBroadcast(ERR_NOSUCHCHANNEL(channelName), user.getSocket());
+		server.setBroadcast(ERR_NOSUCHCHANNEL(server.hostname, channelName), user.getSocket());
 		return; 
 	}
 	// check if the channel doesn't exist, creates it
@@ -337,14 +336,14 @@ void	CommandHandler::handleJOIN() {
 	{
 		if (server.channelMap[channelName].getInvit() == true)
 		{
-			server.setBroadcast(ERR_INVITEONLYCHAN(channelName), user.getSocket());
+			server.setBroadcast(ERR_INVITEONLYCHAN(server.hostname, channelName), user.getSocket());
 			return; 
 		}
 		if (server.channelMap[channelName].getProtected() == true)
 		{
 			if (server.channelMap[channelName].getKey() != *(params.begin() + 1))
 			{
-				server.setBroadcast(ERR_BADCHANNELKEY(channelName), user.getSocket());
+				server.setBroadcast(ERR_BADCHANNELKEY(server.hostname, channelName), user.getSocket());
 				return;
 			}
 		}
@@ -354,7 +353,7 @@ void	CommandHandler::handleJOIN() {
 			{
 				if (server.channelMap[channelName].getNb() == server.channelMap[channelName].getLimit())
 				{
-					server.setBroadcast(ERR_CHANNELISFULL(channelName), user.getSocket());
+					server.setBroadcast(ERR_CHANNELISFULL(server.hostname, channelName), user.getSocket());
 					return; 
 				}
 			}
@@ -365,7 +364,7 @@ void	CommandHandler::handleJOIN() {
 		else
 		{
 			std::string nickName = user.getNickName();
-			server.setBroadcast(ERR_USERONCHANNEL(nickName, channelName), user.getSocket());
+			server.setBroadcast(ERR_USERONCHANNEL(server.hostname, nickName, channelName), user.getSocket());
 			return ; 
 		}
 	}
@@ -374,9 +373,9 @@ void	CommandHandler::handleJOIN() {
 	server.setBroadcast(channelName, user.getNickName(), reply);
 	std::string topic = server.channelMap[channelName].getTheme();
 	if (topic.empty())
-		reply += RPL_NOTOPIC(channelName);
+		reply += RPL_NOTOPIC(server.hostname, channelName);
 	else
-		reply += RPL_TOPIC(user.getNickName(), channelName, topic);
+	 	reply += RPL_TOPIC(server.hostname, user.getNickName(), channelName, topic);
 	server.setBroadcast(reply, user.getSocket());
 }
 
@@ -389,7 +388,7 @@ void	CommandHandler::handlePRIVMSG() {
 	size_t i = commandsFromClient["params"].find_first_of(':');
 	if (i == std::string::npos)
 	{
-		server.setBroadcast(ERR_NOTEXTTOSEND, user.getSocket());
+		server.setBroadcast(ERR_NOTEXTTOSEND(server.hostname), user.getSocket());
 		return;
 	}
 	std::string msgtarget = commandsFromClient["params"].substr(0, i - 1);
@@ -397,7 +396,7 @@ void	CommandHandler::handlePRIVMSG() {
 	std::string reply;
 	if (msgtarget.find(' ') != std::string::npos)
 	{
-		server.setBroadcast(ERR_NOSUCHNICK(msgtarget), user.getSocket());
+		server.setBroadcast(ERR_NOSUCHNICK(server.hostname, msgtarget), user.getSocket());
 		return;
 	}
 	// <msgtarget> is a Channel : 
@@ -405,15 +404,15 @@ void	CommandHandler::handlePRIVMSG() {
 	{
 		if (server.channelMap.find(msgtarget) == server.channelMap.end())
 		{
-			server.setBroadcast(ERR_NOSUCHCHANNEL(msgtarget), user.getSocket());
+			server.setBroadcast(ERR_NOSUCHCHANNEL(server.hostname, msgtarget), user.getSocket());
 			return;
 		}
 		if (server.channelMap[msgtarget]._users.find(user.getNickName()) == server.channelMap[msgtarget]._users.end())
 		{
-			server.setBroadcast(ERR_USERNOTINCHANNEL(user.getNickName(), msgtarget), user.getSocket());
+			server.setBroadcast(ERR_USERNOTINCHANNEL(server.hostname, user.getNickName(), msgtarget), user.getSocket());
 			return;
 		}
-		reply = RPL_PRIVMSG(user.getPrefix(), msgtarget, msg);
+		reply = RPL_PRIVMSG(server.hostname, user.getPrefix(), msgtarget, msg);
 		server.setBroadcast(msgtarget, user.getNickName(), reply);
 	}
 	else  // <msgtarget> is a nickname
@@ -421,36 +420,36 @@ void	CommandHandler::handlePRIVMSG() {
 		int nick_fd = server.getFdbyNickName(msgtarget);
 		if(nick_fd == -1)
 		{
-			server.setBroadcast(ERR_NOSUCHNICK(msgtarget), user.getSocket());
+			server.setBroadcast(ERR_NOSUCHNICK(server.hostname, msgtarget), user.getSocket());
 			return;
 		}
-		reply = RPL_PRIVMSG(user.getPrefix(), msgtarget, msg);
+		reply = RPL_PRIVMSG(server.hostname, user.getPrefix(), msgtarget, msg);
 		server.setBroadcast(reply, nick_fd);
 	}
 }
 
- void	CommandHandler::handleINVITE() {
-
+/*
+** format : /INVITE nickname #channel
+*/
+void	CommandHandler::handleINVITE() {
 	std::cout << YELLOW << "INVITE command received.." << RESET << std::endl;
 
-	//format : /INVITE nickname #channel
-	
 	std::vector<std::string> params = split(commandsFromClient["params"], " ");
 	if (params.begin() + 2 != params.end())
 	{
-		server.setBroadcast(ERR_TOOMANYTARGETS(*(params.end() - 1)), user.getSocket());
+		server.setBroadcast(ERR_NEEDMOREPARAMS(server.hostname, *(params.end() - 1)), user.getSocket());
 		return;
 	}
 	int nick_fd = server.getFdbyNickName(*params.begin());
 	if(nick_fd == -1)
 	{
-		server.setBroadcast(ERR_NOSUCHNICK(*params.begin()), user.getSocket());
+		server.setBroadcast(ERR_NOSUCHNICK(server.hostname, *params.begin()), user.getSocket());
 		return;
 	}
 	std::string channelName = parse_channelName(*(params.begin() + 1));
 	if (channelName.empty() == true)
 	{
-		server.setBroadcast(ERR_NOSUCHCHANNEL(channelName), user.getSocket());
+		server.setBroadcast(ERR_NOSUCHCHANNEL(server.hostname, channelName), user.getSocket());
 		return; 
 	}
 	// creates the channel if it does not exists
@@ -469,56 +468,56 @@ void	CommandHandler::handlePRIVMSG() {
 	{
 		if (user._channels.find(channelName) == user._channels.end())
 		{
-			server.setBroadcast(ERR_USERNOTINCHANNEL(user.getNickName(), channelName), user.getSocket());
+			server.setBroadcast(ERR_USERNOTINCHANNEL(server.hostname, user.getNickName(), channelName), user.getSocket());
 			return;
 		}
 		if (server.channelMap[channelName].getLimited() == true)
 		{
 			if (server.channelMap[channelName].getNb() == server.channelMap[channelName].getLimit())
 			{
-				server.setBroadcast(ERR_CHANNELISFULL(channelName), user.getSocket());
+				server.setBroadcast(ERR_CHANNELISFULL(server.hostname, channelName), user.getSocket());
 				return; 
 			}
 		}
 		if (server.channelMap[channelName]._users.find(*params.begin()) != server.channelMap[channelName]._users.end())
 		{
-			server.setBroadcast(ERR_USERONCHANNEL(*params.begin(), channelName), user.getSocket());
+			server.setBroadcast(ERR_USERONCHANNEL(server.hostname, *params.begin(), channelName), user.getSocket());
 			return ; 
 		}
 		server.usersMap[nick_fd].setChannel(server.getChannel(channelName));
 		server.channelMap[channelName].setUser(server.usersMap[nick_fd]);
 	}
-	server.setBroadcast(RPL_INVITING(user.getNickName(), channelName, *params.begin()), user.getSocket());
+	server.setBroadcast(RPL_INVITING(server.hostname, user.getNickName(), channelName, *params.begin()), user.getSocket());
 	server.setBroadcast(RPL_INVITE(user.getNickName(), *params.begin(), channelName), server.getFdbyNickName(*params.begin()));
 }
 
-void	CommandHandler::handleTOPIC()	{
-
-std::cout << YELLOW << "TOPIC command received.." << RESET << std::endl;
-
- 	// format : /TOPIC #channel [topic]
+/*
+** format : /TOPIC #channel [topic]
+*/
+void	CommandHandler::handleTOPIC() {
+	std::cout << YELLOW << "TOPIC command received.." << RESET << std::endl;
 
 	size_t i = commandsFromClient["params"].find_first_of(' ');
 	std::string channelName = commandsFromClient["params"].substr(0, i);
 	// if the channel does not exist
 	if (server.channelMap.find(channelName) == server.channelMap.end())
 	{
-		server.setBroadcast(ERR_NOSUCHCHANNEL(channelName), user.getSocket());
+		server.setBroadcast(ERR_NOSUCHCHANNEL(server.hostname, channelName), user.getSocket());
 		return;
 	}
 	// if the user is not on the channel
 	if (server.channelMap[channelName]._users.find(user.getNickName()) == server.channelMap[channelName]._users.end())
 	{
-		server.setBroadcast(ERR_USERNOTINCHANNEL(user.getNickName(), channelName), user.getSocket());
+		server.setBroadcast(ERR_USERNOTINCHANNEL(server.hostname, user.getNickName(), channelName), user.getSocket());
 		return;
 	}
 	// if the user just wants to print the topic
 	if (i == std::string::npos)
 	{
 		if (server.channelMap[channelName].getTheme().empty() == true)
-			server.setBroadcast(RPL_NOTOPIC(channelName), user.getSocket());
+			server.setBroadcast(RPL_NOTOPIC(server.hostname, channelName), user.getSocket());
 		else 
-			server.setBroadcast(RPL_TOPIC(user.getNickName(), channelName, server.channelMap[channelName].getTheme()), user.getSocket());
+			server.setBroadcast(RPL_TOPIC(server.hostname, user.getNickName(), channelName, server.channelMap[channelName].getTheme()), user.getSocket());
 		return;
 	}
 	// if the user wants to change the topic
@@ -530,23 +529,24 @@ std::cout << YELLOW << "TOPIC command received.." << RESET << std::endl;
 		{
 			if(server.channelMap[channelName].isOp(user.getNickName()) == false)
 			{
-				server.setBroadcast(ERR_CHANOPRIVSNEEDED(channelName), user.getSocket());
+				server.setBroadcast(ERR_CHANOPRIVSNEEDED(server.hostname, channelName), user.getSocket());
 				return;
 			}
 		}
 		if (topic.empty())
 			server.channelMap[channelName].removeTopic();
 		server.channelMap[channelName].setTheme(topic);
-		server.setBroadcast(RPL_TOPIC(user.getNickName(), channelName, topic), user.getSocket());
-		server.setBroadcast(channelName, user.getNickName(), RPL_TOPIC(user.getNickName(), channelName, topic));
+		server.setBroadcast(RPL_TOPIC(server.hostname, user.getNickName(), channelName, topic), user.getSocket());
+		server.setBroadcast(channelName, user.getNickName(), RPL_TOPIC(server.hostname, user.getNickName(), channelName, topic));
 	}
 }
 
+/*
+** format de la commande : /KICK #channel nickname
+*/
 void	CommandHandler::handleKICK()
 {
  	std::cout << YELLOW << "KICK command received.." << RESET << std::endl;
-
-	// format de la commande : /KICK #channel nickname
 
 	std::vector<std::string> params = split(commandsFromClient["params"], " ");
 	if (params.begin() + 1 != params.end() && params.begin() + 2 != params.end())
@@ -559,46 +559,46 @@ void	CommandHandler::handleKICK()
 			std::cout << i << std::endl;
 			i++;
 		}
-		server.setBroadcast(ERR_TOOMANYTARGETS(*(params.end() - 1)), user.getSocket());
-		// user.responseBuffer = ERR_TOOMANYTARGETS(*(params.end() - 1));
+		server.setBroadcast(ERR_TOOMANYTARGETS(server.hostname, *(params.end() - 1)), user.getSocket());
+		// user.responseBuffer = ERR_TOOMANYTARGETS(server.hostname, *(params.end() - 1));
 		return;
 	}
 	else if (params.begin() + 1 == params.end())
 	{
-		server.setBroadcast(ERR_NEEDMOREPARAMS(commandsFromClient["command"]), user.getSocket());
+		server.setBroadcast(ERR_NEEDMOREPARAMS(server.hostname, commandsFromClient["command"]), user.getSocket());
 		// user.responseBuffer = ERR_NEEDMOREPARAMS(commandsFromClient["command"]);
 		return;
 	}
 	std::string channelName = parse_channelName(*params.begin());
 	if (channelName.empty() == true || server.channelMap.find(channelName) == server.channelMap.end())
 	{
-		server.setBroadcast(ERR_NOSUCHCHANNEL(channelName), user.getSocket());
-		// user.responseBuffer = ERR_NOSUCHCHANNEL(channelName);
+		server.setBroadcast(ERR_NOSUCHCHANNEL(server.hostname, channelName), user.getSocket());
+		// user.responseBuffer = ERR_NOSUCHCHANNEL(server.hostname, channelName);
 		return; 
 	}
 	if (server.channelMap[channelName]._users.find(user.getNickName()) == server.channelMap[channelName]._users.end())
 	{
-		server.setBroadcast(ERR_USERNOTINCHANNEL(user.getNickName(), channelName), user.getSocket());
-		// user.responseBuffer = ERR_USERNOTINCHANNEL(user.getNickName(), channelName);
+		server.setBroadcast(ERR_USERNOTINCHANNEL(server.hostname, user.getNickName(), channelName), user.getSocket());
+		// user.responseBuffer = ERR_USERNOTINCHANNEL(server.hostname, user.getNickName(), channelName);
 		return;
 	}
 	if (server.channelMap[channelName].isOp(user.getNickName()) == false)
 	{
-		server.setBroadcast(ERR_CHANOPRIVSNEEDED(channelName), user.getSocket());
-		// user.responseBuffer = ERR_CHANOPRIVSNEEDED(channelName);
+		server.setBroadcast(ERR_CHANOPRIVSNEEDED(server.hostname, channelName), user.getSocket());
+		// user.responseBuffer = ERR_CHANOPRIVSNEEDED(server.hostname, channelName);
 		return;
 	}
 	std::string nickname = *(params.begin() + 1);
 	if (server.usersMap.find(server.getFdbyNickName(nickname)) == server.usersMap.end())
 	{
-		server.setBroadcast(ERR_NOSUCHNICK(nickname), user.getSocket());
-		// user.responseBuffer = ERR_NOSUCHNICK(nickname);
+		server.setBroadcast(ERR_NOSUCHNICK(server.hostname, nickname), user.getSocket());
+		// user.responseBuffer = ERR_NOSUCHNICK(server.hostname, nickname);
 		return;
 	}
 	if (server.channelMap[channelName]._users.find(nickname) == server.channelMap[channelName]._users.end())
 	{
-		server.setBroadcast(ERR_USERNOTINCHANNEL(nickname, channelName), user.getSocket());
-		// user.responseBuffer = ERR_USERNOTINCHANNEL(nickname, channelName); 
+		server.setBroadcast(ERR_USERNOTINCHANNEL(server.hostname, nickname, channelName), user.getSocket());
+		// user.responseBuffer = ERR_USERNOTINCHANNEL(server.hostname, nickname, channelName);
 		return;
 	}
 	server.channelMap[channelName].getUser(nickname).getChannel(channelName).removeUser(nickname);
@@ -631,11 +631,13 @@ void	CommandHandler::handlePING()
 	// user.responseBuffer = user.getPrefix() + " PONG localhost";
 }
 
+/*
+** format: /PART #channel [message]
+*/
 void	CommandHandler::handlePART()
 {
 	std::cout << YELLOW << "PART command received.." << RESET << std::endl;
 	
-	// format: /PART #channel [message]
 	std::string channelName;
 	size_t i = commandsFromClient["params"].find_first_of(' ');
 	if (i == std::string::npos)
@@ -647,14 +649,14 @@ void	CommandHandler::handlePART()
 		msg = commandsFromClient["params"].substr(i + 1, commandsFromClient["params"].size() - i + 1);
 	if (server.channelMap.find(channelName) == server.channelMap.end())
 	{
-		server.setBroadcast(ERR_NOSUCHCHANNEL(channelName), user.getSocket());
-		// user.responseBuffer = ERR_NOSUCHCHANNEL(channelName);
+		server.setBroadcast(ERR_NOSUCHCHANNEL(server.hostname, channelName), user.getSocket());
+		// user.responseBuffer = ERR_NOSUCHCHANNEL(server.hostname, channelName);
 		return; 
 	}
 	if (server.channelMap[channelName]._users.find(user.getNickName()) == server.channelMap[channelName]._users.end())
 	{
-		server.setBroadcast(ERR_USERNOTINCHANNEL(user.getNickName(), channelName), user.getSocket());
-		// user.responseBuffer = ERR_USERNOTINCHANNEL(user.getNickName(), channelName); 
+		server.setBroadcast(ERR_USERNOTINCHANNEL(server.hostname, user.getNickName(), channelName), user.getSocket());
+		// user.responseBuffer = ERR_USERNOTINCHANNEL(server.hostname, user.getNickName(), channelName);
 		return;
 	}
 	user.removeChannel(channelName);
@@ -698,8 +700,9 @@ void	CommandHandler::sendHandshake()
 	std::string nickName = user.getNickName();
 
 	std::stringstream reply_buffer;
-	reply_buffer << RPL_WELCOME(nickName, hostName) << RPL_YOURHOST(nickName)
-	<< RPL_CREATED(nickName, serverCreated) << RPL_MYINFO(nickName);
+	// reply_buffer << RPL_WELCOME(nickName, hostName) << RPL_YOURHOST(nickName)
+	reply_buffer << RPL_WELCOME(server.hostname, nickName, hostName) << RPL_YOURHOST(server.hostname, nickName)
+	<< RPL_CREATED(server.hostname, nickName, serverCreated) << RPL_MYINFO(server.hostname, nickName);
 	// user.responseBuffer = reply_buffer.str();
 	server.setBroadcast(reply_buffer.str(), user.getSocket());
 	user.setHandshaked(true);

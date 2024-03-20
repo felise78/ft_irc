@@ -4,6 +4,8 @@ ServerManager::ServerManager(int port, std::string const& password) : _server(Se
 
 	SM_instance = this; // This is needed for the signal handling
 
+	hostname = _server.getServerHostName();
+
 	FD_ZERO(&_recv_fd_pool);
 	FD_ZERO(&_send_fd_pool);
 	_serverFd = _server.getServerFd();

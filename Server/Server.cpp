@@ -4,8 +4,8 @@ Server::Server(int port, std::string const& password) :
 	_socket_fd(-1) {
 	
 	// THIS MUST BE PARSED FROM MAIN argv
+	setServerHostName();
 	setPort(port);
-	setServerName(SERVER_NAME);
 	setServerPassword(password);
 
 	// std::cout << MAGENTA << "\tServer constructor called" << RESET << std::endl;
@@ -30,8 +30,12 @@ void	Server::setPort(const int & port) {
 	_port = port;
 }
 
-void	Server::setServerName(const std::string & serverName) {
-	_serverName = serverName;
+void	Server::setServerHostName() {
+	// _serverHostName = serverName;
+
+	char hostname[1024];
+	gethostname(hostname, 1024);
+	_serverHostName = hostname;
 }
 
 void	Server::setServerPassword(const std::string & serverPassword) {
@@ -49,8 +53,8 @@ int		Server::getPort() const {
 	return _port;
 }
 
-std::string const &	Server::getServerName() const {
-	return _serverName;
+std::string const &	Server::getServerHostName() const {
+	return _serverHostName;
 }
 
 std::string const&	Server::getServerPassword() const {
@@ -115,8 +119,8 @@ void	Server::startListenToNetwork() {
 void	Server::printServerData() const {
 
 	std::cout << YELLOW << "[!] Server DATA:" << RESET << std::endl;
-	std::cout << YELLOW << "\tServer fd:   " << getServerFd() << RESET << std::endl;
-	std::cout << YELLOW << "\tServer port: " << _port << RESET << std::endl;
-	std::cout << YELLOW << "\tServer name: " << _serverName << RESET << std::endl;
-	std::cout << YELLOW << "\tServer pass: " << _serverPassword << RESET << std::endl;
+	std::cout << YELLOW << "\tServer fd:       " << getServerFd() << RESET << std::endl;
+	std::cout << YELLOW << "\tServer port:     " << _port << RESET << std::endl;
+	std::cout << YELLOW << "\tServer hostname: " << _serverHostName << RESET << std::endl;
+	std::cout << YELLOW << "\tServer pass:     " << _serverPassword << RESET << std::endl;
 }

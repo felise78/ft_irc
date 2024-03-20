@@ -1,6 +1,7 @@
 #ifndef CHANNEL_HPP
 # define CHANNEL_HPP
 
+	#include <iostream>
 	#include <map>
 	#include <string>
 	#include <vector>
@@ -9,7 +10,11 @@
 	class Operator;
 	
 	#include "../Server/ServerManager.hpp"
+	#include "../User/User.hpp"
+
 	class ServerManager;
+
+	using namespace std;
 
 	class Channel {
 
@@ -27,7 +32,7 @@
 		public :
 			Channel() {}
 			//Channel(ServerManager &_server) : server(_server) {}
-			//Channel(ServerManager& _server, const std::string& name);
+			// Channel(ServerManager& _server, const std::string& name);
 			Channel(const std::string& name);
 			~Channel();
 			//ServerManager&			server;

@@ -5,7 +5,8 @@ ModeHandler::ModeHandler(map<string, string>& commands, ServerManager& srv, User
 {
 	if (_user.getStatus() != REGISTERED)
 	{
-		srv.setBroadcast(ERR_NOTREGISTERED, _user.getSocket());
+		// srv.setBroadcast(ERR_NOTREGISTERED, _user.getSocket());
+		srv.setBroadcast(ERR_NOTREGISTERED(_server.hostname), _user.getSocket());
 		return ;
 	}
 	if (parse_errors() != 0)
@@ -39,7 +40,8 @@ int	ModeHandler::parse_errors()
 				_channel = args[i];
 			else
 			{
-				_server.setBroadcast(ERR_NOSUCHCHANNEL(args[i]), _user.getSocket());
+				// _server.setBroadcast(ERR_NOSUCHCHANNEL(args[i]), _user.getSocket());
+				_server.setBroadcast(ERR_NOSUCHCHANNEL(_server.hostname, args[i]), _user.getSocket());
 				return 1;
 			}
 		}
@@ -51,7 +53,8 @@ int	ModeHandler::parse_errors()
 				const string modes = "itkol";
 				if (_flag.size() < 2 || modes.find(_flag[i]) == string::npos)
 				{
-					_server.setBroadcast(ERR_UMODEUNKNOWNFLAG(args[i]), _user.getSocket());
+					// _server.setBroadcast(ERR_UMODEUNKNOWNFLAG(args[i]), _user.getSocket());
+					_server.setBroadcast(ERR_UMODEUNKNOWNFLAG(_server.hostname, args[i]), _user.getSocket());
 					return 1;
 				}
 			}
@@ -64,12 +67,14 @@ int	ModeHandler::parse_errors()
 	}
 	if (n_flags < 1 || n_channels < 1)
 	{
-		_server.setBroadcast(ERR_NEEDMOREPARAMS(_commandsFromClient["command"]), _user.getSocket());
+		// _server.setBroadcast(ERR_NEEDMOREPARAMS(_commandsFromClient["command"]), _user.getSocket());
+		_server.setBroadcast(ERR_NEEDMOREPARAMS(_server.hostname, _commandsFromClient["command"]), _user.getSocket());
 		return 1;
 	}
 	if (_extra_args.size() > 1 || n_flags > 1 || n_channels > 1)
 	{
-		_server.setBroadcast(ERR_TOOMANYTARGETS(_commandsFromClient["command"]), _user.getSocket());
+		// _server.setBroadcast(ERR_TOOMANYTARGETS(_commandsFromClient["command"]), _user.getSocket());
+		_server.setBroadcast(ERR_TOOMANYTARGETS(_server.hostname, _commandsFromClient["command"]), _user.getSocket());
 		return 1;
 	}
 	Channel &c_tmp = _server.channelMap[_channel];
@@ -78,7 +83,8 @@ int	ModeHandler::parse_errors()
 		return 0;
 	else
 	{
-		_server.setBroadcast(ERR_CHANOPRIVSNEEDED(_channel), _user.getSocket());
+		// _server.setBroadcast(ERR_CHANOPRIVSNEEDED(_channel), _user.getSocket());
+		_server.setBroadcast(ERR_CHANOPRIVSNEEDED(_server.hostname, _channel), _user.getSocket());
 		return 1;
 	}
 }
@@ -112,12 +118,14 @@ void	ModeHandler::exec_mode()
 			if (_extra_args.empty())
 			{
 				std::string cmd = "MODE";
-				_server.setBroadcast(ERR_NEEDMOREPARAMS(cmd), _user.getSocket());
+				// _server.setBroadcast(ERR_NEEDMOREPARAMS(cmd), _user.getSocket());
+				_server.setBroadcast(ERR_NEEDMOREPARAMS(_server.hostname, cmd), _user.getSocket());
 				return ;
 			}
 			else if (channel._users.find(_extra_args[0]) == channel._users.end())
 			{
-				_server.setBroadcast(ERR_NOTONCHANNEL(_channel), _user.getSocket());
+				// _server.setBroadcast(ERR_NOTONCHANNEL(_channel), _user.getSocket());
+				_server.setBroadcast(ERR_NOTONCHANNEL(_server.hostname, _channel), _user.getSocket());
 				return ;
 			}
 			else {
