@@ -117,9 +117,11 @@ void	ModeHandler::exec_mode()
 	std::map<std::string, Channel>::iterator it = _server.channelMap.find(_channel);
 	if (it == _server.channelMap.end() || _flag.empty())
 		return ;
+
 	// DEBUG // 
 	std::cout << "flag : " << _flag << std::endl;
 	//
+
 	Channel &channel = it->second;
 	if (!(_flag.empty()) && _flag[0] == '+')
 		set_flag = true;
@@ -128,9 +130,19 @@ void	ModeHandler::exec_mode()
 	for (size_t i = 1; i < _flag.size(); i++)
 	{
 		if (_flag[i] == 'i')
+		{
+			// DEBUG // 
+			std::cout << MAGENTA << "MODE 'i'" << RESET << std::endl;
+			//
 			channel.setInvit(set_flag);
+		}
 		if (_flag[i] == 't')
+		{
+			// DEBUG // 
+			std::cout << MAGENTA << "MODE 't'" << RESET << std::endl;
+			//
 			channel.setTopicRestricted(set_flag);
+		}
 		if (_flag[i] == 'k')
 		{
 			// DEBUG // 

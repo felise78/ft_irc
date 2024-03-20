@@ -19,7 +19,14 @@ SRCS = main.cpp \
 	ModeHandler.cpp \
 	Channel.cpp \
 	Request.cpp \
-	User.cpp
+	User.cpp \
+	Join.cpp \
+	Privmsg.cpp \
+	Invite.cpp \
+	Part.cpp \
+	Topic.cpp \
+	Kick.cpp \
+	Quit.cpp
 
 OBJS = $(SRCS:.cpp=.o)
 
