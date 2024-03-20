@@ -412,10 +412,10 @@ void	ServerManager::signalhandler(int signal) {
 }
 
 void	ServerManager::handleSignal() {
-	std::cout << RED << "\t[-] Signal received. " << RESET << std::endl;
+	std::cout << RED << "\t[-] SIGINT received. Shutting down the server. Bye.." << RESET << std::endl;
 	// Closing all available connections, cleaning up and terminating the main loop..
 
-	for (int fd = _max_fd; fd >= _serverFd; fd--) {
+	for (int fd = _max_fd; fd > _serverFd; fd--) {
 		_closeConnection(fd);
 	}
 

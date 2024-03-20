@@ -1,8 +1,8 @@
 
 NAME = ircserv
 
-CXX = g++
-CXXFLAGS = -Wall -Werror -Wextra -std=c++98 -g
+CXX = c++
+CXXFLAGS = -Wall -Werror -Wextra -std=c++98
 
 VPATH = Server \
 		Commands \

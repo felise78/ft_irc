@@ -21,10 +21,7 @@
 
 #define PROTOCOL	0
 #define BACKLOG		100 // The maximum length of the queue of pending connections
-
-/* THE FOLLOWING DATA SHALL BE PARSED FROM MAIN argv ..*/
-#define PORT 		55555
-#define SERVER_PASS "password"
+#define CREATION_DATE	": in March 2024"
 
 
 class Server {
