@@ -181,7 +181,7 @@ void	Channel::removeOp(const std::string& opNickname)
         if (*it == opNickname)
 		{
             _ops.erase(it); // Supprime l'op
-			getUser(opNickname).setNickName(opNickname.substr(1)); // remove '@'
+			//getUser(opNickname).setNickName(opNickname.substr(1)); // remove '@'
             break; 
         }
     }

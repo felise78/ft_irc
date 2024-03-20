@@ -33,7 +33,10 @@ int	ModeHandler::parse_errors()
 			args.push_back(tmp);
 	}
 	// DEBUG //
-	std::cout << "arg[0] : " << args[0] << " arg[1] : " << args[1] << " arg[2] : " << args[2] << std::endl;
+	for (size_t i = 0; i < args.size(); i++)
+		std::cout << "arg[" << i << "] : " << args[i] << " ";
+	std::cout << std::endl;
+	// 
 	for (size_t i = 0; i < args.size(); i++)
 	{
 		if (args[i][0] == '#' || args[i][0] == '&')
@@ -49,6 +52,11 @@ int	ModeHandler::parse_errors()
 		}
 		else if (args[i][0] == '+' || args[i][0] == '-')
 		{
+			if (i != 1)
+			{
+				_server.setBroadcast(ERR_UMODEUNKNOWNFLAG(args[i]), _user.getSocket());
+				return 1;
+			}
 			_flag = args[i];
 			for (size_t i = 1; i < _flag.size(); i++)
 			{
@@ -63,11 +71,13 @@ int	ModeHandler::parse_errors()
 		}
 		else
 		{
-			// DEBUG //
-			std::cout << "ca rentre bien la? \n";
+			
 			_extra_args.push_back(args[i]);
 		}
 	}
+	// DEBUG //
+	std::cout << "nb chan : " << n_channels << std::endl;
+	// 
 	if (n_flags < 1 || n_channels < 1)
 	{
 		_server.setBroadcast(ERR_NEEDMOREPARAMS(_commandsFromClient["command"]), _user.getSocket());
@@ -99,8 +109,10 @@ void	ModeHandler::exec_mode()
 	if (!(_flag.empty()) && _flag[0] == '+')
 		set_flag = true;
 	if (!(_flag.empty()) && _flag[0] == '-')
-		set_flag = false;	
+		set_flag = false;
+	// DEBUG //
 	std::cout << "Flag is " << _flag << ".\n";
+	//
 	for (size_t i = 1; i < _flag.size(); i++)
 	{
 		if (_flag[i] == 'i')
@@ -113,14 +125,23 @@ void	ModeHandler::exec_mode()
 			if (!_extra_args.empty())
 				channel.setKey(_extra_args[0]);
 		}
+		/*
+			If a user attempts to make themselves an operator using the "+o"
+   			flag, the attempt should be ignored.  There is no restriction,
+   			however, on anyone `deopping' themselves (using "-o").
+		*/
 		if (_flag[i] == 'o')
 		{
 			// DEBUG //
-			std::cout << "args : " << _extra_args[0] << std::endl;
-			if (_extra_args.empty())
+			std::cout << MAGENTA << "MODE 'o'" << RESET << std::endl;
+			for (size_t i = 0; i < _extra_args.size(); i++)
+			std::cout << "_extra_args[" << i << "] : " << _extra_args[i] << " ";
+			std::cout << std::endl;
+			// 
+			if (_extra_args.size() < 2)
 			{
 				// DEBUG //
-				std::cout << "rentre ici ? \n";
+				//std::cout << "rentre ici ? \n";
 				std::string cmd = "MODE";
 				_server.setBroadcast(ERR_NEEDMOREPARAMS(cmd), _user.getSocket());
 				return ;
@@ -133,31 +154,52 @@ void	ModeHandler::exec_mode()
 			else if (channel._users.find(_extra_args[0]) == channel._users.end())
 			{
 				// DEBUG //
-				std::cout << "ne rentre pas ici ? \n";
+				// std::cout << "ne rentre pas ici ? \n";
 				_server.setBroadcast(ERR_USERNOTINCHANNEL(_extra_args[0],_channel), _user.getSocket());
 				return ;
 			}
 			else
 			{
-				// if (channel.isOp(_user.getNickName()) == false)
-				// 	_server.setBroadcast(ERR_CHANOPRIVSNEEDED(_channel), _user.getSocket());
 				if (set_flag)
 				{
 					if (channel.isOp(_extra_args[0]) == true)
-						{;} // erreur is already op 
-					channel.setOp(_extra_args[0]);                      //
-					// _server.setBroadcast(ERR_CHANOPRIVSNEEDED(_channel), _user.getSocket()); // 
-					// getUser(nickname).responseBuffer = RPL_YOUREOPER(getUser(nickname).getPrefix()); // 
+						{;} // ignored if is already op 
+					channel.setOp(_extra_args[0]);
 					_server.setBroadcast(MODE_USERMSG(_extra_args[0], "+o"), _server.getFdbyNickName(_extra_args[0]));
 				}
 				else
+				{
+					if (channel.isOp(_extra_args[0]) == false)
+						{;} // ignored if is not op 
 					channel.removeOp(_extra_args[0]);
+				}
 			}
 		}
 		if (_flag[i] == 'l')
 		{
+			// DEBUG // 
+				std::cout << "rentre dans le l" << std::endl;
+			//
+
 			if (set_flag)
+			{
+				// DEBUG // 
+				if (!_extra_args[0].empty())
+					std::cout << _extra_args[0] << std::endl;
+				else
+					std::cout << "rien dans args[0]" << std::endl;
+				//
+				std::string::iterator it;
+				for (it = _extra_args[0].begin(); it != _extra_args[0].end(); ++it)
+				{
+					if (std::isdigit(*it) == false)
+					{
+						_server.setBroadcast(ERR_UMODEUNKNOWNFLAG(_extra_args[0]), _user.getSocket());
+						return;
+					}
+				}
 				channel.setLimit(atoi(_extra_args[0].c_str()));
+			}
 			else
 				channel.removeLimit();
 		}

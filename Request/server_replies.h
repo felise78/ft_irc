@@ -44,6 +44,7 @@
 #define ERR_KEYSET(channel) (":localhost 467 " + channel + " :Channel key already set\r\n")
 #define ERR_UNKNOWNMODE(char, channel) (":localhost 472 " + char + " :is unknown mode char to me for " + channel + "\r\n")
 #define ERR_UMODEUNKNOWNFLAG(client) (":localhost 501 " + client + " :Unknown MODE flag\r\n") // client is with prefix 
+// RPL_UMODEIS
 
 /*NICK COMMAND*/
 #define ERR_ERRONEUSNICKNAME(nick) (":localhost 432 " + nick + " :Erroneous nickname\r\n")
