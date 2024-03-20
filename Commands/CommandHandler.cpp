@@ -458,41 +458,50 @@ void	CommandHandler::handlePRIVMSG() {
 		server.setBroadcast(ERR_NOSUCHCHANNEL(channelName), user.getSocket());
 		return; 
 	}
+
+	/* MODIF BY FELISE // it seems we should just send a REPLY and not care about if the chan exists or not
+		There is no requirement that the
+		channel the target user is being invited to must exist or be a valid
+		channel.  To invite a user to a channel which is invite only (MODE
+		+i), the client sending the invite must be recognised as being a
+		channel operator on the given channel.
+	*/
+
 	// creates the channel if it does not exists
-	if(server.channelMap.find(channelName) == server.channelMap.end())
-	{
-		Channel new_channel(channelName);
-		new_channel.setUser(user);
-		new_channel.setOp(user.getNickName());
-		new_channel.setUser(server.usersMap[nick_fd]);
-		server.setChannel(new_channel);
-		server.usersMap[nick_fd].setChannel(new_channel);
-		user.setChannel(new_channel);
-	}
-	// if channel already exists
-	else 
-	{
-		if (user._channels.find(channelName) == user._channels.end())
-		{
-			server.setBroadcast(ERR_USERNOTINCHANNEL(user.getNickName(), channelName), user.getSocket());
-			return;
-		}
-		if (server.channelMap[channelName].getLimited() == true)
-		{
-			if (server.channelMap[channelName].getNb() == server.channelMap[channelName].getLimit())
-			{
-				server.setBroadcast(ERR_CHANNELISFULL(channelName), user.getSocket());
-				return; 
-			}
-		}
-		if (server.channelMap[channelName]._users.find(*params.begin()) != server.channelMap[channelName]._users.end())
-		{
-			server.setBroadcast(ERR_USERONCHANNEL(*params.begin(), channelName), user.getSocket());
-			return ; 
-		}
-		server.usersMap[nick_fd].setChannel(server.getChannel(channelName));
-		server.channelMap[channelName].setUser(server.usersMap[nick_fd]);
-	}
+	// if(server.channelMap.find(channelName) == server.channelMap.end())
+	// {
+	// 	Channel new_channel(channelName);
+	// 	new_channel.setUser(user);
+	// 	new_channel.setOp(user.getNickName());
+	// 	new_channel.setUser(server.usersMap[nick_fd]);
+	// 	server.setChannel(new_channel);
+	// 	server.usersMap[nick_fd].setChannel(new_channel);
+	// 	user.setChannel(new_channel);
+	// }
+	// // if channel already exists
+	// else 
+	// {
+	// 	if (user._channels.find(channelName) == user._channels.end())
+	// 	{
+	// 		server.setBroadcast(ERR_USERNOTINCHANNEL(user.getNickName(), channelName), user.getSocket());
+	// 		return;
+	// 	}
+	// 	if (server.channelMap[channelName].getLimited() == true)
+	// 	{
+	// 		if (server.channelMap[channelName].getNb() == server.channelMap[channelName].getLimit())
+	// 		{
+	// 			server.setBroadcast(ERR_CHANNELISFULL(channelName), user.getSocket());
+	// 			return; 
+	// 		}
+	// 	}
+	// 	if (server.channelMap[channelName]._users.find(*params.begin()) != server.channelMap[channelName]._users.end())
+	// 	{
+	// 		server.setBroadcast(ERR_USERONCHANNEL(*params.begin(), channelName), user.getSocket());
+	// 		return ; 
+	// 	}
+	// 	server.usersMap[nick_fd].setChannel(server.getChannel(channelName));
+	// 	server.channelMap[channelName].setUser(server.usersMap[nick_fd]);
+	// }
 	server.setBroadcast(RPL_INVITING(user.getNickName(), channelName, *params.begin()), user.getSocket());
 	server.setBroadcast(RPL_INVITE(user.getNickName(), *params.begin(), channelName), server.getFdbyNickName(*params.begin()));
 }
@@ -610,13 +619,13 @@ void	CommandHandler::handleKICK()
 	server.channelMap[channelName].getUser(nickname).removeChannel(channelName);
 	server.channelMap[channelName].removeUser(nickname);
 	server.setBroadcast(RPL_KICK(user.getNickName(), channelName, nickname, ""), user.getSocket());
-	// user.responseBuffer += RPL_KICK(user.getNickName(), channelName, nickname, "");
 }
 
 void	CommandHandler::handleMODE()
 {
 	std::cout << YELLOW << "MODE command received.." << RESET << std::endl;
 
+	// format  : /MODE #channel flag [param]
 	ModeHandler	mode_handler(commandsFromClient, server, user);
 }
 
@@ -633,7 +642,6 @@ void	CommandHandler::handlePING()
 	}
 	std::string reply = user.getPrefix() + " " + substr_ping;
 	server.setBroadcast(reply, user.getSocket());
-	// user.responseBuffer = user.getPrefix() + " PONG localhost";
 }
 
 void	CommandHandler::handlePART()
@@ -641,6 +649,7 @@ void	CommandHandler::handlePART()
 	std::cout << YELLOW << "PART command received.." << RESET << std::endl;
 	
 	// format: /PART #channel [message]
+
 	std::string channelName;
 	size_t i = commandsFromClient["params"].find_first_of(' ');
 	if (i == std::string::npos)
@@ -653,18 +662,15 @@ void	CommandHandler::handlePART()
 	if (server.channelMap.find(channelName) == server.channelMap.end())
 	{
 		server.setBroadcast(ERR_NOSUCHCHANNEL(channelName), user.getSocket());
-		// user.responseBuffer = ERR_NOSUCHCHANNEL(channelName);
 		return; 
 	}
 	if (server.channelMap[channelName]._users.find(user.getNickName()) == server.channelMap[channelName]._users.end())
 	{
 		server.setBroadcast(ERR_USERNOTINCHANNEL(user.getNickName(), channelName), user.getSocket());
-		// user.responseBuffer = ERR_USERNOTINCHANNEL(user.getNickName(), channelName); 
 		return;
 	}
 	user.removeChannel(channelName);
 	server.setBroadcast(RPL_PART(user.getPrefix(), channelName, msg), user.getSocket());
-	// user.responseBuffer = RPL_PART(user.getPrefix(), channelName, msg);
 	server.setBroadcast(channelName, user.getNickName(), user.responseBuffer);
 	server.channelMap[channelName].removeUser(user.getNickName());
 }
