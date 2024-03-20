@@ -26,7 +26,8 @@ SRCS = main.cpp \
 	Part.cpp \
 	Topic.cpp \
 	Kick.cpp \
-	Quit.cpp
+	Quit.cpp \
+	Nick.cpp
 
 OBJS = $(SRCS:.cpp=.o)
 

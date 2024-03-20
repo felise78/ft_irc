@@ -51,6 +51,7 @@
 #define ERR_ERRONEUSNICKNAME(nick) (":localhost 432 " + nick + " :Erroneous nickname\r\n")
 #define ERR_NICKNAMEINUSE(nick) (":localhost 433 " + nick + " :Nickname is already in use\r\n")
 #define ERR_NONICKNAMEGIVEN ":localhost 431 :No nickname given\r\n"
+#define RPL_NICK(old_nickname, username, new_nickname) (":" + old_nickname + "!" + username + "@localhost NICK " +  new_nickname + "\r\n")
 
 /*JOIN COMMAND*/
 #define ERR_CHANNELISFULL(channelName) (":localhost 471 " + channelName + " :Cannot join channel (+l)\r\n")
