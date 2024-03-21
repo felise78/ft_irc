@@ -41,7 +41,6 @@ void	CommandHandler::handleNICK() {
 	// if the nickname is already in use:
 	if (server.getFdbyNickName(commandsFromClient["params"]) != -1) {
 		server.setBroadcast(ERR_NICKNAMEINUSE(commandsFromClient["params"]), user.getSocket());
-		// user.responseBuffer = ERR_NICKNAMEINUSE(commandsFromClient["params"]);
 		return;
 	}
 
@@ -68,21 +67,15 @@ void	CommandHandler::handleNICK() {
 		// user.responseBuffer = "NICK set to " + nickname + "\r\n";
 		return;
 	} // if there is no PASS:
-	else if (user.getStatus() == PASS_NEEDED) {
-		user.setNickName("");
-		/* DEBUG */
-		// user.responseBuffer = "PASS needed first\r\n";
-		std::cout << RED << "[-] PASS needed first" << RESET << std::endl;
-
-		return;
-	}
-	else if (user.getStatus() == PASS_MATCHED && !user.getUserName().empty()) {
-		// sendHandshake();
+	if (user.getStatus() PASS_MATCHED && !user.getUserName().empty()) {
+		sendHandshake();
 		user.setStatus(REGISTERED);
 	}
-	// else if (user.getStatus() == PASS_MATCHED && user.getUserName().empty()) {
-	// 	// std::string str = "USER";
-	// 	// user.responseBuffer = ERR_NEEDMOREPARAMS(str);
-	// 	// user.responseBuffer = "NICK is set to " + nickname + ". Also need USER.\r\n";
-	// }
+	// The following logic is not necessary but nice to have anyway !!
+	if (user.getStatus() == PASS_NEEDED) {
+		server.setBroadcast(ERR_NEEDMOREPARAMS(server.hostname, "PASS"), user.getSocket());
+	}
+	if (user.getUserName().empty()) {
+		server.setBroadcast(ERR_NEEDMOREPARAMS(server.hostname, "USER"), user.getSocket());
+	}
 }

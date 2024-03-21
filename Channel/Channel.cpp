@@ -49,8 +49,6 @@ void	Channel::setOp(const std::string& nickname)
 	// //std::string opNickname = "@" + nickname;
 	// //getUser(nickname).setNickName(opNickname);
 	_ops.push_back(nickname);
-	getUser(nickname).responseBuffer = RPL_YOUREOPER(getUser(nickname).getPrefix());
-	
 }
 
 void	Channel::setNb(const int& nb)
