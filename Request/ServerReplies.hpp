@@ -14,7 +14,7 @@
 #define ERR_UNKNOWNCOMMAND(hostname, command) (":" + hostname + " 421 " + command + " :Unknown command\r\n")
 
 /*PRIVMSG*/
-#define ERR_NOSUCHNICK(hostname, user_nick, target_nick) (":" + hostname + " 401 " + user_nick + " " + target_nick + ":No such nick\r\n")
+#define ERR_NOSUCHNICK(hostname, user_nick, target_nick) (":" + hostname + " 401 " + user_nick + " " + target_nick + " :No such nick\r\n")
 #define ERR_CANNOTSENDTOCHAN(hostname, channel) (":" + hostname + " 404 " channel + " :Cannot send to channel\r\n")
 #define ERR_TOOMANYTARGETS(hostname, target) (":" + hostname + " 407 " + target + ":407 recipients. Use one target only.\r\n")
 #define ERR_NORECIPIENT(hostname, command) (":" + hostname + " 411 :No recipient given " + command + "\r\n")
@@ -32,7 +32,7 @@
 /*INVITE COMMAND*/
 #define RPL_INVITE(hostname, user, invited, channel) (":" + hostname + " " + user + " INVITE " + invited + " " + channel + "\r\n")
 #define RPL_INVITING(hostname, user, channel, nick) (":" + hostname + " 341 " + user + " " + nick + " " + channel + "\r\n")
-#define ERR_USERONCHANNEL(hostname, user, channel) (":" + hostname + " 442 " + user + " " + channel + " :is already on channel\r\n")
+#define ERR_USERONCHANNEL(hostname, user_nick, invited_nick, channel) (":" + hostname + " 442 " + user_nick + " " + invited_nick + " " + channel + " :is already on channel\r\n")
 
 /* TOPIC COMMAND: */
 #define RPL_NOTOPIC(hostname, channel) (":" + hostname + " 331 " + channel + " :No topic is set\r\n")
@@ -46,10 +46,10 @@
 #define ERR_UMODEUNKNOWNFLAG(hostname, client) (":" + hostname + " 501 " + client + " :Unknown MODE flag\r\n") // client is with prefix
 
 /*NICK COMMAND*/
-#define ERR_ERRONEUSNICKNAME(hostname, nick) (":" + hostname + " 432 " + nick + " :Erroneous nickname\r\n")
+#define ERR_ERRONEUSNICKNAME(hostname, user_nick, nick) (":" + hostname + " 432 " + user_nick + " " + nick + " :Erroneous nickname\r\n")
 #define ERR_NICKNAMEINUSE(hostname, nick) (":" + hostname + " 433 " + nick + " :Nickname is already in use\r\n")
 #define ERR_NONICKNAMEGIVEN(hostname) (":" + hostname + " 431 :No nickname given\r\n")
-#define RPL_NICK(hostname, old_nick, username, new_nick) (":" + hostname + " " + old_nick + "!" + username + "@localhost NICK " +  new_nick + "\r\n")
+#define RPL_NICK(old_nick, username, new_nick) (":" + old_nick + "!" + username + "@localhost NICK " +  new_nick + "\r\n")
 
 /*JOIN COMMAND*/
 #define ERR_CHANNELISFULL(hostname, channel) (":" + hostname + " 471 " + channel + " :Cannot join channel (+l)\r\n")
@@ -58,8 +58,8 @@
 //                 ERR_TOOMANYCHANNELS
 
 /*PART COMMAND*/
-#define RPL_PART(hostname, user_id, channel, reason) (":" + hostname + " " +user_id + " PART " + channel + " " + (reason.empty() ? "." : reason ) + "\r\n")
-#define RPL_QUIT(user_id, reason) (user_id + " QUIT : " + reason + "\r\n")
+#define RPL_PART(user_prefix, channel, reason) (user_prefix + " PART " + channel + " " + (reason.empty() ? "." : reason ) + "\r\n")
+#define RPL_QUIT(user_prefix, reason) (user_prefix + " QUIT :Quit " + reason + "\r\n")
 
 /*OPERATOR REPLY*/
 #define RPL_YOUREOPER(hostname, nick) (":" + hostname + " 381 " + nick + " :You are now an IRC operator\r\n")

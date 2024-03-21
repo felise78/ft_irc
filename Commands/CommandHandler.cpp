@@ -52,12 +52,7 @@ CommandHandler::CommandHandler(ServerManager& srv, User &usr, map<string, string
 		return;
 	}
 
-	// DEBUG //
-	std::cout << "[CommandHandler] : " << commandsFromClient["params"] << std::endl;
-	//
-
 	executeCommand();
-
 }
 
 CommandHandler::~CommandHandler() {

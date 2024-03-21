@@ -20,9 +20,9 @@ void	CommandHandler::handleNICK() {
 		return;
 	} // check the length and the characters
 	if (nickname.length() > 9 || nickname.length() < 1) {
-		server.setBroadcast(ERR_ERRONEUSNICKNAME(server.hostname, nickname), user.getSocket());
+		server.setBroadcast(ERR_ERRONEUSNICKNAME(server.hostname, user.getNickName(), nickname), user.getSocket());
 		/* DEBUG */
-		std::cout << RED << "[-] " << ERR_ERRONEUSNICKNAME(server.hostname, nickname) << RESET << std::endl;
+		std::cout << RED << "[-] " << ERR_ERRONEUSNICKNAME(server.hostname, user.getNickName(), nickname) << RESET << std::endl;
 
 		return;
 	}
@@ -30,9 +30,9 @@ void	CommandHandler::handleNICK() {
 	string::const_iterator it;
 	for(it = nickname.begin(); it != nickname.end(); ++it) {
 		if (std::isalnum(*it) == false) {
-			server.setBroadcast(ERR_ERRONEUSNICKNAME(server.hostname, nickname), user.getSocket());
+			server.setBroadcast(ERR_ERRONEUSNICKNAME(server.hostname, user.getNickName(), nickname), user.getSocket());
 			/* DEBUG */
-			std::cout << RED << "[-] " << ERR_ERRONEUSNICKNAME(server.hostname, nickname) << RESET << std::endl;
+			std::cout << RED << "[-] " << ERR_ERRONEUSNICKNAME(server.hostname, user.getNickName(), nickname) << RESET << std::endl;
 
 			return;
 		}
@@ -44,22 +44,11 @@ void	CommandHandler::handleNICK() {
 		return;
 	}
 
-
 	// Once all the above passed setting nickname and updating it in all channels
 	std::string oldNick = user.getNickName();
-	user.setNickName(nickname);
-
-	// si le user a change de nick // qu'il est donc bien REGISTERED // 
-	// envoyer un message special a irssi
-	// not sure if this should come at the end of the function ?
+	server.usersMap[server.getFdbyNickName(oldNick)].setNickName(nickname);
 	if (!oldNick.empty())
-		server.setBroadcast(RPL_NICK(server.hostname, oldNick, user.getUserName(), user.getNickName()), user.getSocket()); 
-
-	// segaults cuz we changed for pointers ?
-	// std::map<std::string, Channel *>::iterator it2 = user._channels.begin();
-	// for ( ; it2 != user._channels.end(); ++it2) {
-	// 	it2->second->getUser(oldNick).setNickName(nickname);
-	// }
+		server.setBroadcast(RPL_NICK(oldNick, user.getUserName(), user.getNickName()), user.getSocket()); 
 
 	// the following part is to handle the initial registration of the user
 	// if the user is already registered return
