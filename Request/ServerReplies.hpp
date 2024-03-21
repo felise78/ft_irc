@@ -59,7 +59,7 @@
 
 /*PART COMMAND*/
 #define RPL_PART(user_prefix, channel, reason) (user_prefix + " PART " + channel + " " + (reason.empty() ? "." : reason ) + "\r\n")
-#define RPL_QUIT(user_id, reason) (user_id + " QUIT : " + reason + "\r\n")
+#define RPL_QUIT(user_prefix, reason) (user_prefix + " QUIT :Quit " + reason + "\r\n")
 
 /*OPERATOR REPLY*/
 #define RPL_YOUREOPER(hostname, nick) (":" + hostname + " 381 " + nick + " :You are now an IRC operator\r\n")
