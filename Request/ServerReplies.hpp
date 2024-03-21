@@ -46,10 +46,10 @@
 #define ERR_UMODEUNKNOWNFLAG(hostname, client) (":" + hostname + " 501 " + client + " :Unknown MODE flag\r\n") // client is with prefix
 
 /*NICK COMMAND*/
-#define ERR_ERRONEUSNICKNAME(hostname, nick) (":" + hostname + " 432 " + nick + " :Erroneous nickname\r\n")
+#define ERR_ERRONEUSNICKNAME(hostname, user_nick, nick) (":" + hostname + " 432 " + user_nick + " " + nick + " :Erroneous nickname\r\n")
 #define ERR_NICKNAMEINUSE(hostname, nick) (":" + hostname + " 433 " + nick + " :Nickname is already in use\r\n")
 #define ERR_NONICKNAMEGIVEN(hostname) (":" + hostname + " 431 :No nickname given\r\n")
-#define RPL_NICK(hostname, old_nick, username, new_nick) (":" + hostname + " " + old_nick + "!" + username + "@localhost NICK " +  new_nick + "\r\n")
+#define RPL_NICK(old_nick, username, new_nick) (":" + old_nick + "!" + username + "@localhost NICK " +  new_nick + "\r\n")
 
 /*JOIN COMMAND*/
 #define ERR_CHANNELISFULL(hostname, channel) (":" + hostname + " 471 " + channel + " :Cannot join channel (+l)\r\n")
