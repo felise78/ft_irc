@@ -12,22 +12,17 @@
 		server.setBroadcast(ERR_TOOMANYTARGETS(server.hostname, *(params.end() - 1)), user.getSocket());
 		return;
 	}
+	std::string channelName = parse_channelName(*(params.begin() + 1));
+	if (channelName.empty() || server.channelMap.find(channelName) == server.channelMap.end())
+	{
+		server.setBroadcast(ERR_NOSUCHCHANNEL(server.hostname, user.getNickName(), *(params.begin() + 1)), user.getSocket());
+		return; 
+	}
 	int nick_fd = server.getFdbyNickName(*params.begin());
 	if(nick_fd == -1)
 	{
 		server.setBroadcast(ERR_NOSUCHNICK(server.hostname, user.getNickName(), *params.begin()), user.getSocket());
 		return;
-	}
-	std::string channelName = parse_channelName(*(params.begin() + 1));
-	if (channelName.empty())
-	{
-		server.setBroadcast(ERR_ERRONEUSNICKNAME(server.hostname, user.getNickName(), *(params.begin() + 1)), user.getSocket());
-		return;
-	}
-	else if (server.channelMap.find(channelName) == server.channelMap.end())
-	{
-		server.setBroadcast(ERR_NOSUCHCHANNEL(server.hostname, user.getNickName(), channelName), user.getSocket());
-		return; 
 	}
 	if (server.usersMap[nick_fd]._channels.find(channelName) != server.usersMap[nick_fd]._channels.end())
 	{
