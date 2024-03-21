@@ -4,6 +4,8 @@ ServerManager::ServerManager(int port, std::string const& password) : _server(Se
 
 	SM_instance = this; // This is needed for the signal handling
 
+	hostname = _server.getServerHostName();
+
 	FD_ZERO(&_recv_fd_pool);
 	FD_ZERO(&_send_fd_pool);
 	_serverFd = _server.getServerFd();
@@ -57,8 +59,6 @@ void	ServerManager::_run() {
 				_respond(fd);
 			}
 		}
-
-		// check for timeout ?!
 	}
 }
 
@@ -149,9 +149,7 @@ void	ServerManager::_handle(int fd) {
 	/* DEBUG */
 	std::cout << timeStamp();
 	std::cout << CYAN << "bytes read: [" << bytes_read << "] USER MESSAGE BUFFER: " << MAGENTA << usersMap[fd].userMessageBuffer;
-	std::cout << CYAN << "Size of user msg buffer: " << user.userMessageBuffer.size() << std::endl;
-	std::cout << CYAN << "[*] client fd[" << fd << "]: " << RESET << std::endl;
-	std::cout << CYAN << "parsing..." << RESET << std::endl;
+	std::cout << CYAN << "[*] client fd[" << fd << "]; "  << "Size of msg buffer: " << user.userMessageBuffer.size() << "; parsing..." << RESET << std::endl;
 	/* ***** */
 
 	vector<string> splitMessageBuffer = split(user.userMessageBuffer, "\n");
@@ -191,25 +189,17 @@ void	ServerManager::_respond(int fd) {
 		_closeConnection(fd);
 		return ;
 	}
-	else {
-		/* DEBUG */
-		std::cout << GREEN << "Response to fd:[" << fd << "]: " << user.responseBuffer;
-		std::cout << ", bytes sent: [" << bytes_sent << "]" << RESET << std::endl;
-		std::cout << ". . . . . . . . . . . . . . . . . . . . . . . . . . . " << std::endl;
-		// std::cout << CYAN;
-		// std::cout << UsersMap[fd].responseBuffer << std::endl;
-		// std::cout << RESET;
-		/* ***** */
-	}
+	/* DEBUG */
+	std::cout << GREEN << "Response to fd:[" << fd << "]: " << user.responseBuffer;
+	std::cout << ", bytes sent: [" << bytes_sent << "]" << RESET << std::endl;
+	std::cout << ". . . . . . . . . . . . . . . . . . . . . . . . . . . " << std::endl;
+	/* ***** */
 
-	// if (user.handshaked() == true) {
+	_removeFromSet(fd, &_send_fd_pool);
+	_addToSet(fd, &_recv_fd_pool);
 
-		_removeFromSet(fd, &_send_fd_pool);
-		_addToSet(fd, &_recv_fd_pool);
-
-		user.userMessageBuffer.clear();
-		user.responseBuffer.clear();
-	// }
+	user.userMessageBuffer.clear();
+	user.responseBuffer.clear();
 
 	/* NEW DEBUG */
 	if (user.getStatus() == DELETED) {
@@ -422,10 +412,10 @@ void	ServerManager::signalhandler(int signal) {
 }
 
 void	ServerManager::handleSignal() {
-	std::cout << RED << "\t[-] Signal received. " << RESET << std::endl;
+	std::cout << RED << "\t[-] SIGINT received. Shutting down the server. Bye.." << RESET << std::endl;
 	// Closing all available connections, cleaning up and terminating the main loop..
 
-	for (int fd = _max_fd; fd >= _serverFd; fd--) {
+	for (int fd = _max_fd; fd > _serverFd; fd--) {
 		_closeConnection(fd);
 	}
 

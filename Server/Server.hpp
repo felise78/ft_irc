@@ -21,11 +21,7 @@
 
 #define PROTOCOL	0
 #define BACKLOG		100 // The maximum length of the queue of pending connections
-
-/* THE FOLLOWING DATA SHALL BE PARSED FROM MAIN argv ..*/
-#define PORT 		55555
-#define SERVER_NAME	"ircserv"
-#define SERVER_PASS "password"
+#define CREATION_DATE	": in March 2024"
 
 
 class Server {
@@ -35,7 +31,7 @@ class Server {
 		struct sockaddr_in	_address;
 		int					_socket_fd;
 		int					_port;
-		std::string			_serverName;
+		std::string			_serverHostName;
 		std::string			_serverPassword;
 
 	public:
@@ -44,13 +40,13 @@ class Server {
 
 		// SET
 		void				setPort(const int & port);
-		void				setServerName(const std::string & serverName);
+		void				setServerHostName();
 		void				setServerPassword(const std::string & serverPassword);
 
 		// GET
 		int					getServerFd() const;
 		int					getPort() const;
-		std::string const &	getServerName() const;
+		std::string const &	getServerHostName() const;
 		std::string const&	getServerPassword() const;
 
 		// SOCKET HANDLING

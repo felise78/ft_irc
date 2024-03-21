@@ -17,18 +17,13 @@ def interactive_chat(
 	test: Optional[str] = typer.Option(None, "--text", "-t", help="Start with text to chat with the model."),
 	temperature: float = typer.Option(0.7, help="Controls Randomness: Lower value means more predictable text.."),
 	max_tokens: int = typer.Option(
-		240, help="Controls the length of the response."
+		100, help="Controls the length of the response."
 	),
 	model: str = typer.Option(
 		"gpt-3.5-turbo", help="The model to use for generating the response."
 	),
 ):
-	# """ Interactive CLI chat with Chat GPT via API """
-	# typer.echo(
-	# 	"Welcome to the interactive chat with Chat GPT! Type 'exit' to end the chat."
-	# )
-
-	messages = []
+	# messages = []
 
 	# start the chat loop
 	while True:
@@ -38,31 +33,39 @@ def interactive_chat(
 
 		with open('/usr/src/app/host_to_container.txt', 'r') as host_to_container:
 			prompt = host_to_container.readline().strip()
-			# print(f"Received from host: {prompt}")
+			print(f"\tReceived from host: {prompt}")
 
 		# removing the file after reading the prompt
 		os.remove('/usr/src/app/host_to_container.txt')
 
 		# saving each prompt to the messages list
-		messages.append({"role": "user", "content": prompt})
+		# messages.append({"role": "user", "content": prompt})
 
-		if prompt.lower() == "exit":
-			# typer.echo("Goodbye!")
-			break
+		# if prompt.lower() == "exit":
+		# 	typer.echo("Goodbye!")
+		# 	break
 
 		# getting the response from the model via the OpenAI API
 		response = client.chat.completions.create(
 			model=model,
-			messages=messages,
+			# messages=messages,
+			messages=[
+				{"role": "system", "content": "You are a helpful assistant that answers questions from users in a helpdesk chat. Your answers conscise and straight to the point. You are using GPT-3.5-turbo model. You are using bro like language"},
+				{"role": "user", "content": prompt}
+			],
 			temperature=temperature,
 			max_tokens=max_tokens,
 		)
+		# response = "..example response from GPT-3.5"
 
 		with open('/usr/src/app/container_to_host.txt', 'w') as container_to_host:
 			container_to_host.write(response.choices[0].message.content)
+			print(f"Sent to host: {response.choices[0].message.content}")
+			# container_to_host.write(response)
+			# print(f"\tSent to host: {response}")
 
 		# saving each response to the messages list
-		messages.append({"role": "assistant", "content": response.choices[0].message.content})
+		# messages.append({"role": "assistant", "content": response.choices[0].message.content})
 
 if __name__ == "__main__":
 	app()

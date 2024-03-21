@@ -4,12 +4,14 @@ Server::Server(int port, std::string const& password) :
 	_socket_fd(-1) {
 	
 	// THIS MUST BE PARSED FROM MAIN argv
+	setServerHostName();
 	setPort(port);
-	setServerName(SERVER_NAME);
 	setServerPassword(password);
 
+	/* DEBUG */
 	// std::cout << MAGENTA << "\tServer constructor called" << RESET << std::endl;
-	std::cout << YELLOW << "\tinitializing server socket [ listen ].." << RESET << std::endl;
+	// std::cout << YELLOW << "\tinitializing server socket [ listen ].." << RESET << std::endl;
+	/* ***** */
 
 	initSocket();
 	connectToNetwork();
@@ -19,7 +21,7 @@ Server::Server(int port, std::string const& password) :
 Server::~Server() {
 	// std::cout << RED << "\tServer destructor called" << RESET << std::endl;
 
-	// This might leak when server is interrupted with ctrl+c. Need to handle this in signal handler
+	// This will leak when server is interrupted with ctrl+c AND `exit()` is used in signal handler..
 	close(_socket_fd);
 }
 
@@ -30,8 +32,11 @@ void	Server::setPort(const int & port) {
 	_port = port;
 }
 
-void	Server::setServerName(const std::string & serverName) {
-	_serverName = serverName;
+void	Server::setServerHostName() {
+
+	char hostname[1024];
+	gethostname(hostname, 1024);
+	_serverHostName = hostname;
 }
 
 void	Server::setServerPassword(const std::string & serverPassword) {
@@ -49,8 +54,8 @@ int		Server::getPort() const {
 	return _port;
 }
 
-std::string const &	Server::getServerName() const {
-	return _serverName;
+std::string const &	Server::getServerHostName() const {
+	return _serverHostName;
 }
 
 std::string const&	Server::getServerPassword() const {
@@ -76,7 +81,9 @@ void	Server::initSocket() {
 		exit(EXIT_FAILURE);
 	}
 
-	std::cout << GREEN << "\t[+] Socket created successfully. _socket_fd = " << this->_socket_fd << RESET << std::endl; 
+	/* DEBUG */
+	// std::cout << GREEN << "\t[+] Socket created successfully. _socket_fd = " << this->_socket_fd << RESET << std::endl; 
+	/* ***** */
 }
 
 void	Server::connectToNetwork() {
@@ -114,9 +121,9 @@ void	Server::startListenToNetwork() {
 */
 void	Server::printServerData() const {
 
-	std::cout << YELLOW << "[!] Server DATA:" << RESET << std::endl;
-	std::cout << YELLOW << "\tServer fd:   " << getServerFd() << RESET << std::endl;
-	std::cout << YELLOW << "\tServer port: " << _port << RESET << std::endl;
-	std::cout << YELLOW << "\tServer name: " << _serverName << RESET << std::endl;
-	std::cout << YELLOW << "\tServer pass: " << _serverPassword << RESET << std::endl;
+	std::cout << BLUE << "[!] Server DATA:" << RESET << std::endl;
+	std::cout << CYAN << "\tServer hostname:  " << RESET << _serverHostName << std::endl;
+	std::cout << CYAN << "\tServer port:      " << RESET << _port << std::endl;
+	std::cout << CYAN << "\tServer pass:      " << RESET << _serverPassword << std::endl;
+	std::cout << CYAN << "\tServer socket fd: " << RESET << getServerFd() << std::endl;
 }

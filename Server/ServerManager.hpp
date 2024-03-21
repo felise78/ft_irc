@@ -6,7 +6,8 @@
 #include "../Commands/CommandHandler.hpp"
 #include "../Request/UserRequestParsing.hpp"
 #include "../Request/Request.hpp"
-#include "../Request/server_replies.h"
+// #include "../Request/server_replies.h"
+#include "../Request/ServerReplies.hpp"
 #include "../User/User.hpp"
 #include <sys/types.h>  // for u_long
 #include <sys/select.h> // for fd_set
@@ -39,6 +40,7 @@ class ServerManager {
 		void						_respond(int fd);
 
 	public:
+		std::string					hostname;
 		// Helper functions
 		void						_fcntl();
 		void						_addToSet(int fd, fd_set *set);

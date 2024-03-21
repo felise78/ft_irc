@@ -1,8 +1,8 @@
 
 NAME = ircserv
 
-CXX = g++
-CXXFLAGS = -Wall -Werror -Wextra -std=c++98 -g
+CXX = c++
+CXXFLAGS = -Wall -Werror -Wextra -std=c++98
 
 VPATH = Server \
 		Commands \
@@ -51,6 +51,7 @@ clean:
 
 fclean: clean
 	rm -f $(NAME) bot
+# $(MAKE) fclean -C Bot
 
 re: fclean all
 

@@ -43,7 +43,7 @@ void IrcBot::initSocket() {
 
 /*
 ** This function is used to establish a connection to the server given the server's IP address and port.
-*/
+** !!! ATTENTION !!! works only for IPv4 in exactly `127.0.0.1` format
 void IrcBot::connectToServer() {
 
 	struct sockaddr_in serv_addr;
@@ -63,6 +63,43 @@ void IrcBot::connectToServer() {
 		std::cout << "- - - - - - - - - - - - - - - - - - -" << std::endl;
 	}
 
+}
+*/
+
+/*
+** This function is used to establish a connection to the server.
+** It uses the `getaddrinfo` function to get the server address and port.
+** The `struct addrinfo` is used to identify the server name/address and port.
+** The `getaddrinfo` function returns a list of `struct addrinfo` structures, each of which contains an Internet address that can be specified in a call to `connect`.
+** This slows down the program since it has to be free'd with `freeaddrinfo` after the connection is established.
+** ..we will use older method where the address is given directly to the `connect` function in `127.0.0.1` format.
+*/
+void IrcBot::connectToServer() {
+
+	struct addrinfo		hints;
+	struct addrinfo*	result;
+
+	memset(&hints, 0, sizeof(hints));
+
+	hints.ai_family = AF_INET;
+	hints.ai_socktype = SOCK_STREAM;
+
+	int returnValue = getaddrinfo(_serverName.c_str(), NULL, &hints, &result);
+	checkErrorAndExit(returnValue, "ERROR: getaddrinfo failed. No such host [" + _serverName + "]\n");
+
+	struct sockaddr_in* serv_addr = (struct sockaddr_in*)result->ai_addr;
+	serv_addr->sin_port = htons(_serverPort);
+
+	returnValue = connect(_serverSocket, (struct sockaddr*)serv_addr, sizeof(*serv_addr));
+	checkErrorAndExit(returnValue, "ERROR: connecting to server [" + _serverName + "] failed. Make sure the server is up..\n");
+
+	if (!signalErrorFlag) {
+		std::cout << "Connected to server: " << CYAN << _serverName << RESET << " on port: " << YELLOW << _serverPort << RESET << std::endl;
+		std::cout << "Bot name: " << GREEN << _botName << RESET << std::endl;
+		std::cout << "- - - - - - - - - - - - - - - - - - -" << std::endl;
+	}
+
+	freeaddrinfo(result);
 }
 
 void IrcBot::sendHandshake() {
@@ -103,7 +140,7 @@ void IrcBot::handleServerRequest() {
 	checkErrorAndExit(bytes, "ERROR: reading from socket failed\n"); // check if `-1`
 
 	if (bytes == 0) {
-		checkErrorAndExit(-1, "ERROR: server closed the connection\n");
+		checkErrorAndExit(-1, "..server closed the connection\n");
 	}
 
 	// once the code made it this far means `read` was successful and we can process the buffer
@@ -144,16 +181,22 @@ void IrcBot::handleResponse() {
 
 		// trimming the prompt
 		prompt.erase(0, prompt.find_first_not_of(" "));
+		prompt.erase(0, prompt.find_first_not_of(":"));
+		prompt.erase(0, prompt.find_first_not_of(" "));
 
 		std::cout << YELLOW << sender << RESET << ": " << MAGENTA << prompt << RESET << std::endl;
 
 		// sending the prompt to the GPT container to process via API
 		handleGPT(prompt);
 
-		/* DEBUG */
-		std::cout << BLUE << _botName << RESET << ": " << CYAN << _responseGPT << RESET << std::endl;
+		if (signalErrorFlag)
+			return;
 
-		sendMessage("#helpdesk", _responseGPT);
+		/* DEBUG */
+		std::cout << GREEN << _botName << RESET << ": " << CYAN << _responseGPT << RESET << std::endl;
+
+		// sendMessage("#helpdesk", _responseGPT);
+		sendMessage("sender", _responseGPT);
 		std::cout << "- - - - - - - - - - - -" << std::endl;
 	}
 	if (prompt.find("PING") != std::string::npos) {
@@ -161,6 +204,9 @@ void IrcBot::handleResponse() {
 		std::cout << YELLOW << "..ping received.. sending pong.." << YELLOW << std::endl;
 		/* ***** */
 		sendIrcMessage("PONG " + prompt.substr(5));
+	}
+	if (prompt.find("QUIT") != std::string::npos) {
+		signalErrorFlag = true;
 	}
 	
 }
@@ -175,13 +221,15 @@ void IrcBot::handleResponse() {
 */
 void IrcBot::handleGPT(const std::string& prompt) {
 
+	time_t start = time(0);
+	double secondsPassed = 0;
 	// removing the container_to_host.txt file
 	// std::ofstream ofs;
 	// ofs.open("./Bot/GPT/host_to_container.txt", std::ofstream::out | std::ofstream::trunc);
 	// ofs.close();
 
-
 	std::ofstream outfile("./Bot/GPT/host_to_container.txt");
+
 	if (outfile.is_open()) {
 		outfile << prompt;
 	}
@@ -193,10 +241,21 @@ void IrcBot::handleGPT(const std::string& prompt) {
 
 	// making sure the responce is complete before reading it
 	while (!fileExists("./Bot/GPT/container_to_host.txt")) {
-		// waiting for the file toread from
+		// waiting for the file to read from
+		secondsPassed = difftime(time(0), start);
+		// time limit for the response from the container: 10 seconds
+		if (secondsPassed > 7) {
+
+			std::cerr << RED << "Timeout waiting for the response from the GPT container (" << secondsPassed << ")" << RESET << std::endl;
+			std::cout << RED << "Make sure GPT container is up and running.." << RESET << std::endl;
+
+			signalErrorFlag = true;
+			return;
+		}
 	}
 
 	std::ifstream infile("./Bot/GPT/container_to_host.txt");
+
 	if (infile.is_open()) {
 		
 		std::string line;
@@ -244,7 +303,7 @@ void IrcBot::checkErrorAndExit(int returnValue, const std::string& message) {
 }
 
 void IrcBot::signalHandler(int signal) {
-	std::cout << RED << "\nInterrupt signal (" << signal << ") received." << RESET << std::endl;
+	std::cout << RED << "\nSIGINT (" << signal << ") received." << RESET << std::endl;
 	
 	ircBotInstance->handleSignal();
 
@@ -261,40 +320,3 @@ void IrcBot::handleSignal() {
 	
 } 
 
-
-/*
-** This function is used to establish a connection to the server.
-** It uses the `getaddrinfo` function to get the server address and port.
-** The `struct addrinfo` is used to identify the server name/address and port.
-** The `getaddrinfo` function returns a list of `struct addrinfo` structures, each of which contains an Internet address that can be specified in a call to `connect`.
-** This slows down the program since it has to be free'd with `freeaddrinfo` after the connection is established.
-** ..we will use older method where the address is given directly to the `connect` function in `127.0.0.1` format.
-void IrcBot::connectToServer() {
-
-	struct addrinfo		hints;
-	struct addrinfo*	result;
-
-	memset(&hints, 0, sizeof(hints));
-
-	hints.ai_family = AF_INET;
-	hints.ai_socktype = SOCK_STREAM;
-
-	int returnValue = getaddrinfo(_serverName.c_str(), NULL, &hints, &result);
-	checkErrorAndExit(returnValue, "ERROR: getaddrinfo failed. No such host [" + _serverName + "]\n");
-
-	struct sockaddr_in* serv_addr = (struct sockaddr_in*)result->ai_addr;
-	serv_addr->sin_port = htons(_serverPort);
-
-	returnValue = connect(_serverSocket, (struct sockaddr*)serv_addr, sizeof(*serv_addr));
-	checkErrorAndExit(returnValue, "ERROR: connecting to server [" + _serverName + "] failed. Make sure the server is up..\n");
-
-	if (!signalErrorFlag) {
-		std::cout << "Connected to server: " << _serverName << " on port: " << _serverPort << std::endl;
-		std::cout << "Bot name: " << _botName << std::endl;
-		std::cout << "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - " << std::endl;
-	}
-
-	freeaddrinfo(result);
-
-}
-*/
