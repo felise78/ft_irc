@@ -18,8 +18,8 @@
 		server.setBroadcast(ERR_NOSUCHNICK(server.hostname, user.getNickName(), *params.begin()), user.getSocket());
 		return;
 	}
-	std::string channelName = parse_channelName(*(params.begin() + 1));
-	if (channelName.empty() == true)
+	std::string channelName;
+	if (server.channelMap.find(channelName) == server.channelMap.end())
 	{
 		server.setBroadcast(ERR_NOSUCHCHANNEL(server.hostname, user.getNickName(), channelName), user.getSocket());
 		return; 
