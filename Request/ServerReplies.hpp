@@ -32,7 +32,7 @@
 /*INVITE COMMAND*/
 #define RPL_INVITE(hostname, user, invited, channel) (":" + hostname + " " + user + " INVITE " + invited + " " + channel + "\r\n")
 #define RPL_INVITING(hostname, user, channel, nick) (":" + hostname + " 341 " + user + " " + nick + " " + channel + "\r\n")
-#define ERR_USERONCHANNEL(hostname, user, channel) (":" + hostname + " 442 " + user + " " + channel + " :is already on channel\r\n")
+#define ERR_USERONCHANNEL(hostname, user_nick, invited_nick, channel) (":" + hostname + " 442 " + user_nick + " " + invited_nick + " " + channel + " :is already on channel\r\n")
 
 /* TOPIC COMMAND: */
 #define RPL_NOTOPIC(hostname, channel) (":" + hostname + " 331 " + channel + " :No topic is set\r\n")

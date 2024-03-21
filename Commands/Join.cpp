@@ -67,7 +67,7 @@ void	CommandHandler::handleJOIN() {
 		else
 		{
 			std::string nickName = user.getNickName();
-			server.setBroadcast(ERR_USERONCHANNEL(server.hostname, nickName, channelName), user.getSocket());
+			server.setBroadcast(ERR_USERONCHANNEL(server.hostname, user.getNickName(), nickName, channelName), user.getSocket());
 			return ; 
 		}
 	}

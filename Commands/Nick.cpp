@@ -47,8 +47,12 @@ void	CommandHandler::handleNICK() {
 
 	// Once all the above passed setting nickname and updating it in all channels
 	std::string oldNick = user.getNickName();
-	user.setNickName(nickname);
-
+	//user.setNickName(nickname);
+	
+	//a verifier si c'est bon 
+	server.usersMap[server.getFdbyNickName(oldNick)].setNickName(nickname);
+	
+	
 	// si le user a change de nick // qu'il est donc bien REGISTERED // 
 	// envoyer un message special a irssi
 	// not sure if this should come at the end of the function ?
