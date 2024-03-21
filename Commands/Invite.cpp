@@ -35,5 +35,5 @@
 		return;
 	}
 	server.setBroadcast(RPL_INVITING(server.hostname, user.getNickName(), channelName, *params.begin()), user.getSocket());
-	server.setBroadcast(RPL_INVITE(server.hostname, user.getNickName(), *params.begin(), channelName), server.getFdbyNickName(*params.begin()));
+	server.setBroadcast(RPL_INVITE(user.getPrefix(), *params.begin(), channelName), server.getFdbyNickName(*params.begin()));
 }

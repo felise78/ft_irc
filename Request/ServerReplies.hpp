@@ -30,8 +30,8 @@
 #define RPL_KICK(hostname, user_id, channel, kicked, reason) (":" + hostname + " " + user_id + " KICK " + channel + " " + kicked + " " + reason + "\r\n")
 
 /*INVITE COMMAND*/
-#define RPL_INVITE(hostname, user, invited, channel) (":" + hostname + " " + user + " INVITE " + invited + " " + channel + "\r\n")
-#define RPL_INVITING(hostname, user, channel, nick) (":" + hostname + " 341 " + user + " " + nick + " " + channel + "\r\n")
+#define RPL_INVITE(user_prefix, nick, channel) (user_prefix + " INVITE " + nick + " " + channel + "\r\n")
+#define RPL_INVITING(hostname, user, channel, target_nick) (":" + hostname + " 341 " + user + " " + target_nick + " " + channel + "\r\n")
 #define ERR_USERONCHANNEL(hostname, user_nick, invited_nick, channel) (":" + hostname + " 442 " + user_nick + " " + invited_nick + " " + channel + " :is already on channel\r\n")
 
 /* TOPIC COMMAND: */
