@@ -44,26 +44,11 @@ void	CommandHandler::handleNICK() {
 		return;
 	}
 
-
 	// Once all the above passed setting nickname and updating it in all channels
 	std::string oldNick = user.getNickName();
-	//user.setNickName(nickname);
-	
-	//a verifier si c'est bon 
 	server.usersMap[server.getFdbyNickName(oldNick)].setNickName(nickname);
-	
-	
-	// si le user a change de nick // qu'il est donc bien REGISTERED // 
-	// envoyer un message special a irssi
-	// not sure if this should come at the end of the function ?
 	if (!oldNick.empty())
 		server.setBroadcast(RPL_NICK(oldNick, user.getUserName(), user.getNickName()), user.getSocket()); 
-
-	// segaults cuz we changed for pointers ?
-	// std::map<std::string, Channel *>::iterator it2 = user._channels.begin();
-	// for ( ; it2 != user._channels.end(); ++it2) {
-	// 	it2->second->getUser(oldNick).setNickName(nickname);
-	// }
 
 	// the following part is to handle the initial registration of the user
 	// if the user is already registered return
