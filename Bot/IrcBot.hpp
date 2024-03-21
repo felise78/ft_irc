@@ -26,13 +26,15 @@
 #define RESET	"\033[0m"
 
 
-#define			BUFFER_SIZE 1024
+#define 		NET_PORT 10001 // Port for the GPT container
+#define			BUFFER_SIZE 256
 extern bool		signalFlag;
 
 class IrcBot {
 
 private:
 
+	int			_socketGPT;
     int			_serverSocket;
 	int			_serverPort;
 	std::string	_serverName;
@@ -51,6 +53,7 @@ public:
 
 	void		initSocket();
     void		connectToServer();
+	void		connectToContainer();
 
 	void		sendHandshake();
     void		joinChannel(const std::string& channel);
@@ -59,7 +62,7 @@ public:
 
     void		handleServerRequest();	
 	void		handleResponse();
-	void		handleGPT(const std::string& prompt);
+	void		gptRequestResponse(const std::string& prompt);
 
 	// The following declarations are needed for the signal handling (to be able to close the socket and exit properly)
 	// ..the signalHandler() must be static, as well as anything it operates on.
@@ -69,7 +72,6 @@ public:
 	void		handleSignal();
 
 	void		checkErrorAndExit(int returnValue, const std::string& message);
-	bool 		fileExists(const std::string& fileName);
 
 };
 

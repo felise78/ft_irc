@@ -6,6 +6,6 @@ RUN pip install --no-cache-dir typer openai python-dotenv
 
 COPY main.py /usr/src/app
 
-EXPOSE 80
+# EXPOSE 80
 
 CMD ["python", "./main.py"]

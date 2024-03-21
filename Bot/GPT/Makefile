@@ -12,20 +12,19 @@ NAME = bot-gpt
 build:
 	@echo "$(MAGENTA)Building $(NAME)...$(NC)"
 	docker build -t $(NAME) .
-	touch host_to_container.txt container_to_host.txt
-	chmod 777 host_to_container.txt container_to_host.txt
+# touch host_to_container.txt container_to_host.txt
+# chmod 777 host_to_container.txt container_to_host.txt
 	@echo "$(GREEN)Image '$(NAME)' is ready!$(NC)"
 	@echo "$(GREEN)Type 'make run' to launch GPT app in the container.$(NC)"
 
 run:
 	@echo "$(MAGENTA)Launching $(NAME) container...$(NC)"
 	docker run --detach -v .:/usr/src/app --rm --name $(NAME) --env-file .env $(NAME)
-# docker run --detach -v $(PWD):/usr/src/app --rm --name $(NAME) --env-file .env $(NAME)
+	docker run -it -p 10001:10001 -v .:/usr/src/app --rm --name $(NAME) --env-file .env $(NAME)
 	@echo "$(GREEN)Container is UP and running! Container ID ^^^$(NC)"
 	@echo "$(GREEN)You can use the 'bot' in 'ircserv' by sending 'PRIVMSG' to 'NeoBot' in '#helpdesk' channel.$(NC)"
-# DEBUGGING:
-# docker run -it --rm --name $(NAME) --env-file .env $(NAME)
-# docker run -it -v .:/usr/src/app --rm --name bot-gpt --env-file .env bot-gpt
+# DEBUGGING (use in terminal):
+# docker run -it -p 10001:10001 -v .:/usr/src/app --rm --name bot-gpt --env-file .env bot-gpt
 
 down:
 	@echo "$(RED)Stopping and removing $(NAME) container...$(NC)"

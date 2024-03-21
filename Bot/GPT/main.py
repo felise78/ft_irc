@@ -1,71 +1,66 @@
-import os # for environment variables and API keys security
-import typer # for command line interface (print, input, etc.)
+# This is the main program which acts as a server designed to run in the container
+# It listens for incoming connections from the client and sends back the prompt received from the client
+
+import os
+import socket
 from openai import OpenAI
-from dotenv import load_dotenv # for loading environment variables from .env file
-from typing import Optional # for optional arguments (needed on Linux)
 
-# load environment variables from .env file
-load_dotenv()
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY")) # for GPT-3 / GPT-4 API
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# create a new Typer app instance
-app = typer.Typer()
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-@app.command()
-def interactive_chat(
-	test: Optional[str] = typer.Option(None, "--text", "-t", help="Start with text to chat with the model."),
-	temperature: float = typer.Option(0.7, help="Controls Randomness: Lower value means more predictable text.."),
-	max_tokens: int = typer.Option(
-		100, help="Controls the length of the response."
-	),
-	model: str = typer.Option(
-		"gpt-3.5-turbo", help="The model to use for generating the response."
-	),
-):
-	# messages = []
+# Read the HOST_IP from the environment variables
+# hostname = os.getenv("HOSTNAME")
+port = int(os.getenv("NET_PORT"))
+server_address = ('0.0.0.0', port) # must be `0.0.0.0` to allow connections from outside the container
+sock.bind(server_address)
 
-	# start the chat loop
-	while True:
-		# getting the prompt from the host
-		while not os.path.exists('/usr/src/app/host_to_container.txt'):
-			pass
+sock.listen(1)
 
-		with open('/usr/src/app/host_to_container.txt', 'r') as host_to_container:
-			prompt = host_to_container.readline().strip()
-			print(f"\tReceived from host: {prompt}")
+while True:
+	# Wait for a connection
+	print("Waiting for a connection...")
+	connection, client_address = sock.accept()
 
-		# removing the file after reading the prompt
-		os.remove('/usr/src/app/host_to_container.txt')
+	print(f"Connection from {client_address}")
 
-		# saving each prompt to the messages list
-		# messages.append({"role": "user", "content": prompt})
+	try:
+		print(f"Connection from {client_address}")
 
-		# if prompt.lower() == "exit":
-		# 	typer.echo("Goodbye!")
-		# 	break
+		while True:
+			prompt = connection.recv(512)
+			print(f"Received from client: {prompt}")
 
-		# getting the response from the model via the OpenAI API
-		response = client.chat.completions.create(
-			model=model,
-			# messages=messages,
-			messages=[
-				{"role": "system", "content": "You are a helpful assistant that answers questions from users in a helpdesk chat. Your answers conscise and straight to the point. You are using GPT-3.5-turbo model. You are using bro like language"},
-				{"role": "user", "content": prompt}
-			],
-			temperature=temperature,
-			max_tokens=max_tokens,
-		)
-		# response = "..example response from GPT-3.5"
+			if prompt:
+				# Decoding the prompt from bytes to string
+				prompt_str = prompt.decode('utf-8').strip()
 
-		with open('/usr/src/app/container_to_host.txt', 'w') as container_to_host:
-			container_to_host.write(response.choices[0].message.content)
-			print(f"Sent to host: {response.choices[0].message.content}")
-			# container_to_host.write(response)
-			# print(f"\tSent to host: {response}")
+				response = client.chat.completions.create(
+					model="gpt-3.5-turbo",
+					messages=[
+						{"role": "system", "content": "You are a helpful assistant that answers questions from users in a helpdesk chat. Your answers conscise and straight to the point. You are using strong bro-like language."},
+						{"role": "user", "content": prompt_str}
+					],
+					temperature=0.7,
+					max_tokens=50,
+				)
 
-		# saving each response to the messages list
-		# messages.append({"role": "assistant", "content": response.choices[0].message.content})
+				text_to_send = response.choices[0].message.content
+				
+				print(f"Sending response back to the client: {text_to_send}\n")
+				connection.sendall(text_to_send.encode('utf-8'))
 
-if __name__ == "__main__":
-	app()
+				
+				# print(f"Sending prompt back to the client: {prompt}\n")
+				# connection.sendall(prompt)
+			else:
+				print("No more prompt from client\n")
+				break
+
+	finally:
+		# Clean up the connection
+		connection.close()
+
+if __name__ == '__main__':
+	pass
