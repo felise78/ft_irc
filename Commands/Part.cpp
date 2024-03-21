@@ -26,7 +26,7 @@ void	CommandHandler::handlePART()
 		return;
 	}
 	user.removeChannel(channelName);
-	server.setBroadcast(RPL_PART(server.hostname, user.getPrefix(), channelName, msg), user.getSocket());
+	server.setBroadcast(RPL_PART(user.getPrefix(), channelName, msg), user.getSocket());
 	server.setBroadcast(channelName, user.getNickName(), user.responseBuffer);
 	server.channelMap[channelName].removeUser(user.getNickName());
 }
