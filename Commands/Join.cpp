@@ -12,13 +12,13 @@ void	CommandHandler::handleJOIN() {
 	else
 	{
 		if (!params.empty())
-			server.setBroadcast(ERR_TOOMANYTARGETS(*(params.end() - 1)), user.getSocket());
+			server.setBroadcast(ERR_TOOMANYTARGETS(server.hostname, *(params.end() - 1)), user.getSocket());
 		return;
 	}
 	std::string channelName = parse_channelName(*params.begin());
 	if (channelName.empty() == true)
 	{
-		server.setBroadcast(ERR_NOSUCHCHANNEL(user.getNickName(), channelName), user.getSocket());
+		server.setBroadcast(ERR_NOSUCHCHANNEL(server.hostname, user.getNickName(), channelName), user.getSocket());
 		return; 
 	}
 	// check if the channel doesn't exist, creates it
@@ -39,14 +39,14 @@ void	CommandHandler::handleJOIN() {
 	{
 		if (server.channelMap[channelName].getInvit() == true)
 		{
-			server.setBroadcast(ERR_INVITEONLYCHAN(channelName), user.getSocket());
+			server.setBroadcast(ERR_INVITEONLYCHAN(server.hostname, channelName), user.getSocket());
 			return; 
 		}
 		if (server.channelMap[channelName].getProtected() == true)
 		{
 			if (server.channelMap[channelName].getKey() != *(params.begin() + 1))
 			{
-				server.setBroadcast(ERR_BADCHANNELKEY(channelName), user.getSocket());
+				server.setBroadcast(ERR_BADCHANNELKEY(server.hostname, channelName), user.getSocket());
 				return;
 			}
 		}
@@ -56,7 +56,7 @@ void	CommandHandler::handleJOIN() {
 			{
 				if (server.channelMap[channelName].getNb() == server.channelMap[channelName].getLimit())
 				{
-					server.setBroadcast(ERR_CHANNELISFULL(channelName), user.getSocket());
+					server.setBroadcast(ERR_CHANNELISFULL(server.hostname, channelName), user.getSocket());
 					return; 
 				}
 			}
@@ -67,7 +67,7 @@ void	CommandHandler::handleJOIN() {
 		else
 		{
 			std::string nickName = user.getNickName();
-			server.setBroadcast(ERR_USERONCHANNEL(nickName, channelName), user.getSocket());
+			server.setBroadcast(ERR_USERONCHANNEL(server.hostname, nickName, channelName), user.getSocket());
 			return ; 
 		}
 	}
@@ -76,8 +76,8 @@ void	CommandHandler::handleJOIN() {
 	server.setBroadcast(channelName, user.getNickName(), reply);
 	std::string topic = server.channelMap[channelName].getTheme();
 	if (topic.empty())
-		reply += RPL_NOTOPIC(channelName);
+		reply += RPL_NOTOPIC(server.hostname, channelName);
 	else
-		reply += RPL_TOPIC(user.getNickName(), channelName, topic);
+		reply += RPL_TOPIC(server.hostname, user.getNickName(), channelName, topic);
 	server.setBroadcast(reply, user.getSocket());
 }

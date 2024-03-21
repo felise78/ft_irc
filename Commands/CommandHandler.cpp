@@ -48,7 +48,7 @@ CommandHandler::CommandHandler(ServerManager& srv, User &usr, map<string, string
 
 	if (commandsFromClient["command"] != "QUIT" && (commandsFromClient.find("params") == commandsFromClient.end() || commandsFromClient["params"].empty()))
 	{
-		server.setBroadcast(ERR_NEEDMOREPARAMS(commandsFromClient["command"]), user.getSocket());
+		server.setBroadcast(ERR_NEEDMOREPARAMS(server.hostname, commandsFromClient["command"]), user.getSocket());
 		return;
 	}
 

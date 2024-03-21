@@ -53,7 +53,7 @@ int	ModeHandler::parse_errors()
 			else
 			{
 				// _server.setBroadcast(ERR_NOSUCHCHANNEL(_user.getNickName(), args[i]), _user.getSocket());
-				_server.setBroadcast(ERR_NOSUCHCHANNEL(_server.hostname, args[i]), _user.getSocket());
+				_server.setBroadcast(ERR_NOSUCHCHANNEL(_server.hostname, _user.getNickName(), args[i]), _user.getSocket());
 				return 1;
 			}
 			// ADD BY FELISE to handle the -o +o mode. format : /mode nickname +o #channel
@@ -181,12 +181,12 @@ void	ModeHandler::exec_mode()
 			}
 			else if (_server.usersMap.find(_server.getFdbyNickName(_extra_args[0])) == _server.usersMap.end())
 			{
-				_server.setBroadcast(ERR_NOSUCHNICK(_user.getNickName(), _extra_args[0]), _user.getSocket());
+				_server.setBroadcast(ERR_NOSUCHNICK(_server.hostname, _user.getNickName(), _extra_args[0]), _user.getSocket());
 				return;
 			}
 			else if (channel._users.find(_extra_args[0]) == channel._users.end())
 			{
-				_server.setBroadcast(ERR_NOTONCHANNEL(_channel), _user.getSocket());
+				_server.setBroadcast(ERR_NOTONCHANNEL(_server.hostname, _channel), _user.getSocket());
 				return ;
 			}
 			else
@@ -223,7 +223,7 @@ void	ModeHandler::exec_mode()
 				{
 					if (std::isdigit(*it) == false)
 					{
-						_server.setBroadcast(ERR_UMODEUNKNOWNFLAG(_extra_args[0]), _user.getSocket());
+						_server.setBroadcast(ERR_UMODEUNKNOWNFLAG(_server.hostname, _extra_args[0]), _user.getSocket());
 						return;
 					}
 				}
