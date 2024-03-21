@@ -186,7 +186,7 @@ void	ModeHandler::exec_mode()
 			}
 			else if (channel._users.find(_extra_args[0]) == channel._users.end())
 			{
-				_server.setBroadcast(ERR_NOTONCHANNEL(_server.hostname, _channel), _user.getSocket());
+				_server.setBroadcast(ERR_NOTONCHANNEL(_server.hostname, _user.getNickName(), _channel), _user.getSocket());
 				return ;
 			}
 			else

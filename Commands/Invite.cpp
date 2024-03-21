@@ -19,10 +19,15 @@
 		return; 
 	}
 	int nick_fd = server.getFdbyNickName(*params.begin());
-	if(nick_fd == -1)
+	if (nick_fd == -1)
 	{
 		server.setBroadcast(ERR_NOSUCHNICK(server.hostname, user.getNickName(), *params.begin()), user.getSocket());
 		return;
+	}
+	if (user._channels.find(channelName) == user._channels.end())
+	{	
+		server.setBroadcast(ERR_NOTONCHANNEL(server.hostname, user.getNickName(), channelName), user.getSocket());
+		return ;
 	}
 	if (server.usersMap[nick_fd]._channels.find(channelName) != server.usersMap[nick_fd]._channels.end())
 	{

@@ -24,7 +24,7 @@
 /*KICK COMMAND*/
 #define ERR_NOSUCHCHANNEL(hostname, nick, channel) (":" + hostname + " 403 " + nick + " " + channel + " :No such channel\r\n")
 #define ERR_USERNOTINCHANNEL(hostname, nick, channel) (":" + hostname + " 441 " + nick + " " + channel + " :They aren't on that channel\r\n")
-#define ERR_NOTONCHANNEL(hostname, channel) (":" + hostname + " 442 " + channel + " :You're not on that channel\r\n")
+#define ERR_NOTONCHANNEL(hostname, user_nick, channel) (":" + hostname + " 442 " + user_nick + " " + channel + " :You're not on that channel!\r\n")
 #define ERR_NEEDMOREPARAMS(hostname, command) (":" + hostname + " 461 " + command + " :Not enough parameters\r\n")
 #define ERR_CHANOPRIVSNEEDED(hostname, channel) (":" + hostname + " 482 " + channel + " :You're not channel operator\r\n")
 #define RPL_KICK(hostname, user_id, channel, kicked, reason) (":" + hostname + " " + user_id + " KICK " + channel + " " + kicked + " " + reason + "\r\n")
