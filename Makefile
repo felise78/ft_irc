@@ -43,6 +43,8 @@ valgrind: $(NAME)
 	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --track-fds=all ./$(NAME)
 
 bot:
+	$(MAKE) build -C Bot/GPT
+	$(MAKE) run -C Bot/GPT
 	$(MAKE) -C Bot
 	mv Bot/bot .
 
@@ -51,6 +53,8 @@ clean:
 
 fclean: clean
 	rm -f $(NAME) bot
+	$(MAKE) down -C Bot/GPT
+# $(MAKE) clean -C Bot/GPT
 # $(MAKE) fclean -C Bot
 
 re: fclean all

@@ -11,11 +11,6 @@ OBJS = $(SRCS:.cpp=.o)
 
 all: $(NAME)
 
-gpt:
-	$(MAKE) build -C GPT
-	sleep 5
-	$(MAKE) run -C GPT
-
 $(NAME): $(OBJS)
 	$(CXX) $(CXXFLAGS) $(OBJS) -o $(NAME)
 	make clean

@@ -19,8 +19,8 @@ build:
 
 run:
 	@echo "$(MAGENTA)Launching $(NAME) container...$(NC)"
-	docker run --detach -v .:/usr/src/app --rm --name $(NAME) --env-file .env $(NAME)
-	docker run -it -p 10001:10001 -v .:/usr/src/app --rm --name $(NAME) --env-file .env $(NAME)
+	docker run --detach -p 10001:10001 -v .:/usr/src/app --rm --name $(NAME) --env-file .env $(NAME)
+# docker run -it -p 10001:10001 -v .:/usr/src/app --rm --name $(NAME) --env-file .env $(NAME)
 	@echo "$(GREEN)Container is UP and running! Container ID ^^^$(NC)"
 	@echo "$(GREEN)You can use the 'bot' in 'ircserv' by sending 'PRIVMSG' to 'NeoBot' in '#helpdesk' channel.$(NC)"
 # DEBUGGING (use in terminal):
