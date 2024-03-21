@@ -15,7 +15,7 @@
 	int nick_fd = server.getFdbyNickName(*params.begin());
 	if(nick_fd == -1)
 	{
-		server.setBroadcast(ERR_NOSUCHNICK(*params.begin()), user.getSocket());
+		server.setBroadcast(ERR_NOSUCHNICK(user.getNickName(), *params.begin()), user.getSocket());
 		return;
 	}
 	std::string channelName = parse_channelName(*(params.begin() + 1));

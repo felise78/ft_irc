@@ -49,7 +49,7 @@ void	CommandHandler::handleKICK()
 	std::string nickname = *(params.begin() + 1);
 	if (server.usersMap.find(server.getFdbyNickName(nickname)) == server.usersMap.end())
 	{
-		server.setBroadcast(ERR_NOSUCHNICK(nickname), user.getSocket());
+		server.setBroadcast(ERR_NOSUCHNICK(user.getNickName(), nickname), user.getSocket());
 		// user.responseBuffer = ERR_NOSUCHNICK(nickname);
 		return;
 	}

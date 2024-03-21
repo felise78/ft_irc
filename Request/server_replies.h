@@ -14,7 +14,7 @@
 #define ERR_UNKNOWNCOMMAND(command) (":localhost 421 " + command + " :Unknown command\r\n")
 
 /*PRIVMSG*/
-#define ERR_NOSUCHNICK(nickname) (":localhost 401 " + nickname + " :No such nick\r\n")
+#define ERR_NOSUCHNICK(user_nick, target_nick) (":localhost 401 " + user_nick + " " + target_nick + " :No such nick\r\n")
 #define ERR_CANNOTSENDTOCHAN(channelName) (":localhost 404 " channelName + " :Cannot send to channel\r\n")
 #define ERR_TOOMANYTARGETS(target) (":localhost 407 " + target + ":407 recipients. Use one target only.\r\n")
 #define ERR_NORECIPIENT(command) (":localhost 411 :No recipient given " + command + "\r\n")

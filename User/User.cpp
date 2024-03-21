@@ -18,7 +18,6 @@ User::User() :
 	_pinged(false),
 	_cap(false),
 	isBot(false) {
-
 };
 
 // User::User(const User& copy)

@@ -17,7 +17,7 @@ void	CommandHandler::handlePRIVMSG() {
 	std::string reply;
 	if (msgtarget.find(' ') != std::string::npos)
 	{
-		server.setBroadcast(ERR_NOSUCHNICK(msgtarget), user.getSocket());
+		server.setBroadcast(ERR_NOSUCHNICK(user.getNickName(), msgtarget), user.getSocket());
 		return;
 	}
 	// <msgtarget> is a Channel : 
@@ -41,7 +41,7 @@ void	CommandHandler::handlePRIVMSG() {
 		int nick_fd = server.getFdbyNickName(msgtarget);
 		if(nick_fd == -1)
 		{
-			server.setBroadcast(ERR_NOSUCHNICK(msgtarget), user.getSocket());
+			server.setBroadcast(ERR_NOSUCHNICK(user.getNickName(), msgtarget), user.getSocket());
 			return;
 		}
 		reply = RPL_PRIVMSG(user.getPrefix(), msgtarget, msg);

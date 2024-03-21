@@ -174,7 +174,7 @@ void	ModeHandler::exec_mode()
 			}
 			else if (_server.usersMap.find(_server.getFdbyNickName(_extra_args[0])) == _server.usersMap.end())
 			{
-				_server.setBroadcast(ERR_NOSUCHNICK(_extra_args[0]), _user.getSocket());
+				_server.setBroadcast(ERR_NOSUCHNICK(_user.getNickName(), _extra_args[0]), _user.getSocket());
 				return;
 			}
 			else if (channel._users.find(_extra_args[0]) == channel._users.end())
