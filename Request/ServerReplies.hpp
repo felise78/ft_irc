@@ -58,7 +58,7 @@
 #define RPL_NICK(old_nick, username, new_nick) (":" + old_nick + "!" + username + "@localhost NICK " +  new_nick + "\r\n")
 
 /*JOIN COMMAND*/
-#define ERR_CHANNELISFULL(hostname, channel) (":" + hostname + " 471 " + channel + " :Cannot join channel (+l)\r\n")
+#define ERR_CHANNELISFULL(hostname, nick, channel) (":" + hostname + " 471 " + nick + " " + channel + " :Cannot join channel (+l)\r\n")
 #define ERR_INVITEONLYCHAN(hostname, channel) (":" + hostname + " 473 " + channel + " :Cannot join channel (+i)\r\n")
 #define ERR_BADCHANNELKEY(hostname, channel) (":" + hostname + " 475 " + channel + " :Cannot join channel (+k)\r\n")
 #define RPL_JOIN(user_prefix, channel) (user_prefix + " JOIN :" +  channel + "\r\n")

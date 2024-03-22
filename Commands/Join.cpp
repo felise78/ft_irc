@@ -54,9 +54,10 @@ void	CommandHandler::handleJOIN() {
 		{
 			if (server.channelMap[channelName].getLimited() == true)
 			{
+				std::cout << RED << "getNb() : " << server.channelMap[channelName].getNb() << RESET << std::endl;
 				if (server.channelMap[channelName].getNb() == server.channelMap[channelName].getLimit())
 				{
-					server.setBroadcast(ERR_CHANNELISFULL(server.hostname, channelName), user.getSocket());
+					server.setBroadcast(ERR_CHANNELISFULL(server.hostname, user.getNickName(), channelName), user.getSocket());
 					return; 
 				}
 			}
