@@ -168,18 +168,7 @@ void	ModeHandler::exec_mode()
 			// DEBUG //
 			std::cout << MAGENTA << "MODE 'o'" << RESET << std::endl;
 			//
-			// for (size_t i = 0; i < _extra_args.size(); i++)
-			// std::cout << "_extra_args[" << i << "] : " << _extra_args[i] << " ";
-			// std::cout << std::endl;
-			// 
-			if (_extra_args.size() < 2)
-			{
-				std::string cmd = "MODE";
-				// _server.setBroadcast(ERR_NEEDMOREPARAMS(cmd), _user.getSocket());
-				_server.setBroadcast(ERR_NEEDMOREPARAMS(_server.hostname, cmd), _user.getSocket());
-				return ;
-			}
-			else if (_server.usersMap.find(_server.getFdbyNickName(_extra_args[0])) == _server.usersMap.end())
+			if (_server.usersMap.find(_server.getFdbyNickName(_extra_args[0])) == _server.usersMap.end())
 			{
 				_server.setBroadcast(ERR_NOSUCHNICK(_server.hostname, _user.getNickName(), _extra_args[0]), _user.getSocket());
 				return;
@@ -193,17 +182,12 @@ void	ModeHandler::exec_mode()
 			{
 				if (set_flag)
 				{
-					if (channel.isOp(_extra_args[0]) == true)
-						{;} // ignored if is already op 
 					channel.setOp(_extra_args[0]);
 					_server.setBroadcast(MODE_USERMSG(_extra_args[0], "+o"), _server.getFdbyNickName(_extra_args[0]));
 				}
 				else
-				{
-					if (channel.isOp(_extra_args[0]) == false)
-						{;} // ignored if is not op 
 					channel.removeOp(_extra_args[0]);
-				}
+					// il faut surement envoyer aussi une reply ici
 			}
 		}
 		if (_flag[i] == 'l')
