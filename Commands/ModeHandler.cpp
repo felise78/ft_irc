@@ -75,7 +75,7 @@ int	ModeHandler::parse_errors()
 				if (_flag.size() < 2 || modes.find(_flag[i]) == string::npos)
 				{
 					// _server.setBroadcast(ERR_UMODEUNKNOWNFLAG(args[i]), _user.getSocket());
-					_server.setBroadcast(ERR_UMODEUNKNOWNFLAG(_server.hostname, args[i]), _user.getSocket());
+					_server.setBroadcast(ERR_UMODEUNKNOWNFLAG(_server.hostname, _user.getPrefix()), _user.getSocket());
 					return 1;
 				}
 			}

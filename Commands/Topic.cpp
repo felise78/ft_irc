@@ -8,12 +8,8 @@ std::cout << YELLOW << "TOPIC command received.." << RESET << std::endl;
 
 	size_t i = commandsFromClient["params"].find_first_of(' ');
 	std::string channelName = commandsFromClient["params"].substr(0, i);
+
 	// if the channel does not exist
-
-	// DEBUG //
-	std::cout << "channelName : " << channelName << std::endl;
-	//
-
 	if (server.channelMap.find(channelName) == server.channelMap.end())
 	{
 		server.setBroadcast(ERR_NOSUCHCHANNEL(server.hostname, user.getNickName(), channelName), user.getSocket());
@@ -22,7 +18,8 @@ std::cout << YELLOW << "TOPIC command received.." << RESET << std::endl;
 	// if the user is not on the channel
 	if (server.channelMap[channelName]._users.find(user.getNickName()) == server.channelMap[channelName]._users.end())
 	{
-		server.setBroadcast(ERR_USERNOTINCHANNEL(server.hostname, user.getNickName(), channelName), user.getSocket());
+		server.setBroadcast(ERR_NOTONCHANNEL(server.hostname, user.getNickName(), channelName), user.getSocket());
+		//server.setBroadcast(ERR_USERNOTINCHANNEL(server.hostname, user.getNickName(), channelName), user.getSocket());
 		return;
 	}
 	// if the user just wants to print the topic
@@ -47,10 +44,8 @@ std::cout << YELLOW << "TOPIC command received.." << RESET << std::endl;
 				return;
 			}
 		}
-		if (topic.empty())
-			server.channelMap[channelName].removeTopic();
 		server.channelMap[channelName].setTheme(topic);
 		server.setBroadcast(RPL_TOPIC(server.hostname, user.getNickName(), channelName, topic), user.getSocket());
-		server.setBroadcast(channelName, user.getNickName(), RPL_TOPIC(server.hostname, user.getNickName(), channelName, topic));
+		server.setBroadcast(channelName, user.getNickName(), RPL_TOPIC(server.hostname, user.getPrefix(), channelName, topic));
 	}
 }

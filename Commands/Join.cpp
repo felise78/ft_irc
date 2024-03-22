@@ -76,7 +76,7 @@ void	CommandHandler::handleJOIN() {
 	server.setBroadcast(channelName, user.getNickName(), reply);
 	std::string topic = server.channelMap[channelName].getTheme();
 	if (topic.empty())
-		reply += RPL_NOTOPIC(server.hostname, user.getNickName(), channelName);
+		reply += RPL_NOTOPIC(server.hostname, user.getNickName(), channelName) + "\r\n"; //
 	else
 		reply += RPL_TOPIC(server.hostname, user.getNickName(), channelName, topic);
 	server.setBroadcast(reply, user.getSocket());
