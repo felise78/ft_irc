@@ -154,9 +154,16 @@ void	ModeHandler::exec_mode()
 			// DEBUG // 
 			std::cout << MAGENTA << "MODE 'k'" << RESET << std::endl;
 			//
-			channel.setProtected(set_flag);
-			if (!_extra_args.empty())
+
+			if (_extra_args.empty())
+			{
+				_server.setBroadcast(ERR_EMPTYMODEPARAM(_server.hostname, _user.getNickName(), _channel, _flag[i]), _user.getSocket());
+				return;
+			}
+			else if (set_flag)
 				channel.setKey(_extra_args[0]);
+			else
+				; // remove key ??
 		}
 		/*
 			If a user attempts to make themselves an operator using the "+o"
