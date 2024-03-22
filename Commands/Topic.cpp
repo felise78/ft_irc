@@ -29,7 +29,7 @@ std::cout << YELLOW << "TOPIC command received.." << RESET << std::endl;
 	if (i == std::string::npos)
 	{
 		if (server.channelMap[channelName].getTheme().empty() == true)
-			server.setBroadcast(RPL_NOTOPIC(server.hostname, channelName), user.getSocket());
+			server.setBroadcast(RPL_NOTOPIC(server.hostname, user.getNickName(), channelName), user.getSocket());
 		else 
 			server.setBroadcast(RPL_TOPIC(server.hostname, user.getNickName(), channelName, server.channelMap[channelName].getTheme()), user.getSocket());
 		return;

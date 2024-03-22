@@ -35,7 +35,7 @@
 #define ERR_USERONCHANNEL(hostname, user_nick, invited_nick, channel) (":" + hostname + " 442 " + user_nick + " " + invited_nick + " " + channel + " :is already on channel\r\n")
 
 /*TOPIC COMMAND:*/
-#define RPL_NOTOPIC(hostname, channel) (":" + hostname + " 331 " + channel + " :No topic is set\r\n")
+#define RPL_NOTOPIC(hostname, user_nick, channel) (":" + hostname + " 331 " + user_nick + " " + channel + " :No topic is set\r\n")
 #define RPL_TOPIC(hostname, nick, channel, topic) (":" + hostname + " 332 " + nick + " " + channel + " " + topic + "\r\n")
 #define ERR_NOCHANMODES(hostname, channel) (":" + hostname + " 477 " + channel + " :Channel doesn't support modes\r\n")
 
