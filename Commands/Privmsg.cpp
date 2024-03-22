@@ -33,7 +33,7 @@ void	CommandHandler::handlePRIVMSG() {
 			server.setBroadcast(ERR_USERNOTINCHANNEL(server.hostname, user.getNickName(), msgtarget), user.getSocket());
 			return;
 		}
-		reply = RPL_PRIVMSG(server.hostname, user.getPrefix(), msgtarget, msg);
+		reply = RPL_PRIVMSG(user.getPrefix(), msgtarget, msg);
 		server.setBroadcast(msgtarget, user.getNickName(), reply);
 	}
 	else  // <msgtarget> is a nickname
@@ -44,7 +44,7 @@ void	CommandHandler::handlePRIVMSG() {
 			server.setBroadcast(ERR_NOSUCHNICK(server.hostname, user.getNickName(), msgtarget), user.getSocket());
 			return;
 		}
-		reply = RPL_PRIVMSG(server.hostname, user.getPrefix(), msgtarget, msg);
+		reply = RPL_PRIVMSG(user.getPrefix(), msgtarget, msg);
 		server.setBroadcast(reply, nick_fd);
 	}
 }
