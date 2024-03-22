@@ -53,7 +53,7 @@
 
 /*NICK COMMAND*/
 #define ERR_ERRONEUSNICKNAME(hostname, user_nick, nick) (":" + hostname + " 432 " + user_nick + " " + nick + " :Erroneous nickname\r\n")
-#define ERR_NICKNAMEINUSE(hostname, nick) (":" + hostname + " 433 " + nick + " :Nickname is already in use\r\n")
+#define ERR_NICKNAMEINUSE(hostname, user_nick, nick) (":" + hostname + " 433 " + user_nick + " " + nick + " :Nickname is already in use\r\n")
 #define ERR_NONICKNAMEGIVEN(hostname) (":" + hostname + " 431 :No nickname given\r\n")
 #define RPL_NICK(old_nick, username, new_nick) (":" + old_nick + "!" + username + "@localhost NICK " +  new_nick + "\r\n")
 

@@ -40,7 +40,7 @@ void	CommandHandler::handleNICK() {
 
 	// if the nickname is already in use:
 	if (server.getFdbyNickName(commandsFromClient["params"]) != -1) {
-		server.setBroadcast(ERR_NICKNAMEINUSE(server.hostname, commandsFromClient["params"]), user.getSocket());
+		server.setBroadcast(ERR_NICKNAMEINUSE(server.hostname, user.getNickName() ,commandsFromClient["params"]), user.getSocket());
 		return;
 	}
 
