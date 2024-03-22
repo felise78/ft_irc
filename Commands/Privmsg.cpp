@@ -15,11 +15,14 @@ void	CommandHandler::handlePRIVMSG() {
 	std::string msgtarget = commandsFromClient["params"].substr(0, i - 1);
 	std::string msg = ":" + commandsFromClient["params"].substr(i + 1);
 	std::string reply;
-	if (msgtarget.find(' ') != std::string::npos)
-	{
-		server.setBroadcast(ERR_NOSUCHNICK(server.hostname, user.getNickName(), msgtarget), user.getSocket());
-		return;
-	}
+	
+	// pas sur que ce soit utile car je pense que irssi et meme netcat ne tiennent pas compte des espaces
+	// if (msgtarget.find(' ') != std::string::npos)
+	// {
+	// 	server.setBroadcast(ERR_NOSUCHNICK(server.hostname, user.getNickName(), msgtarget), user.getSocket());
+	// 	return;
+	// }
+
 	// <msgtarget> is a Channel : 
 	if (*msgtarget.begin() == '#')
 	{
@@ -36,7 +39,9 @@ void	CommandHandler::handlePRIVMSG() {
 		reply = RPL_PRIVMSG(user.getPrefix(), msgtarget, msg);
 		server.setBroadcast(msgtarget, user.getNickName(), reply);
 	}
-	else  // <msgtarget> is a nickname
+
+	// <msgtarget> is a nickname
+	else  
 	{
 		int nick_fd = server.getFdbyNickName(msgtarget);
 		if(nick_fd == -1)

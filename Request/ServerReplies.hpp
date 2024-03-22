@@ -44,6 +44,12 @@
 #define ERR_KEYSET(hostname, channel) (":" + hostname + " 467 " + channel + " :Channel key already set\r\n")
 #define ERR_UNKNOWNMODE(hostname, char, channel) (":" + hostname + " 472 " + char + " :is unknown mode char to me for " + channel + "\r\n")
 #define ERR_UMODEUNKNOWNFLAG(hostname, user_nick) (":" + hostname + " 501 " + user_nick + " :Unknown MODE flag\r\n")
+#define ERR_EMPTYMODEPARAM(hostname, user_nick, channel, mode) (":" + hostname + " 696 " + user_nick + " " + channel + " " + mode + " * You must specify a parameter for the mode.\r\n")
+#define ERR_INVALIDMODEPARAM(hostname, user_nick, channel, mode, param) (":" + hostname + " 696 " + user_nick + " " + channel + " " + mode + " " + param + " Invalid mode parameter.\r\n")
+//RPL_CHANNELMODEISWITHKEY
+//MODE_CHANNELMSGWITHPARAM
+//MODE_CHANNELMSG
+//RPL_UMODEIS
 
 /*NICK COMMAND*/
 #define ERR_ERRONEUSNICKNAME(hostname, user_nick, nick) (":" + hostname + " 432 " + user_nick + " " + nick + " :Erroneous nickname\r\n")
@@ -56,7 +62,7 @@
 #define ERR_INVITEONLYCHAN(hostname, channel) (":" + hostname + " 473 " + channel + " :Cannot join channel (+i)\r\n")
 #define ERR_BADCHANNELKEY(hostname, channel) (":" + hostname + " 475 " + channel + " :Cannot join channel (+k)\r\n")
 #define RPL_JOIN(user_prefix, channel) (user_prefix + " JOIN :" +  channel + "\r\n")
-//                 ERR_TOOMANYCHANNELS
+//ERR_TOOMANYCHANNELS ???
 
 /*PART COMMAND*/
 #define RPL_PART(user_prefix, channel, reason) (user_prefix + " PART " + channel + " " + (reason.empty() ? "." : reason ) + "\r\n")

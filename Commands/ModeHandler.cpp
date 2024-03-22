@@ -213,24 +213,25 @@ void	ModeHandler::exec_mode()
 			//
 			if (set_flag)
 			{
-				if (!_extra_args[0].empty())
-					std::cout << _extra_args[0] << std::endl;
-				else
-					std::cout << "rien dans args[0]" << std::endl;
-				//////////////////
+				if (_extra_args.empty())
+				{
+					_server.setBroadcast(ERR_EMPTYMODEPARAM(_server.hostname, _user.getNickName(), _channel, _flag[i]), _user.getSocket());
+					return;
+				}
+				// protection if _extra_args contains letters (because it can enter setLimit and set the channel limit to 0)
 				std::string::iterator it;
 				for (it = _extra_args[0].begin(); it != _extra_args[0].end(); ++it)
 				{
 					if (std::isdigit(*it) == false)
 					{
-						_server.setBroadcast(ERR_UMODEUNKNOWNFLAG(_server.hostname, _extra_args[0]), _user.getSocket());
+						_server.setBroadcast(ERR_INVALIDMODEPARAM(_server.hostname, _user.getNickName(), _channel, _flag[i], _extra_args[0]), _user.getSocket());
 						return;
 					}
 				}
 				channel.setLimit(atoi(_extra_args[0].c_str()));
 			}
 			else
-				channel.removeLimit();
+				channel.removeLimit();		
 		}
 	}
 	string msg = _user.getPrefix() + " " + _user.userMessageBuffer;
