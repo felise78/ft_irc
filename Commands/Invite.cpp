@@ -36,5 +36,5 @@ void	CommandHandler::handleINVITE() {
 	}
 	server.setBroadcast(RPL_INVITING(server.hostname, user.getNickName(), channelName, *params.begin()), user.getSocket());
 	server.setBroadcast(RPL_INVITE(user.getPrefix(), *params.begin(), channelName), server.getFdbyNickName(*params.begin()));
-
+	server.channelMap[channelName].setInvited(*params.begin());
 }

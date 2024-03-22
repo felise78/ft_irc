@@ -31,13 +31,12 @@
 
 		public :
 			Channel() {}
-			//Channel(ServerManager &_server) : server(_server) {}
-			// Channel(ServerManager& _server, const std::string& name);
 			Channel(const std::string& name);
 			~Channel();
-			//ServerManager&			server;
+
 			std::map<std::string, User *> 	_users;
 			std::vector<std::string>		_ops;
+			std::vector<std::string>		_invited;
 			// setters 
 			void	setName(const std::string & name);
 			void	setTheme(const std::string & theme);
@@ -49,6 +48,7 @@
 			void	setInvit(const bool & invit);
 			void	setTopicRestricted(const bool& topic);
 			void	setProtected(const bool& protecd);
+			void 	setInvited(const std::string& nickname);
 			// getters
 			const std::string& 	getName( void ) const;
 			const std::string& 	getTheme( void ) const;
@@ -63,8 +63,10 @@
 			const bool& getProtected() const;
 
 			bool	isOp(const std::string& nickname);
+			bool	isInvited(const std::string& nickname);
 			void	removeUser(const std::string& nickname);
 			void	removeOp(const std::string& opNickname);
+			void 	removeInvited(const std::string& nickname);
 			void	removeTopic();
 			void	removeLimit();
 			//void	broadcast(std::string msg);

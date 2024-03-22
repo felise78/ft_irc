@@ -37,12 +37,8 @@ void	CommandHandler::handleJOIN() {
 	// if channel already exists
 	else
 	{
-		if (server.channelMap[channelName].getInvit() == true)
-		{
-			server.setBroadcast(ERR_INVITEONLYCHAN(server.hostname, channelName), user.getSocket());
-			return; 
-		}
-		if (server.channelMap[channelName].getProtected() == true)
+		// handles if mode +k is actived in the channel
+		if (server.channelMap[channelName].isInvited(user.getNickName()) == false && server.channelMap[channelName].getProtected() == true)
 		{
 			if (server.channelMap[channelName].getKey() != *(params.begin() + 1))
 			{
@@ -50,8 +46,23 @@ void	CommandHandler::handleJOIN() {
 				return;
 			}
 		}
+		// handles if mode +i is actived in the channel
+		if (server.channelMap[channelName].getInvit() == true)
+		{
+			if (server.channelMap[channelName].isInvited(user.getNickName()) == false)
+			{
+				server.setBroadcast(ERR_INVITEONLYCHAN(server.hostname, user.getNickName() ,channelName), user.getSocket());
+				return;
+			}
+			// delete the user of the invited list as he is able to join
+			// so that he cannot join a second time if not invited again
+			else
+				server.channelMap[channelName].removeInvited(user.getNickName());
+		}
+	
 		if (user._channels.find(channelName) == user._channels.end())
 		{
+			// handles if mode +l is actived in the channel
 			if (server.channelMap[channelName].getLimited() == true)
 			{
 				std::cout << RED << "getNb() : " << server.channelMap[channelName].getNb() << RESET << std::endl;

@@ -77,6 +77,12 @@ void	Channel::setProtected(const bool& protecd)
 	_protected = protecd;
 }
 
+void 	Channel::setInvited(const std::string& nickname)
+{
+	if (isInvited(nickname) == false)
+		_invited.push_back(nickname);
+}
+
 // ------------------- GETTERS ---------------------- // 
 
 const std::string& Channel::getName( void ) const
@@ -156,6 +162,19 @@ bool	Channel::isOp(const std::string& nickname)
 	return false;
 }
 
+bool	Channel::isInvited(const std::string& nickname)
+{
+	vector<string>::iterator it;
+	vector<string>:: iterator last = _invited.end();
+
+	for(it = _invited.begin(); it != last; ++it)
+	{
+		if (*it == nickname)
+			return true;
+	}
+	return false;
+}
+
 void	Channel::removeUser(const std::string& nickname)
 {
 	// std::map<std::string, User>::iterator it;
@@ -176,6 +195,18 @@ void	Channel::removeOp(const std::string& opNickname)
 		{
             _ops.erase(it); // Supprime l'op
 			//getUser(opNickname).setNickName(opNickname.substr(1)); // remove '@'
+            break; 
+        }
+    }
+}
+
+void	Channel::removeInvited(const std::string& nickname)
+{
+	for (std::vector<std::string>::iterator it = _invited.begin(); it != _ops.end(); ++it)
+	{
+        if (*it == nickname)
+		{
+            _ops.erase(it);
             break; 
         }
     }
