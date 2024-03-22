@@ -127,10 +127,10 @@ bool	User::handshaked() { return this->_handshaked; }
 
 bool	User::pinged() { return this->_pinged; }
 
-const int& User::getPort( void ) const
-{
-	return _port;
-}
+// const int& User::getPort( void ) const
+// {
+// 	return _port;
+// }
 
 const int& User::getSocket( void ) const
 {

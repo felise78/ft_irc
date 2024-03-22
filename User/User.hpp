@@ -19,7 +19,7 @@
 	class User {
 
 		private :
-		int								_port;
+		int								_port;		// not used but needed to stock the port info by ServerManager
 		int								_socket;	// fd
 		std::string						_hostName; // ..parsed in `UserRequestParsing` class..
 		std::string 					_nickName;	// ..parsed in `UserRequestParsing` class..
@@ -62,7 +62,7 @@
 		void	setPinged(bool pinged);
 		// Getters //
 		e_status getStatus();
-		const int& getPort( void ) const;
+		//const int& getPort( void ) const;
 		const int& getSocket( void ) const;
 		const std::string& getNickName( void ) const;
 		const std::string& getUserName( void ) const;
