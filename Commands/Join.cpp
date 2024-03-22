@@ -21,6 +21,8 @@ void	CommandHandler::handleJOIN() {
 		server.setBroadcast(ERR_NOSUCHCHANNEL(server.hostname, user.getNickName(), channelName), user.getSocket());
 		return; 
 	}
+
+
 	// check if the channel doesn't exist, creates it
 	if (server.channelMap.find(channelName) == server.channelMap.end())
 	{
@@ -34,6 +36,8 @@ void	CommandHandler::handleJOIN() {
 		user.setChannel(new_channel);
 		server.setBroadcast(MODE_USERMSG(user.getNickName(), "+o"), user.getSocket());
 	}
+
+
 	// if channel already exists
 	else
 	{
@@ -46,6 +50,7 @@ void	CommandHandler::handleJOIN() {
 				return;
 			}
 		}
+
 		// handles if mode +i is actived in the channel
 		if (server.channelMap[channelName].getInvit() == true)
 		{
@@ -54,9 +59,9 @@ void	CommandHandler::handleJOIN() {
 				server.setBroadcast(ERR_INVITEONLYCHAN(server.hostname, user.getNickName() ,channelName), user.getSocket());
 				return;
 			}
-			// delete the user of the invited list as he is able to join
+			// delete the user of the invited list as he is able to join 
 			// so that he cannot join a second time if not invited again
-			else
+			else 
 				server.channelMap[channelName].removeInvited(user.getNickName());
 		}
 	

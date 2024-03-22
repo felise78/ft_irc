@@ -32,10 +32,7 @@ void	Channel::setKey(const std::string & key)
 
 void	Channel::setUser(User& user)
 {
-	/* DEBUG */
 	_users[user.getNickName()] = &user;
-	/* ***** */
-	// _users[user.getNickName()] = user;
 	user.setChannel(*this);
 	_nb++;
 }
@@ -202,11 +199,11 @@ void	Channel::removeOp(const std::string& opNickname)
 
 void	Channel::removeInvited(const std::string& nickname)
 {
-	for (std::vector<std::string>::iterator it = _invited.begin(); it != _ops.end(); ++it)
+	for (std::vector<std::string>::iterator it = _invited.begin(); it != _invited.end(); ++it)
 	{
         if (*it == nickname)
 		{
-            _ops.erase(it);
+            _invited.erase(it);
             break; 
         }
     }
