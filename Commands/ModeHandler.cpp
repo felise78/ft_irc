@@ -95,7 +95,8 @@ int	ModeHandler::parse_errors()
 		_server.setBroadcast(ERR_NEEDMOREPARAMS(_server.hostname, _commandsFromClient["command"]), _user.getSocket());
 		return 1;
 	}
-	if (_extra_args.size() > 1 || n_flags > 1 || n_channels > 1)
+	// modif by felise : n_channels > 2 / car si c'est le meme channel ca doit marcher
+	if (_extra_args.size() > 1 || n_flags > 1 || n_channels > 2)
 	{
 		// _server.setBroadcast(ERR_TOOMANYTARGETS(_commandsFromClient["command"]), _user.getSocket());
 		_server.setBroadcast(ERR_TOOMANYTARGETS(_server.hostname, _commandsFromClient["command"]), _user.getSocket());
@@ -124,9 +125,14 @@ void	ModeHandler::exec_mode()
 	if (it == _server.channelMap.end() || _flag.empty())
 		return ;
 
-	// DEBUG // 
+	// DEBUG //////////////
+	std::cout << RED;
 	std::cout << "flag : " << _flag << std::endl;
-	//
+	vector<string>::iterator it2 = _extra_args.begin();
+	for( ; it2 != _extra_args.end(); ++it2)
+		std::cout << "_extra_args : " << *it2 << " ";
+	std::cout << RESET << std::endl;
+	//////////////////////
 
 	Channel &channel = it->second;
 	if (!(_flag.empty()) && _flag[0] == '+')
@@ -193,8 +199,10 @@ void	ModeHandler::exec_mode()
 					_server.setBroadcast(MODE_USERMSG(_extra_args[0], "+o"), _server.getFdbyNickName(_extra_args[0]));
 				}
 				else
+				{
 					channel.removeOp(_extra_args[0]);
-					// il faut surement envoyer aussi une reply ici
+					_server.setBroadcast(MODE_USERMSG(_extra_args[0], "-o"), _server.getFdbyNickName(_extra_args[0]));
+				}
 			}
 		}
 		if (_flag[i] == 'l')
