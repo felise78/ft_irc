@@ -1,6 +1,6 @@
 #include "CommandHandler.hpp"
 
- void	CommandHandler::handleINVITE() {
+void	CommandHandler::handleINVITE() {
 
 	std::cout << YELLOW << "INVITE command received.." << RESET << std::endl;
 
@@ -36,4 +36,5 @@
 	}
 	server.setBroadcast(RPL_INVITING(server.hostname, user.getNickName(), channelName, *params.begin()), user.getSocket());
 	server.setBroadcast(RPL_INVITE(user.getPrefix(), *params.begin(), channelName), server.getFdbyNickName(*params.begin()));
+
 }
