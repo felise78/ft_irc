@@ -13,14 +13,14 @@ void	CommandHandler::handleNICK() {
 	
 	// first check if NICK is valid
 	if (nickname.empty()) {
-		server.setBroadcast(ERR_NONICKNAMEGIVEN(server.hostname), user.getSocket());
+		server.setBroadcast(ERR_NONICKNAMEGIVEN(server.hostname), user.getFd());
 		/* DEBUG */
 		std::cout << RED << "[-] " << "ERR_NONICKNAMEGIVEN" << RESET << std::endl;
 
 		return;
 	} // check the length and the characters
 	if (nickname.length() > 9 || nickname.length() < 1) {
-		server.setBroadcast(ERR_ERRONEUSNICKNAME(server.hostname, user.getNickName(), nickname), user.getSocket());
+		server.setBroadcast(ERR_ERRONEUSNICKNAME(server.hostname, user.getNickName(), nickname), user.getFd());
 		/* DEBUG */
 		std::cout << RED << "[-] " << ERR_ERRONEUSNICKNAME(server.hostname, user.getNickName(), nickname) << RESET << std::endl;
 
@@ -30,7 +30,7 @@ void	CommandHandler::handleNICK() {
 	string::const_iterator it;
 	for(it = nickname.begin(); it != nickname.end(); ++it) {
 		if (std::isalnum(*it) == false) {
-			server.setBroadcast(ERR_ERRONEUSNICKNAME(server.hostname, user.getNickName(), nickname), user.getSocket());
+			server.setBroadcast(ERR_ERRONEUSNICKNAME(server.hostname, user.getNickName(), nickname), user.getFd());
 			/* DEBUG */
 			std::cout << RED << "[-] " << ERR_ERRONEUSNICKNAME(server.hostname, user.getNickName(), nickname) << RESET << std::endl;
 
@@ -40,7 +40,7 @@ void	CommandHandler::handleNICK() {
 
 	// if the nickname is already in use:
 	if (server.getFdbyNickName(commandsFromClient["params"]) != -1) {
-		server.setBroadcast(ERR_NICKNAMEINUSE(server.hostname, user.getNickName() ,commandsFromClient["params"]), user.getSocket());
+		server.setBroadcast(ERR_NICKNAMEINUSE(server.hostname, user.getNickName() ,commandsFromClient["params"]), user.getFd());
 		return;
 	}
 
@@ -48,7 +48,7 @@ void	CommandHandler::handleNICK() {
 	std::string oldNick = user.getNickName();
 	server.usersMap[server.getFdbyNickName(oldNick)].setNickName(nickname);
 	if (!oldNick.empty())
-		server.setBroadcast(RPL_NICK(oldNick, user.getUserName(), user.getNickName()), user.getSocket()); 
+		server.setBroadcast(RPL_NICK(oldNick, user.getUserName(), user.getNickName()), user.getFd()); 
 
 	// the following part is to handle the initial registration of the user
 	// if the user is already registered return
@@ -62,9 +62,9 @@ void	CommandHandler::handleNICK() {
 	}
 	// The following logic is not necessary but nice to have anyway !!
 	if (user.getStatus() == PASS_NEEDED) {
-		server.setBroadcast(ERR_NEEDMOREPARAMS(server.hostname, "PASS"), user.getSocket());
+		server.setBroadcast(ERR_NEEDMOREPARAMS(server.hostname, "PASS"), user.getFd());
 	}
 	if (user.getUserName().empty()) {
-		server.setBroadcast(ERR_NEEDMOREPARAMS(server.hostname, "USER"), user.getSocket());
+		server.setBroadcast(ERR_NEEDMOREPARAMS(server.hostname, "USER"), user.getFd());
 	}
 }

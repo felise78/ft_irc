@@ -226,7 +226,7 @@ void	Channel::removeLimit()
 
 // 	for(it = _users.begin(); it != _users.end(); ++it)
 // 	{
-// 		server.setBroadcast(msg, it->second.getSocket());
+// 		server.setBroadcast(msg, it->second.getFd());
 // 	}
 	
 // }

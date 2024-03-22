@@ -48,7 +48,7 @@ CommandHandler::CommandHandler(ServerManager& srv, User &usr, map<string, string
 
 	if (commandsFromClient["command"] != "QUIT" && (commandsFromClient.find("params") == commandsFromClient.end() || commandsFromClient["params"].empty()))
 	{
-		server.setBroadcast(ERR_NEEDMOREPARAMS(server.hostname, commandsFromClient["command"]), user.getSocket());
+		server.setBroadcast(ERR_NEEDMOREPARAMS(server.hostname, commandsFromClient["command"]), user.getFd());
 		return;
 	}
 
@@ -106,8 +106,8 @@ void	CommandHandler::executeCommand() {
 void	CommandHandler::handleNONE() {
 	// do nothing or/and print error message
 	std::cout << RED << "[-] command not found.." << RESET << std::endl;
-	// server.setBroadcast(ERR_UNKNOWNCOMMAND(commandsFromClient["command"]), user.getSocket());
-	server.setBroadcast(ERR_UNKNOWNCOMMAND(server.hostname, commandsFromClient["command"]), user.getSocket());
+	// server.setBroadcast(ERR_UNKNOWNCOMMAND(commandsFromClient["command"]), user.getFd());
+	server.setBroadcast(ERR_UNKNOWNCOMMAND(server.hostname, commandsFromClient["command"]), user.getFd());
 }
 
 void	CommandHandler::handleCAP() {
@@ -125,8 +125,8 @@ void	CommandHandler::handlePASS() {
 
 	// if already registered
 	if (user.getStatus() == REGISTERED) {
-		// server.setBroadcast(ERR_ALREADYREGISTRED, user.getSocket()); //replacing all instances of assigning to user.responseBuffer with setBroadcast server method
-		server.setBroadcast(ERR_ALREADYREGISTRED(server.hostname), user.getSocket());
+		// server.setBroadcast(ERR_ALREADYREGISTRED, user.getFd()); //replacing all instances of assigning to user.responseBuffer with setBroadcast server method
+		server.setBroadcast(ERR_ALREADYREGISTRED(server.hostname), user.getFd());
 		/* DEBUG */
 		std::cout << RED << "[-]" << ERR_ALREADYREGISTRED(server.hostname) << RESET << std::endl;
 		/* ***** */	
@@ -135,7 +135,7 @@ void	CommandHandler::handlePASS() {
 	// first check is the PASS is not empty
 	if (pass.empty() == true) {
 		std::string str = "PASS";
-		server.setBroadcast(ERR_NEEDMOREPARAMS(server.hostname, str), user.getSocket());
+		server.setBroadcast(ERR_NEEDMOREPARAMS(server.hostname, str), user.getFd());
 		/* DEBUG */
 		std::cout << RED << "[-] " << ERR_NEEDMOREPARAMS(server.hostname, str) << RESET << std::endl;
 		/* ***** */
@@ -143,8 +143,8 @@ void	CommandHandler::handlePASS() {
 	}
 	// pass missmatch check
 	if (pass != server.getPassword()) {
-		server.setBroadcast(ERR_PASSWDMISMATCH(server.hostname), user.getSocket());
-		// server.setBroadcast(ERR_PASSWDMISMATCH, user.getSocket());
+		server.setBroadcast(ERR_PASSWDMISMATCH(server.hostname), user.getFd());
+		// server.setBroadcast(ERR_PASSWDMISMATCH, user.getFd());
 		/* DEBUG */
 		std::cout << RED << "[-] " << ERR_PASSWDMISMATCH(server.hostname) << RESET << std::endl;
 		/* ***** */
@@ -165,10 +165,10 @@ void	CommandHandler::handlePASS() {
 	
 	// The following logic is not necessary but nice to have anyway !!
 	if (user.getUserName().empty()) {
-		server.setBroadcast(ERR_NEEDMOREPARAMS(server.hostname, "USER"), user.getSocket());
+		server.setBroadcast(ERR_NEEDMOREPARAMS(server.hostname, "USER"), user.getFd());
 	}
 	if (user.getNickName().empty()) {
-		server.setBroadcast(ERR_NEEDMOREPARAMS(server.hostname, "NICK"), user.getSocket());
+		server.setBroadcast(ERR_NEEDMOREPARAMS(server.hostname, "NICK"), user.getFd());
 	}
 }
 
@@ -185,7 +185,7 @@ void	CommandHandler::handleUSER() {
 		// check if there are not enough parameters return
 		if (!(params.size() == 1 || params.size() >= 4)) {
 			std::string str = "USER";
-			server.setBroadcast(ERR_NEEDMOREPARAMS(server.hostname, str), user.getSocket());
+			server.setBroadcast(ERR_NEEDMOREPARAMS(server.hostname, str), user.getFd());
 			/* DEBUG */
 			std::cout << RED << "[-] " << ERR_NEEDMOREPARAMS(server.hostname, str) << RESET << std::endl;
 			/* ***** */
@@ -212,10 +212,10 @@ void	CommandHandler::handleUSER() {
 
 	// The following logic is not necessary but nice to have anyway !!
 	if (user.getNickName().empty()) {
-		server.setBroadcast(ERR_NEEDMOREPARAMS(server.hostname, "NICK"), user.getSocket());
+		server.setBroadcast(ERR_NEEDMOREPARAMS(server.hostname, "NICK"), user.getFd());
 	}
 	if (user.getStatus() == PASS_NEEDED) {
-		server.setBroadcast(ERR_NEEDMOREPARAMS(server.hostname, "PASS"), user.getSocket());
+		server.setBroadcast(ERR_NEEDMOREPARAMS(server.hostname, "PASS"), user.getFd());
 	}
 }
 
@@ -245,7 +245,7 @@ void	CommandHandler::handlePING()
 		substr_ping.replace(0, ping.length(), "PONG");
 	}
 	std::string reply = user.getPrefix() + " " + substr_ping;
-	server.setBroadcast(reply, user.getSocket());
+	server.setBroadcast(reply, user.getFd());
 }
 
 void	CommandHandler::sendHandshake()
@@ -258,6 +258,6 @@ void	CommandHandler::sendHandshake()
 	reply_buffer << RPL_WELCOME(server.hostname, nickName, hostName) << RPL_YOURHOST(server.hostname, nickName)
 	<< RPL_CREATED(server.hostname, nickName, CREATION_DATE) << RPL_MYINFO(server.hostname, nickName);
 	// user.responseBuffer = reply_buffer.str();
-	server.setBroadcast(reply_buffer.str(), user.getSocket());
+	server.setBroadcast(reply_buffer.str(), user.getFd());
 	user.setHandshaked(true);
 }

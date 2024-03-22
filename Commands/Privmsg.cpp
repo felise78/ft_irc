@@ -9,7 +9,7 @@ void	CommandHandler::handlePRIVMSG() {
 	size_t i = commandsFromClient["params"].find_first_of(':');
 	if (i == std::string::npos)
 	{
-		server.setBroadcast(ERR_NOTEXTTOSEND(server.hostname), user.getSocket());
+		server.setBroadcast(ERR_NOTEXTTOSEND(server.hostname), user.getFd());
 		return;
 	}
 	std::string msgtarget = commandsFromClient["params"].substr(0, i - 1);
@@ -19,7 +19,7 @@ void	CommandHandler::handlePRIVMSG() {
 	// pas sur que ce soit utile car je pense que irssi et meme netcat ne tiennent pas compte des espaces
 	// if (msgtarget.find(' ') != std::string::npos)
 	// {
-	// 	server.setBroadcast(ERR_NOSUCHNICK(server.hostname, user.getNickName(), msgtarget), user.getSocket());
+	// 	server.setBroadcast(ERR_NOSUCHNICK(server.hostname, user.getNickName(), msgtarget), user.getFd());
 	// 	return;
 	// }
 
@@ -28,12 +28,12 @@ void	CommandHandler::handlePRIVMSG() {
 	{
 		if (server.channelMap.find(msgtarget) == server.channelMap.end())
 		{
-			server.setBroadcast(ERR_NOSUCHCHANNEL(server.hostname, user.getNickName(), msgtarget), user.getSocket());
+			server.setBroadcast(ERR_NOSUCHCHANNEL(server.hostname, user.getNickName(), msgtarget), user.getFd());
 			return;
 		}
 		if (server.channelMap[msgtarget]._users.find(user.getNickName()) == server.channelMap[msgtarget]._users.end())
 		{
-			server.setBroadcast(ERR_USERNOTINCHANNEL(server.hostname, user.getNickName(), msgtarget), user.getSocket());
+			server.setBroadcast(ERR_USERNOTINCHANNEL(server.hostname, user.getNickName(), msgtarget), user.getFd());
 			return;
 		}
 		reply = RPL_PRIVMSG(user.getPrefix(), msgtarget, msg);
@@ -46,7 +46,7 @@ void	CommandHandler::handlePRIVMSG() {
 		int nick_fd = server.getFdbyNickName(msgtarget);
 		if(nick_fd == -1)
 		{
-			server.setBroadcast(ERR_NOSUCHNICK(server.hostname, user.getNickName(), msgtarget), user.getSocket());
+			server.setBroadcast(ERR_NOSUCHNICK(server.hostname, user.getNickName(), msgtarget), user.getFd());
 			return;
 		}
 		reply = RPL_PRIVMSG(user.getPrefix(), msgtarget, msg);

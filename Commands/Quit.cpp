@@ -23,5 +23,5 @@ void	CommandHandler::handleQUIT()
 		server.setBroadcast(it->first, user.getNickName(), msg);
 
 	}
-	server.setBroadcast("", user.getSocket());
+	server.setBroadcast("", user.getFd());
 }
