@@ -17,16 +17,18 @@ void	CommandHandler::handlePART()
 		msg = commandsFromClient["params"].substr(i + 1, commandsFromClient["params"].size() - i + 1);
 	if (server.channelMap.find(channelName) == server.channelMap.end())
 	{
-		server.setBroadcast(ERR_NOSUCHCHANNEL(server.hostname, user.getNickName(), channelName), user.getSocket());
+		server.setBroadcast(ERR_NOSUCHCHANNEL(server.hostname, user.getNickName(), channelName), user.getFd());
 		return; 
 	}
 	if (server.channelMap[channelName]._users.find(user.getNickName()) == server.channelMap[channelName]._users.end())
 	{
-		server.setBroadcast(ERR_USERNOTINCHANNEL(server.hostname, user.getNickName(), channelName), user.getSocket());
+		server.setBroadcast(ERR_USERNOTINCHANNEL(server.hostname, user.getNickName(), channelName), user.getFd());
 		return;
 	}
 	user.removeChannel(channelName);
-	server.setBroadcast(RPL_PART(user.getPrefix(), channelName, msg), user.getSocket());
+	server.setBroadcast(RPL_PART(user.getPrefix(), channelName, msg), user.getFd());
 	server.setBroadcast(channelName, user.getNickName(), user.responseBuffer);
 	server.channelMap[channelName].removeUser(user.getNickName());
+	// delete the user of the invited list as he is able to join
+	// so that he cannot join a second time if not invited again
 }

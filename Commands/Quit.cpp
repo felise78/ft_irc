@@ -18,11 +18,10 @@ void	CommandHandler::handleQUIT()
 	// broadcast the QUIT message to all users in the channels
 	std::map<std::string, Channel*>::iterator it = user._channels.begin();
 	for ( ; it != user._channels.end(); ++it) {
-		// server.channelMap[it->first].removeUser(user.getNickName());
 
+		server.channelMap[it->first].removeUser(user.getNickName());
 		server.setBroadcast(it->first, user.getNickName(), msg);
 
-		// user.removeChannel(it->first); // this SEGFAULTS
 	}
-	server.setBroadcast("", user.getSocket());
+	server.setBroadcast("", user.getFd());
 }

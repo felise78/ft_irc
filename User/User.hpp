@@ -19,8 +19,8 @@
 	class User {
 
 		private :
-		int								_port;
-		int								_socket;	// fd
+		int								_port;		// not used in this class but needed by ServerManager
+		int								_fd; 
 		std::string						_hostName; // ..parsed in `UserRequestParsing` class..
 		std::string 					_nickName;	// ..parsed in `UserRequestParsing` class..
 		std::string 					_userName; // ..parsed in `UserRequestParsing` class..
@@ -49,7 +49,7 @@
 		// Setters //
 		void	setStatus(e_status status);
 		void	setPort(const int& port);
-		void	setSocket(const int& socket);
+		void	setFd(const int& socket);
 		void 	setNickName(const std::string& nickname);
 		void 	setUserName(const std::string& username);
 		void 	setHostName(const std::string& hostname);
@@ -62,21 +62,18 @@
 		void	setPinged(bool pinged);
 		// Getters //
 		e_status getStatus();
-		const int& getPort( void ) const;
-		const int& getSocket( void ) const;
+		const int& getFd( void ) const;
 		const std::string& getNickName( void ) const;
 		const std::string& getUserName( void ) const;
 		const std::string& getHostName( void ) const;
 		const std::string& getRealName() const;
 		const std::string& getPassword( void ) const;
 		Channel& getChannel( const std::string& name );
-		std::string			getPrefix();
 		bool	authenticated();
 		bool	handshaked();
 		bool	pinged();
 
-
-		void	printChannels( void ) const;   // for debug
+		std::string			getPrefix();
 		void	removeChannel(const std::string& channelName);
 	};
 

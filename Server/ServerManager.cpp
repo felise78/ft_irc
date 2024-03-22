@@ -271,7 +271,7 @@ void	ServerManager::initUser(int clientFd, struct sockaddr_in &address) {
 	int	port = ntohs(address.sin_port);
 	newUser.setPort(port);
 
-	newUser.setSocket(clientFd);
+	newUser.setFd(clientFd);
 	newUser.setHostName(client_ip);
 
 	// newUser.setHostName("must be parsed from the User's request: `UserMessageBuffer`");
@@ -312,7 +312,7 @@ void	ServerManager::log(int clientFd) {
 	User &user = usersMap[clientFd];
 	(void)user;
 
-	// std::cout << timeStamp() << YELLOW << "[!] Logging client fd:[" << user.getSocket() << "]" << RESET << std::endl;
+	// std::cout << timeStamp() << YELLOW << "[!] Logging client fd:[" << user.getFd() << "]" << RESET << std::endl;
 	// std::cout << YELLOW << "\tport: " << user.getPort() << RESET << std::endl;
 	// std::cout << YELLOW << "\thostName: " << user.getHostName() << RESET << std::endl;
 	// std::cout << YELLOW << "\tnickName: " << User.getNickName() << RESET << std::endl;
@@ -349,7 +349,7 @@ int ServerManager::getFdbyNickName( const std::string& nickname ) const
 	for (it = usersMap.begin(); it != usersMap.end(); ++it)
 	{
 		if (it->second.getNickName() == nickname)
-			return it->second.getSocket();
+			return it->second.getFd();
 	}
 	return -1;
 }
@@ -374,7 +374,7 @@ void	ServerManager::setBroadcast(std::string channelName, std::string sender_nic
 	// std::cout << RED << "\t[-] it->second.getNickName(): [" << it->second->getNickName() << "] vs [" << sender_nick << "] sender_nick" << RESET << std::endl;
 	/* ***** */
 		if (it->second->getNickName() != sender_nick)
-			setBroadcast(msg, it->second->getSocket());
+			setBroadcast(msg, it->second->getFd());
 	}
 }
 
