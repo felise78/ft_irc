@@ -91,7 +91,7 @@ void	CommandHandler::handleJOIN() {
 	// send response to client
 	std::string reply = RPL_JOIN(user.getPrefix(), channelName);
 	server.setBroadcast(channelName, user.getNickName(), reply);
-	std::string topic = server.channelMap[channelName].getTheme();
+	std::string topic = server.channelMap[channelName].getTopic();
 	if (topic.empty())
 		reply += RPL_NOTOPIC(server.hostname, user.getNickName(), channelName) + "\r\n"; //
 	else

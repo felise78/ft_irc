@@ -1,34 +1,21 @@
 #include "Channel.hpp"
 
-Channel::Channel(const std::string& name) : _name(name), _theme(""), _key(""), _nb(0), _limit(0), 
+Channel::Channel(const std::string& name) : _name(name), _topic(""), _key(""), _nb(0), _limit(0), 
 _limited(false), _invit_only(false), _topic_restricted(false), _protected(false)
 {
 	//std::cout << "Channel " << _name << " has been created" << std::endl;
 }
 
 
-Channel::~Channel()
-{
-	//std::cout << "Channel " << _name << " has been destructed" << std::endl;
-}
+Channel::~Channel() {}
 
 // ------------------- SETTERS ---------------------- // 
 
-void	Channel::setName(const std::string & name)
-{
-	_name = name;
-}
+void	Channel::setName(const std::string & name) { _name = name; }
 
-void	Channel::setTheme(const std::string & theme)
-{
-	_theme = theme;
-}
+void	Channel::setTopic(const std::string & topic) { _topic = topic; }
 
-void	Channel::setKey(const std::string & key)
-{
-	_key = key;
-	_protected = true;
-}
+void	Channel::setKey(const std::string & key) { _key = key; _protected = true; }
 
 void	Channel::setUser(User& user)
 {
@@ -49,10 +36,7 @@ void	Channel::setOp(const std::string& nickname)
 		_ops.push_back(nickname);
 }
 
-void	Channel::setNb(const int& nb)
-{
-	_nb = nb;
-}
+void	Channel::setNb(const int& nb) { _nb = nb; }
 
 void	Channel::setLimit(const int & limit)
 {
@@ -60,20 +44,11 @@ void	Channel::setLimit(const int & limit)
 	_limited = true;
 }
 
-void	Channel::setInvit(const bool & invit)
-{
-	_invit_only = invit;
-}
+void	Channel::setInvit(const bool & invit) { _invit_only = invit; }
 
-void	Channel::setTopicRestricted(const bool& topic)
-{
-	_topic_restricted = topic;
-}
+void	Channel::setTopicRestricted(const bool& topic) { _topic_restricted = topic; }
 
-void	Channel::setProtected(const bool& protecd)
-{
-	_protected = protecd;
-}
+void	Channel::setProtected(const bool& protecd) { _protected = protecd; }
 
 void 	Channel::setInvited(const std::string& nickname)
 {
@@ -83,26 +58,13 @@ void 	Channel::setInvited(const std::string& nickname)
 
 // ------------------- GETTERS ---------------------- // 
 
-const std::string& Channel::getName( void ) const
-{
-	return _name;
-}
+const std::string& Channel::getName( void ) const { return _name; }
 
-const std::string& 	Channel::getTheme( void ) const
-{
-	return _theme;
-}
+const std::string& 	Channel::getTopic( void ) const { return _topic; }
 
-const std::string&	Channel::getKey( void ) const
-{
-	return _key;
-}
+const std::string&	Channel::getKey( void ) const { return _key; }
 
-User& Channel::getUser( const std::string & nickname )
-{
-	// return _users.at(nickname);
-	return *_users.at(nickname);
-}
+User& Channel::getUser( const std::string & nickname ) { return *_users.at(nickname); }
 
 const std::string& Channel::getOp( const std::string & nickname ) const
 {
@@ -115,35 +77,17 @@ const std::string& Channel::getOp( const std::string & nickname ) const
 	return *it;
 }
 
-const int& Channel::getNb( void ) const
-{
-	return _nb;
-}
+const int& Channel::getNb( void ) const { return _nb; }
 
-const int& 		Channel::getLimit( void ) const
-{
-	return _limit;
-}
+const int& Channel::getLimit( void ) const { return _limit; }
 
-const bool&		Channel::getLimited( void ) const
-{
-	return _limited;
-}
+const bool&	Channel::getLimited( void ) const { return _limited; }
 
-const bool& 	Channel::getInvit( void ) const
-{
-	return _invit_only;
-}
+const bool& Channel::getInvit( void ) const { return _invit_only; }
 
-const bool& Channel::getTopicRestricted() const
-{
-	return _topic_restricted;
-}
+const bool& Channel::getTopicRestricted() const { return _topic_restricted; }
 
-const bool& Channel::getProtected() const
-{
-	return _protected;
-}
+const bool& Channel::getProtected() const { return _protected; }
 
 // ------------------- MEMBER FUNCTIONS ---------------------- // 
 
@@ -210,43 +154,6 @@ void	Channel::removeInvited(const std::string& nickname)
     }
 }
 
-void	Channel::removeTopic()
-{
-	_theme = "";
-}
+void	Channel::removeTopic() { _topic = ""; }
 
-void	Channel::removeLimit()
-{
-	_limited = false;
-}
-
-// void	Channel::broadcast(std::string msg)
-// {
-// 	std::map<std::string, User>::iterator it;
-
-// 	for(it = _users.begin(); it != _users.end(); ++it)
-// 	{
-// 		server.setBroadcast(msg, it->second.getFd());
-// 	}
-	
-// }
-
-void Channel::printUsers( void) const
-{
-	// std::map<std::string, User>::const_iterator it;
-	std::map<std::string, User* >::const_iterator it;
-
-    std::cout << "Users in this channel:" << std::endl;
-    for ( it = _users.begin(); it != _users.end(); ++it)
-        std::cout << it->second->getNickName() << std::endl;
-        // std::cout << it->second.getNickName() << std::endl;
-}
-
-void Channel::printOps( void) const
-{
-	std::vector<std::string>::const_iterator it;
-
-    std::cout << "Ops in this channel:" << std::endl;
-    for ( it = _ops.begin(); it != _ops.end(); ++it)
-        std::cout << *it << std::endl;
-}
+void	Channel::removeLimit() { _limited = false; }
