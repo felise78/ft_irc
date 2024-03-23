@@ -23,18 +23,25 @@ void	CommandHandler::handleJOIN() {
 	}
 
 
-	// check if the channel doesn't exist, creates it
+	// check if the channel doesn't exist, creates it and sets the user as chanOp
 	if (server.channelMap.find(channelName) == server.channelMap.end())
 	{
 		Channel new_channel(channelName);
 		new_channel.setUser(user);
-		// set the creator of the channel as operator
 		new_channel.setOp(user.getNickName());
 		if (params.begin() + 1  != params.end())
 			new_channel.setKey(*(params.begin() + 1));
 		server.setChannel(new_channel);
 		user.setChannel(new_channel);
 		server.setBroadcast(MODE_USERMSG(user.getNickName(), "+o"), user.getFd());
+		//server.setBroadcast(channelName, user.getNickName() ,MODE_USERMSG(user.getNickName(), "+o"));
+		//server.setBroadcast(RPL_YOUREOPER(server.hostname, user.getNickName()), user.getFd());
+		// DEBUG //
+		std::cout << RED << "OPS in channel : ";
+		for (std::vector<std::string>::iterator it = server.channelMap[channelName]._ops.begin(); it != server.channelMap[channelName]._ops.end(); ++it)
+			std::cout << *it << " " ;
+		std::cout << RESET << std::endl;
+		//////////
 	}
 
 

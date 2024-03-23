@@ -227,9 +227,6 @@ void	CommandHandler::handleMODE()
 	// ou
 	// format  : /MODE nickname flag [param]
 
-	// DEBUG //
-	std::cout << "handleMODE | commandsFromClient[params] : " << commandsFromClient["params"] << std::endl;
-	//
 	ModeHandler	mode_handler(commandsFromClient, server, user);
 }
 

@@ -11,9 +11,9 @@
 #include "../User/User.hpp"
 
 
-#ifndef DEBUG
-	#define DEBUG 0
-#endif
+// #ifndef DEBUG
+// 	#define DEBUG 0
+// #endif
 
 // typedef enum	e_commands
 // {

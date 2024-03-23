@@ -25,13 +25,6 @@ void	Channel::setUser(User& user)
 
 void	Channel::setOp(const std::string& nickname)
 {
-	// if (_users.find(nickname) == _users.end())
-	// 	return;
-	// // Les opérateurs du canal sont généralement désignés par un symbole "@" 
-	// // devant leur nom d'utilisateur dans la liste des utilisateurs du canal.
-	// //std::string opNickname = "@" + nickname;
-	// //getUser(nickname).setNickName(opNickname);
-	// if (isOp(nickname) == false) // je protege dans MODE car il faut ignorer
 		_ops.push_back(nickname);
 }
 
@@ -124,8 +117,7 @@ void	Channel::removeOp(const std::string& opNickname)
 	{
         if (*it == opNickname)
 		{
-            _ops.erase(it); // Supprime l'op
-			//getUser(opNickname).setNickName(opNickname.substr(1)); // remove '@'
+            _ops.erase(it);
             break; 
         }
     }

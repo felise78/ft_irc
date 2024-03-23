@@ -45,6 +45,7 @@
 		bool							_pinged;
 		bool							_cap;
 		bool							isBot;
+		bool							skip_mode;
 
 		// Setters //
 		void	setStatus(e_status status);

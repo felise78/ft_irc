@@ -73,6 +73,7 @@
 
 /*OPERATOR REPLY*/
 #define RPL_YOUREOPER(hostname, nick) (":" + hostname + " 381 " + nick + " :You are now an IRC operator\r\n")
-#define MODE_USERMSG(client, mode) (":" + client + " MODE " + client + " :" + mode + "\r\n")
+//#define MODE_USERMSG(user_prefix, nick, mode) (user_prefix + " MODE " + nick + " :" + mode + "\r\n")
+#define MODE_USERMSG(nick, mode) (":" + nick + " MODE " + nick + " :" + mode + "\r\n")
 
 #endif
