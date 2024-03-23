@@ -65,16 +65,16 @@ int	ModeHandler::parse_errors()
 			// le comportement de irssi : il va concatener tout ce qui vient apres un + ou -
 			// il ne doit pas return si il trouve un flag qu'il ne connait pas.
 			_flag = args[i];
-			for (size_t i = 1; i < _flag.size(); i++)
-			{
-				const string modes = "itkol";
-				if (_flag.size() < 2 || modes.find(_flag[i]) == string::npos)
-				{
-					// _server.setBroadcast(ERR_UMODEUNKNOWNFLAG(args[i]), _user.getFd());
-					_server.setBroadcast(ERR_UMODEUNKNOWNFLAG(_server.hostname, _user.getPrefix(), _flag[i]), _user.getFd());
-					return 1;
-				}
-			}
+			// for (size_t i = 1; i < _flag.size(); i++)
+			// {
+			// 	const string modes = "itkol";
+			// 	if (_flag.size() < 2 || modes.find(_flag[i]) == string::npos)
+			// 	{
+			// 		// _server.setBroadcast(ERR_UMODEUNKNOWNFLAG(args[i]), _user.getFd());
+			// 		_server.setBroadcast(ERR_UMODEUNKNOWNFLAG(_server.hostname, _user.getPrefix(), _flag[i]), _user.getFd());
+			// 		return 1;
+			// 	}
+			// }
 			n_flags++;
 		}
 		else
@@ -145,14 +145,14 @@ void	ModeHandler::exec_mode()
 			//
 			channel.setInvit(set_flag);
 		}
-		if (_flag[i] == 't')
+		else if (_flag[i] == 't')
 		{
 			// DEBUG // 
 			std::cout << MAGENTA << "MODE 't'" << RESET << std::endl;
 			//
 			channel.setTopicRestricted(set_flag);
 		}
-		if (_flag[i] == 'k')
+		else if (_flag[i] == 'k')
 		{
 			// DEBUG // 
 			std::cout << MAGENTA << "MODE 'k'" << RESET << std::endl;
@@ -173,7 +173,7 @@ void	ModeHandler::exec_mode()
    			flag, the attempt should be ignored.  There is no restriction,
    			however, on anyone `deopping' themselves (using "-o").
 		*/
-		if (_flag[i] == 'o')
+		else if (_flag[i] == 'o')
 		{
 			// DEBUG //
 			std::cout << MAGENTA << "MODE 'o'" << RESET << std::endl;
@@ -207,7 +207,7 @@ void	ModeHandler::exec_mode()
 				_server.setBroadcast(MODE_USERMSG(_extra_args[0], "-o"), _server.getFdbyNickName(_extra_args[0]));
 			}
 		}
-		if (_flag[i] == 'l')
+		else if (_flag[i] == 'l')
 		{
 			// DEBUG // 
 				std::cout << MAGENTA << "MODE 'l'" << RESET << std::endl;
@@ -219,7 +219,7 @@ void	ModeHandler::exec_mode()
 					_server.setBroadcast(ERR_EMPTYMODEPARAM(_server.hostname, _user.getNickName(), _channel, _flag[i]), _user.getFd());
 					return;
 				}
-				// protection if _extra_args contains letters (because it can enter setLimit and set the channel limit to 0)
+				// protection if _extra_args contains letters (if so it could set the limit to 0)
 				std::string::iterator it;
 				for (it = _extra_args[0].begin(); it != _extra_args[0].end(); ++it)
 				{
@@ -234,9 +234,11 @@ void	ModeHandler::exec_mode()
 			else
 				channel.removeLimit();		// je pense il faut aussi envoyer un CHAN MODE MSG
 		}
+		else
+			_server.setBroadcast(ERR_UMODEUNKNOWNFLAG(_server.hostname, _user.getPrefix(), _flag[i]), _user.getFd());
 	}
-	string msg = _user.getPrefix() + " " + _user.userMessageBuffer;
-	_server.setBroadcast(msg, _user.getFd());
-	_server.setBroadcast(_channel, _user.getNickName(), msg);
+	// string msg = _user.getPrefix() + " " + _user.userMessageBuffer;
+	// _server.setBroadcast(msg, _user.getFd());
+	// _server.setBroadcast(_channel, _user.getNickName(), msg);
 }
 
