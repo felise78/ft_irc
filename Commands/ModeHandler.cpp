@@ -195,8 +195,11 @@ void	ModeHandler::exec_mode()
 			{
 				if (set_flag)
 				{
-					channel.setOp(_extra_args[0]);
-					_server.setBroadcast(MODE_USERMSG(_extra_args[0], "+o"), _server.getFdbyNickName(_extra_args[0]));
+					if (channel.isOp(_extra_args[0]) == false)   // it should do nothing if the user is already op
+					{
+						channel.setOp(_extra_args[0]);
+						_server.setBroadcast(MODE_USERMSG(_extra_args[0], "+o"), _server.getFdbyNickName(_extra_args[0]));
+					}
 				}
 				else
 				{

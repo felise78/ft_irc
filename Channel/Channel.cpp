@@ -45,7 +45,7 @@ void	Channel::setOp(const std::string& nickname)
 	// // devant leur nom d'utilisateur dans la liste des utilisateurs du canal.
 	// //std::string opNickname = "@" + nickname;
 	// //getUser(nickname).setNickName(opNickname);
-	if (isOp(nickname) == false)
+	// if (isOp(nickname) == false) // je protege dans MODE car il faut ignorer
 		_ops.push_back(nickname);
 }
 
