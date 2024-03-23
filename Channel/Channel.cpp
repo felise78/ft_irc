@@ -1,15 +1,14 @@
 #include "Channel.hpp"
 
-Channel::Channel(const std::string& name) : _name(name), _topic(""), _key(""), _nb(0), _limit(0), 
-_limited(false), _invit_only(false), _topic_restricted(false), _protected(false)
-{
-	//std::cout << "Channel " << _name << " has been created" << std::endl;
-}
+// -----------------------CONSTRUCTOR / DESTRUCTOR ---------------------------------//
 
+
+Channel::Channel(const std::string& name) : _name(name), _topic(""), _key(""), _nb(0), _limit(0), 
+_limited(false), _invit_only(false), _topic_restricted(false), _protected(false) {}
 
 Channel::~Channel() {}
 
-// ------------------- SETTERS ---------------------- // 
+// ------------------------------ SETTERS ----------------------------------------- // 
 
 void	Channel::setName(const std::string & name) { _name = name; }
 
@@ -56,7 +55,8 @@ void 	Channel::setInvited(const std::string& nickname)
 		_invited.push_back(nickname);
 }
 
-// ------------------- GETTERS ---------------------- // 
+// ---------------------------------- GETTERS -------------------------------------- // 
+
 
 const std::string& Channel::getName( void ) const { return _name; }
 
@@ -65,17 +65,6 @@ const std::string& 	Channel::getTopic( void ) const { return _topic; }
 const std::string&	Channel::getKey( void ) const { return _key; }
 
 User& Channel::getUser( const std::string & nickname ) { return *_users.at(nickname); }
-
-const std::string& Channel::getOp( const std::string & nickname ) const
-{
-	vector<string>::const_iterator it;
-	for(it = _ops.begin(); it != _ops.end(); ++it)
-	{
-		if (*it == nickname)
-			break;
-	}
-	return *it;
-}
 
 const int& Channel::getNb( void ) const { return _nb; }
 
@@ -89,7 +78,8 @@ const bool& Channel::getTopicRestricted() const { return _topic_restricted; }
 
 const bool& Channel::getProtected() const { return _protected; }
 
-// ------------------- MEMBER FUNCTIONS ---------------------- // 
+
+// ------------------------------ MEMBER FUNCTIONS --------------------------------- // 
 
 bool	Channel::isOp(const std::string& nickname)
 {
@@ -119,7 +109,6 @@ bool	Channel::isInvited(const std::string& nickname)
 
 void	Channel::removeUser(const std::string& nickname)
 {
-	// std::map<std::string, User>::iterator it;
 	std::map<std::string, User* >::iterator it;
 	it = _users.find(nickname);
     if (it != _users.end())

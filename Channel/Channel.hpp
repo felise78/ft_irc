@@ -5,17 +5,13 @@
 	#include <map>
 	#include <string>
 	#include <vector>
-
-	class User;
-	class Operator;
-	
 	#include "../Server/ServerManager.hpp"
 	#include "../User/User.hpp"
 
+	class User;
+	class Operator;
 	class ServerManager;
-
-	using namespace std;
-
+	
 	class Channel {
 
 		private :
@@ -54,14 +50,13 @@
 			const std::string& 	getTopic( void ) const;
 			const std::string&	getKey( void ) const;
 			User& getUser( const std::string & nickname );
-			const std::string& getOp( const std::string & nickname ) const;
 			const int& getNb( void ) const;
 			const int& getLimit( void ) const;
 			const bool& getLimited( void ) const;
 			const bool& getInvit( void ) const;
 			const bool& getTopicRestricted() const;
 			const bool& getProtected() const;
-
+			// member functions
 			bool	isOp(const std::string& nickname);
 			bool	isInvited(const std::string& nickname);
 			void	removeUser(const std::string& nickname);
