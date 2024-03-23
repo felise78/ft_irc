@@ -18,18 +18,17 @@ void	CommandHandler::handleNICK() {
 		std::cout << RED << "[-] " << "ERR_NONICKNAMEGIVEN" << RESET << std::endl;
 
 		return;
-	} // check the length and the characters
-	if (nickname.length() > 9 || nickname.length() < 1) {
+	}
+	// if nickname starts with a digit, it is invalid
+	if (std::isdigit(nickname[0]))
+	{
 		server.setBroadcast(ERR_ERRONEUSNICKNAME(server.hostname, user.getNickName(), nickname), user.getFd());
-		/* DEBUG */
-		std::cout << RED << "[-] " << ERR_ERRONEUSNICKNAME(server.hostname, user.getNickName(), nickname) << RESET << std::endl;
-
 		return;
 	}
 	// check forbidden characters
 	string::const_iterator it;
 	for(it = nickname.begin(); it != nickname.end(); ++it) {
-		if (std::isalnum(*it) == false) {
+		if (std::isalnum(*it) == false && *it != '-' && *it != '_') {
 			server.setBroadcast(ERR_ERRONEUSNICKNAME(server.hostname, user.getNickName(), nickname), user.getFd());
 			/* DEBUG */
 			std::cout << RED << "[-] " << ERR_ERRONEUSNICKNAME(server.hostname, user.getNickName(), nickname) << RESET << std::endl;
@@ -37,15 +36,32 @@ void	CommandHandler::handleNICK() {
 			return;
 		}
 	}
-
-	// if the nickname is already in use:
-	if (server.getFdbyNickName(commandsFromClient["params"]) != -1) {
+	
+	std::string oldNick = user.getNickName();
+	// if the nickname is already in use at registration : 
+	if (oldNick.empty() && server.getFdbyNickName(commandsFromClient["params"]) != -1)
+	{
+		while (server.getFdbyNickName(nickname) != -1)
+			nickname += '_';
+		if (DEBUG)
+			std::cout << RED << "nickname : " << nickname << std::endl; 
+	}
+	// if the nickname is already in user after registration : 
+	else if (server.getFdbyNickName(commandsFromClient["params"]) != -1) {
 		server.setBroadcast(ERR_NICKNAMEINUSE(server.hostname, user.getNickName() ,commandsFromClient["params"]), user.getFd());
+		return;
+	}
+	
+	// check the length (31 chars max)
+	if (nickname.length() > 31 || nickname.length() < 1) {
+		server.setBroadcast(ERR_ERRONEUSNICKNAME(server.hostname, user.getNickName(), nickname), user.getFd());
+		/* DEBUG */
+		std::cout << RED << "[-] " << ERR_ERRONEUSNICKNAME(server.hostname, user.getNickName(), nickname) << RESET << std::endl;
+
 		return;
 	}
 
 	// Once all the above passed setting nickname and updating it in all channels
-	std::string oldNick = user.getNickName();
 	server.usersMap[server.getFdbyNickName(oldNick)].setNickName(nickname);
 	if (!oldNick.empty())
 		server.setBroadcast(RPL_NICK(oldNick, user.getUserName(), user.getNickName()), user.getFd()); 
