@@ -181,31 +181,33 @@ void	ModeHandler::exec_mode()
 			// DEBUG //
 			std::cout << MAGENTA << "MODE 'o'" << RESET << std::endl;
 			//
+			if (_extra_args.empty())
+			{
+				_server.setBroadcast(ERR_EMPTYMODEPARAM(_server.hostname, _user.getNickName(), _channel, _flag[i]), _user.getFd());
+				return;
+			}
 			if (_server.usersMap.find(_server.getFdbyNickName(_extra_args[0])) == _server.usersMap.end())
 			{
 				_server.setBroadcast(ERR_NOSUCHNICK(_server.hostname, _user.getNickName(), _extra_args[0]), _user.getFd());
 				return;
 			}
-			else if (channel._users.find(_extra_args[0]) == channel._users.end())
+			if (channel._users.find(_extra_args[0]) == channel._users.end())
 			{
 				_server.setBroadcast(ERR_NOTONCHANNEL(_server.hostname, _user.getNickName(), _channel), _user.getFd());
 				return ;
 			}
+			if (set_flag)
+			{
+				if (channel.isOp(_extra_args[0]) == false)   // it should do nothing if the user is already op
+				{
+					channel.setOp(_extra_args[0]);
+					_server.setBroadcast(MODE_USERMSG(_extra_args[0], "+o"), _server.getFdbyNickName(_extra_args[0]));
+				}
+			}
 			else
 			{
-				if (set_flag)
-				{
-					if (channel.isOp(_extra_args[0]) == false)   // it should do nothing if the user is already op
-					{
-						channel.setOp(_extra_args[0]);
-						_server.setBroadcast(MODE_USERMSG(_extra_args[0], "+o"), _server.getFdbyNickName(_extra_args[0]));
-					}
-				}
-				else
-				{
-					channel.removeOp(_extra_args[0]);
-					_server.setBroadcast(MODE_USERMSG(_extra_args[0], "-o"), _server.getFdbyNickName(_extra_args[0]));
-				}
+				channel.removeOp(_extra_args[0]);
+				_server.setBroadcast(MODE_USERMSG(_extra_args[0], "-o"), _server.getFdbyNickName(_extra_args[0]));
 			}
 		}
 		if (_flag[i] == 'l')
