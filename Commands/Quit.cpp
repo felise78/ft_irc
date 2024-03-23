@@ -25,5 +25,11 @@ void	CommandHandler::handleQUIT()
 		if (it->second->getNb() == 0)
 			server.channelMap.erase(it->first);
 	}
+	// sends quit message to all the users the user was talking in privmsg
+	std::vector<std::string>::iterator it2 = user._privmsg_nicks.begin();
+	for ( ; it2 != user._privmsg_nicks.end(); ++it2) {
+
+		server.setBroadcast(msg, server.getFdbyNickName(*it2));
+	}
 	server.setBroadcast("", user.getFd());
 }

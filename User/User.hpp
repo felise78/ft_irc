@@ -4,6 +4,7 @@
 	#include <string>
 	#include <sstream>
 	#include <map>
+	#include <vector>
 	//#include "../Channel/Channel.hpp"
 
 	typedef enum Status {
@@ -39,7 +40,8 @@
 		// attributs publics
 		std::string						userMessageBuffer;
 		std::string						responseBuffer;
-		std::map<std::string, Channel *>_channels;
+		std::map<std::string, Channel*>	_channels;
+		std::vector<std::string>		_privmsg_nicks;
 		bool							_authenticated;
 		bool							_handshaked;
 		bool							_pinged;
