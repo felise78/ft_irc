@@ -18,7 +18,9 @@ void	CommandHandler::handleJOIN() {
 	std::string channelName = parse_channelName(*params.begin());
 	if (channelName.empty() == true)
 	{
-		server.setBroadcast(ERR_NOSUCHCHANNEL(server.hostname, user.getNickName(), channelName), user.getFd());
+		
+		server.setBroadcast(ERR_NOSUCHCHANNEL(server.hostname, user.getNickName(), *params.begin()), user.getFd());
+		//server.setBroadcast(ERR_NOSUCHCHANNEL(server.hostname, user.getNickName(), channelName), user.getFd());
 		return; 
 	}
 
@@ -34,14 +36,6 @@ void	CommandHandler::handleJOIN() {
 		server.setChannel(new_channel);
 		user.setChannel(new_channel);
 		server.setBroadcast(MODE_USERMSG(user.getNickName(), "+o"), user.getFd());
-		//server.setBroadcast(channelName, user.getNickName() ,MODE_USERMSG(user.getNickName(), "+o"));
-		//server.setBroadcast(RPL_YOUREOPER(server.hostname, user.getNickName()), user.getFd());
-		// DEBUG //
-		std::cout << RED << "OPS in channel : ";
-		for (std::vector<std::string>::iterator it = server.channelMap[channelName]._ops.begin(); it != server.channelMap[channelName]._ops.end(); ++it)
-			std::cout << *it << " " ;
-		std::cout << RESET << std::endl;
-		//////////
 	}
 
 

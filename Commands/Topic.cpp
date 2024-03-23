@@ -40,7 +40,7 @@ std::cout << YELLOW << "TOPIC command received.." << RESET << std::endl;
 		{
 			if(server.channelMap[channelName].isOp(user.getNickName()) == false)
 			{
-				server.setBroadcast(ERR_CHANOPRIVSNEEDED(server.hostname, channelName), user.getFd());
+				server.setBroadcast(ERR_CANTCHANGETOPIC(server.hostname, user.getNickName(), channelName), user.getFd());
 				return;
 			}
 		}

@@ -9,11 +9,7 @@ ModeHandler::ModeHandler(map<string, string>& commands, ServerManager& srv, User
 		return ;
 	}
 	if (parse_errors() != 0)
-	{
-		if (DEBUG)
-			std::cout << "something went wrong in parsing" << std::endl;
 		return ;
-	}
 	exec_mode();	
 }
 
@@ -120,7 +116,7 @@ int	ModeHandler::parse_errors()
 	{
 		if (DEBUG)
 			std::cout << RED << "ici chanOp" << std::endl;
-		_server.setBroadcast(ERR_CHANOPRIVSNEEDED(_server.hostname, _channel), _user.getFd());
+		_server.setBroadcast(ERR_CHANOPRIVSNEEDED(_server.hostname, _user.getNickName(), _channel), _user.getFd());
 		return 1;
 	}
 }
@@ -163,6 +159,7 @@ void	ModeHandler::exec_mode()
 			if (DEBUG)
 				std::cout << MAGENTA << "MODE 'i'" << RESET << std::endl;
 			channel.setInvit(set_flag);
+			// RPL_CHANNELMODEIS
 		}
 		else if (_flag[i] == 't')
 		{
@@ -170,6 +167,9 @@ void	ModeHandler::exec_mode()
 				std::cout << MAGENTA << "MODE 't'" << RESET << std::endl;
 			channel.setTopicRestricted(set_flag);
 		}
+		/*
+			 FLAG 'k' // CHANNEL PASSWORD MODE
+		*/
 		else if (_flag[i] == 'k')
 		{
 			if (DEBUG)
@@ -185,9 +185,7 @@ void	ModeHandler::exec_mode()
 				; // remove key ??
 		}
 		/*
-			If a user attempts to make themselves an operator using the "+o"
-   			flag, the attempt should be ignored.  There is no restriction,
-   			however, on anyone `deopping' themselves (using "-o").
+			 FLAG 'o' // CHANOP MODE
 		*/
 		else if (_flag[i] == 'o')
 		{
@@ -213,16 +211,20 @@ void	ModeHandler::exec_mode()
 				if (channel.isOp(_extra_args[0]) == false)   // it should do nothing if the user is already op
 				{
 					channel.setOp(_extra_args[0]);
-					_server.setBroadcast(MODE_USERMSG(_extra_args[0], "+o"), _server.getFdbyNickName(_extra_args[0]));
+					_user.userMessageBuffer += MODE_USERMSG(_extra_args[0], "+o");
+					//_server.setBroadcast(MODE_USERMSG(_extra_args[0], "+o"), _server.getFdbyNickName(_extra_args[0]));
 				}
-			}
+		}
 			else
 			{
 				channel.removeOp(_extra_args[0]);
-				_server.setBroadcast(MODE_USERMSG(_extra_args[0], "-o"), _server.getFdbyNickName(_extra_args[0]));
-				//_server.setBroadcast(_channel, _user.getNickName(), MODE_USERMSG(_extra_args[0], "-o"));
+				_user.userMessageBuffer += MODE_USERMSG(_extra_args[0], "-o");
+				//_server.setBroadcast(MODE_USERMSG(_extra_args[0], "-o"), _server.getFdbyNickName(_extra_args[0]));
 			}
 		}
+		/*
+			 FLAG 'l' // CHANNEL USER LIMIT 
+		*/
 		else if (_flag[i] == 'l')
 		{
 			if (DEBUG)
@@ -247,13 +249,20 @@ void	ModeHandler::exec_mode()
 				channel.setLimit(atoi(_extra_args[0].c_str())); // je pense il faut aussi envoyer un CHAN MODE MSG
 			}
 			else
-				channel.removeLimit();		// je pense il faut aussi envoyer un CHAN MODE MSG
+				channel.removeLimit(); // je pense il faut aussi envoyer un CHAN MODE MSG
 		}
+		/*
+			unknown flag
+		*/
 		else
-			_server.setBroadcast(ERR_UMODEUNKNOWNFLAG(_server.hostname, _user.getPrefix(), _flag[i]), _user.getFd());
+		{
+			_user.userMessageBuffer += ERR_UMODEUNKNOWNFLAG(_server.hostname, _user.getPrefix(), _flag[i]);
+			//_server.setBroadcast(ERR_UMODEUNKNOWNFLAG(_server.hostname, _user.getPrefix(), _flag[i]), _user.getFd());
+		}
 	}
-
-	
+	/*
+		sends reply 
+	*/
 	string msg = _user.getPrefix() + " " + _user.userMessageBuffer;
 	if (DEBUG)
 		std::cout << RED << "msg : " <<  msg << RESET << std::endl;
