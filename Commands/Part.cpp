@@ -29,6 +29,6 @@ void	CommandHandler::handlePART()
 	server.setBroadcast(RPL_PART(user.getPrefix(), channelName, msg), user.getFd());
 	server.setBroadcast(channelName, user.getNickName(), user.responseBuffer);
 	server.channelMap[channelName].removeUser(user.getNickName());
-	// delete the user of the invited list as he is able to join
-	// so that he cannot join a second time if not invited again
+	if (server.channelMap[channelName].getNb() == 0)
+		server.channelMap.erase(channelName);
 }

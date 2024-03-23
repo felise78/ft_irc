@@ -21,7 +21,9 @@ void	CommandHandler::handleQUIT()
 
 		server.channelMap[it->first].removeUser(user.getNickName());
 		server.setBroadcast(it->first, user.getNickName(), msg);
-
+		// deletes the channels of the server if they are empty when User leaves
+		if (it->second->getNb() == 0)
+			server.channelMap.erase(it->first);
 	}
 	server.setBroadcast("", user.getFd());
 }
