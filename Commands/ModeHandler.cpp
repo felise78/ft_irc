@@ -63,11 +63,7 @@ int	ModeHandler::parse_errors()
 		else if (args[i][0] == '+' || args[i][0] == '-')
 		{
 			// le comportement de irssi : il va concatener tout ce qui vient apres un + ou -
-			// if (i != 1)
-			// {
-			// 	_server.setBroadcast(ERR_UMODEUNKNOWNFLAG(args[i]), _user.getFd());
-			// 	return 1;
-			// }
+			// il ne doit pas return si il trouve un flag qu'il ne connait pas.
 			_flag = args[i];
 			for (size_t i = 1; i < _flag.size(); i++)
 			{
@@ -75,7 +71,7 @@ int	ModeHandler::parse_errors()
 				if (_flag.size() < 2 || modes.find(_flag[i]) == string::npos)
 				{
 					// _server.setBroadcast(ERR_UMODEUNKNOWNFLAG(args[i]), _user.getFd());
-					_server.setBroadcast(ERR_UMODEUNKNOWNFLAG(_server.hostname, _user.getPrefix()), _user.getFd());
+					_server.setBroadcast(ERR_UMODEUNKNOWNFLAG(_server.hostname, _user.getPrefix(), _flag[i]), _user.getFd());
 					return 1;
 				}
 			}
@@ -134,10 +130,11 @@ void	ModeHandler::exec_mode()
 	std::cout << RESET << std::endl;
 	//////////////////////
 
+
 	Channel &channel = it->second;
 	if (!(_flag.empty()) && _flag[0] == '+')
 		set_flag = true;
-	if (!(_flag.empty()) && _flag[0] == '-')
+	else if (!(_flag.empty()) && _flag[0] == '-')
 		set_flag = false;
 	for (size_t i = 1; i < _flag.size(); i++)
 	{
@@ -232,10 +229,10 @@ void	ModeHandler::exec_mode()
 						return;
 					}
 				}
-				channel.setLimit(atoi(_extra_args[0].c_str()));
+				channel.setLimit(atoi(_extra_args[0].c_str())); // je pense il faut aussi envoyer un CHAN MODE MSG
 			}
 			else
-				channel.removeLimit();		
+				channel.removeLimit();		// je pense il faut aussi envoyer un CHAN MODE MSG
 		}
 	}
 	string msg = _user.getPrefix() + " " + _user.userMessageBuffer;

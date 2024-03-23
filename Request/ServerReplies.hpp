@@ -42,14 +42,17 @@
 /*MODE COMMAND*/
 #define RPL_CHANNELMODEIS(hostname, channel, mode, mode_params) (":" + hostname + " 324 " + channel + " " + mode + " " + mode_params + "\r\n")
 #define ERR_KEYSET(hostname, channel) (":" + hostname + " 467 " + channel + " :Channel key already set\r\n")
-#define ERR_UNKNOWNMODE(hostname, char, channel) (":" + hostname + " 472 " + char + " :is unknown mode char to me for " + channel + "\r\n")
-#define ERR_UMODEUNKNOWNFLAG(hostname, user_nick) (":" + hostname + " 501 " + user_nick + " :Unknown MODE flag\r\n")
+//#define ERR_UNKNOWNMODE(hostname, char, channel) (":" + hostname + " 472 " + char + " :is unknown mode char to me for " + channel + "\r\n")
+//  12:08 -!- Unknown mode character q
+//
+#define ERR_UMODEUNKNOWNFLAG(hostname, user_nick, char) (":" + hostname + " 501 " + user_nick + " :Unknown mode character " + char + "\r\n")
+//
 #define ERR_EMPTYMODEPARAM(hostname, user_nick, channel, mode) (":" + hostname + " 696 " + user_nick + " " + channel + " " + mode + " * You must specify a parameter for the mode.\r\n")
 #define ERR_INVALIDMODEPARAM(hostname, user_nick, channel, mode, param) (":" + hostname + " 696 " + user_nick + " " + channel + " " + mode + " " + param + " Invalid mode parameter.\r\n")
-//RPL_CHANNELMODEISWITHKEY
-//MODE_CHANNELMSGWITHPARAM
-//MODE_CHANNELMSG
-//RPL_UMODEIS
+// RPL_CHANNELMODEISWITHKEY
+// MODE_CHANNELMSGWITHPARAM
+// MODE_CHANNELMSG
+// RPL_UMODEIS
 
 /*NICK COMMAND*/
 #define ERR_ERRONEUSNICKNAME(hostname, user_nick, nick) (":" + hostname + " 432 " + user_nick + " " + nick + " :Erroneous nickname\r\n")
