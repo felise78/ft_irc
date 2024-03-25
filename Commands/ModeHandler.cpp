@@ -19,19 +19,12 @@ ModeHandler::~ModeHandler()
 
 int	ModeHandler::parse_errors()
 {
-	// ignorer le mode du debut mais pas le /mode nickname +i apres ?
-	if (_user.skip_mode == true)
+	if (_commandsFromClient["params"].find("#") == std::string::npos) //removed & 
 	{
-		_user.skip_mode = false;
+		if (DEBUG)
+			std::cout << "returns cuz no '#'" << std::endl;
 		return 1;
 	}
-	///
-	// if (_commandsFromClient["params"].find("#") == std::string::npos && _commandsFromClient["params"].find("&") == std::string::npos)
-	// {
-	// 	if (DEBUG)
-	// 		std::cout << "returns cuz no '#' or '&'" << std::endl;
-	// 	return 1;
-	// }
 	stringstream params;
 	params.str(_commandsFromClient["params"]);
 
@@ -40,7 +33,7 @@ int	ModeHandler::parse_errors()
 
 	vector<string> args;
 	string			tmp;
-	while (getline(params, tmp, ' '))
+	while (getline(params, tmp, ' ')) //vector method needs to change. Should be closer to COMMAND/PARAMS type parsing. 
 	{
 		if (!tmp.empty())
 			args.push_back(tmp);
@@ -55,7 +48,7 @@ int	ModeHandler::parse_errors()
 	
 	for (size_t i = 0; i < args.size(); i++)
 	{
-		if (args[i][0] == '#' || args[i][0] == '&')
+		if (args[i][0] == '#')
 		{
 			n_channels++;
 			if (_server.channelMap.find(args[i]) != _server.channelMap.end())
@@ -69,7 +62,7 @@ int	ModeHandler::parse_errors()
 		else if (args[i][0] == '+' || args[i][0] == '-')
 		{
 			// le comportement de irssi : il va concatener tout ce qui vient apres un + ou -
-			// freendoe ne return pas si il trouve un flag qu'il ne connait pas mais traite chaque flag.
+			// freenode ne return pas si il trouve un flag qu'il ne connait pas mais traite chaque flag.
 			_flag = args[i];
 			// for (size_t i = 1; i < _flag.size(); i++) //|| npos removed
 			// {

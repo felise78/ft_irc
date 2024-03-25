@@ -17,7 +17,8 @@
 		private :
 			std::string						_name;
 			std::string						_topic; 
-			std::string						_key; 
+			std::string						_key;
+			std::string						_channelModes;
 			int								_nb;
 			int								_limit; 
 			bool							_limited; 
@@ -45,10 +46,12 @@
 			void	setTopicRestricted(const bool& topic);
 			void	setProtected(const bool& protecd);
 			void 	setInvited(const std::string& nickname);
+			void	setChannelModes(const char mode);
 			// getters
 			const std::string& 	getName( void ) const;
 			const std::string& 	getTopic( void ) const;
 			const std::string&	getKey( void ) const;
+			const std::string&	getChannelModes() const;
 			User& getUser( const std::string & nickname );
 			const int& getNb( void ) const;
 			const int& getLimit( void ) const;
@@ -64,6 +67,7 @@
 			void 	removeInvited(const std::string& nickname);
 			void	removeTopic();
 			void	removeLimit();
+			void	removeChannelMode(const char mode);
 	};
 
 #endif

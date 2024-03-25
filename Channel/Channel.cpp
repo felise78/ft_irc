@@ -48,6 +48,12 @@ void 	Channel::setInvited(const std::string& nickname)
 		_invited.push_back(nickname);
 }
 
+void	Channel::setChannelModes(const char mode)
+{
+	_channelModes.push_back(mode);
+}
+
+
 // ---------------------------------- GETTERS -------------------------------------- // 
 
 
@@ -71,6 +77,7 @@ const bool& Channel::getTopicRestricted() const { return _topic_restricted; }
 
 const bool& Channel::getProtected() const { return _protected; }
 
+const std::string&	Channel::getChannelModes() const { return (_channelModes); }
 
 // ------------------------------ MEMBER FUNCTIONS --------------------------------- // 
 
@@ -138,3 +145,10 @@ void	Channel::removeInvited(const std::string& nickname)
 void	Channel::removeTopic() { _topic = ""; }
 
 void	Channel::removeLimit() { _limited = false; }
+
+void	Channel::removeChannelMode(const char mode)
+{
+	size_t found = _channelModes.find(mode);
+	if (found != std::string::npos)
+		_channelModes.erase(found, 1);
+}
