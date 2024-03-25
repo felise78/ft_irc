@@ -18,17 +18,18 @@ void	CommandHandler::handleJOIN() {
 	std::string channelName = parse_channelName(*params.begin());
 	if (channelName.empty() == true)
 	{
-		server.setBroadcast(ERR_NOSUCHCHANNEL(server.hostname, user.getNickName(), channelName), user.getFd());
+		
+		server.setBroadcast(ERR_NOSUCHCHANNEL(server.hostname, user.getNickName(), *params.begin()), user.getFd());
+		//server.setBroadcast(ERR_NOSUCHCHANNEL(server.hostname, user.getNickName(), channelName), user.getFd());
 		return; 
 	}
 
 
-	// check if the channel doesn't exist, creates it
+	// check if the channel doesn't exist, creates it and sets the user as chanOp
 	if (server.channelMap.find(channelName) == server.channelMap.end())
 	{
 		Channel new_channel(channelName);
 		new_channel.setUser(user);
-		// set the creator of the channel as operator
 		new_channel.setOp(user.getNickName());
 		if (params.begin() + 1  != params.end())
 			new_channel.setKey(*(params.begin() + 1));
@@ -46,7 +47,7 @@ void	CommandHandler::handleJOIN() {
 		{
 			if (server.channelMap[channelName].getKey() != *(params.begin() + 1))
 			{
-				server.setBroadcast(ERR_BADCHANNELKEY(server.hostname, channelName), user.getFd());
+				server.setBroadcast(ERR_BADCHANNELKEY(server.hostname, user.getNickName(), channelName), user.getFd());
 				return;
 			}
 		}
@@ -91,7 +92,7 @@ void	CommandHandler::handleJOIN() {
 	// send response to client
 	std::string reply = RPL_JOIN(user.getPrefix(), channelName);
 	server.setBroadcast(channelName, user.getNickName(), reply);
-	std::string topic = server.channelMap[channelName].getTheme();
+	std::string topic = server.channelMap[channelName].getTopic();
 	if (topic.empty())
 		reply += RPL_NOTOPIC(server.hostname, user.getNickName(), channelName) + "\r\n"; //
 	else

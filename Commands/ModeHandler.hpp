@@ -2,7 +2,7 @@
 #define MODE_HANDLER_HPP
 
 #ifndef DEBUG
-	#define DEBUG 0
+	#define DEBUG 1
 #endif
 
 #include <string>

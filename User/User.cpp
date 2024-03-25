@@ -17,7 +17,8 @@ User::User() :
 	_handshaked(false),
 	_pinged(false),
 	_cap(false),
-	isBot(false) {
+	isBot(false),
+	skip_mode(true) {
 };
 
 

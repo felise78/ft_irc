@@ -5,29 +5,25 @@
 	#include <map>
 	#include <string>
 	#include <vector>
-
-	class User;
-	class Operator;
-	
 	#include "../Server/ServerManager.hpp"
 	#include "../User/User.hpp"
 
+	class User;
+	class Operator;
 	class ServerManager;
-
-	using namespace std;
-
+	
 	class Channel {
 
 		private :
 			std::string						_name;
-			std::string						_theme; 	// theme and/or rules of channel
-			std::string						_key; 		// channel password
+			std::string						_topic; 
+			std::string						_key; 
 			int								_nb;
-			int								_limit; 	// max number of users
+			int								_limit; 
 			bool							_limited; 
 			bool							_invit_only;
 			bool							_topic_restricted;
-			bool							_protected; // has password;
+			bool							_protected; 
 
 		public :
 			Channel() {}
@@ -39,7 +35,7 @@
 			std::vector<std::string>		_invited;
 			// setters 
 			void	setName(const std::string & name);
-			void	setTheme(const std::string & theme);
+			void	setTopic(const std::string & topic);
 			void	setKey(const std::string & key);
 			void	setUser(User& user);
 			void	setOp(const std::string& nickname);
@@ -51,17 +47,16 @@
 			void 	setInvited(const std::string& nickname);
 			// getters
 			const std::string& 	getName( void ) const;
-			const std::string& 	getTheme( void ) const;
+			const std::string& 	getTopic( void ) const;
 			const std::string&	getKey( void ) const;
 			User& getUser( const std::string & nickname );
-			const std::string& getOp( const std::string & nickname ) const;
 			const int& getNb( void ) const;
 			const int& getLimit( void ) const;
 			const bool& getLimited( void ) const;
 			const bool& getInvit( void ) const;
 			const bool& getTopicRestricted() const;
 			const bool& getProtected() const;
-
+			// member functions
 			bool	isOp(const std::string& nickname);
 			bool	isInvited(const std::string& nickname);
 			void	removeUser(const std::string& nickname);
@@ -69,9 +64,6 @@
 			void 	removeInvited(const std::string& nickname);
 			void	removeTopic();
 			void	removeLimit();
-			//void	broadcast(std::string msg);
-			void	printUsers( void ) const; // for debug
-			void	printOps( void) const; // for debug
 	};
 
 #endif

@@ -3,15 +3,15 @@
 /*CONSTRUCTORS/DESTRUCTORS*/
 Request::Request(ServerManager& server, std::string buffer) : _server(server), _input_buffer(buffer), _request_valid(false)
 {
-	if (DEBUG)
-		std::cout << "Request constructor called" << std::endl;
+	// if (DEBUG)
+	// 	std::cout << "Request constructor called" << std::endl;
 	parse_args();
 }
 
 Request::~Request()
 {
-	if (DEBUG)
-		std::cout << "Request destructor called" << std::endl;
+	// if (DEBUG)
+	// 	std::cout << "Request destructor called" << std::endl;
 }
 
 /*SETTERS*/

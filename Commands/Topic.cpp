@@ -25,10 +25,10 @@ std::cout << YELLOW << "TOPIC command received.." << RESET << std::endl;
 	// if the user just wants to print the topic
 	if (i == std::string::npos)
 	{
-		if (server.channelMap[channelName].getTheme().empty() == true)
+		if (server.channelMap[channelName].getTopic().empty() == true)
 			server.setBroadcast(RPL_NOTOPIC(server.hostname, user.getNickName(), channelName), user.getFd());
 		else 
-			server.setBroadcast(RPL_TOPIC(server.hostname, user.getNickName(), channelName, server.channelMap[channelName].getTheme()), user.getFd());
+			server.setBroadcast(RPL_TOPIC(server.hostname, user.getNickName(), channelName, server.channelMap[channelName].getTopic()), user.getFd());
 		return;
 	}
 	// if the user wants to change the topic
@@ -40,11 +40,11 @@ std::cout << YELLOW << "TOPIC command received.." << RESET << std::endl;
 		{
 			if(server.channelMap[channelName].isOp(user.getNickName()) == false)
 			{
-				server.setBroadcast(ERR_CHANOPRIVSNEEDED(server.hostname, channelName), user.getFd());
+				server.setBroadcast(ERR_CANTCHANGETOPIC(server.hostname, user.getNickName(), channelName), user.getFd());
 				return;
 			}
 		}
-		server.channelMap[channelName].setTheme(topic);
+		server.channelMap[channelName].setTopic(topic);
 		server.setBroadcast(RPL_TOPIC(server.hostname, user.getNickName(), channelName, topic), user.getFd());
 		server.setBroadcast(channelName, user.getNickName(), RPL_TOPIC(server.hostname, user.getPrefix(), channelName, topic));
 	}
