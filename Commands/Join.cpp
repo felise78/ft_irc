@@ -47,7 +47,7 @@ void	CommandHandler::handleJOIN() {
 		{
 			if (server.channelMap[channelName].getKey() != *(params.begin() + 1))
 			{
-				server.setBroadcast(ERR_BADCHANNELKEY(server.hostname, channelName), user.getFd());
+				server.setBroadcast(ERR_BADCHANNELKEY(server.hostname, user.getNickName(), channelName), user.getFd());
 				return;
 			}
 		}
