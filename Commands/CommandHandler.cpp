@@ -112,7 +112,7 @@ void	CommandHandler::handleNONE() {
 
 void	CommandHandler::handleCAP() {
 	std::cout << YELLOW << "CAP command received.." << RESET << std::endl;
-	// user._cap = true;
+	user._cap = true;
 }
 
 /*
@@ -164,10 +164,10 @@ void	CommandHandler::handlePASS() {
 	}
 	
 	// The following logic is not necessary but nice to have anyway !!
-	if (user.getUserName().empty()) {
+	if (user.getUserName().empty() && user._cap == false) {
 		server.setBroadcast(ERR_NEEDMOREPARAMS(server.hostname, "USER"), user.getFd());
 	}
-	if (user.getNickName().empty()) {
+	if (user.getNickName().empty() && user._cap == false) {
 		server.setBroadcast(ERR_NEEDMOREPARAMS(server.hostname, "NICK"), user.getFd());
 	}
 }
@@ -211,10 +211,10 @@ void	CommandHandler::handleUSER() {
 	}
 
 	// The following logic is not necessary but nice to have anyway !!
-	if (user.getNickName().empty()) {
+	if (user.getNickName().empty() && user._cap == false) {
 		server.setBroadcast(ERR_NEEDMOREPARAMS(server.hostname, "NICK"), user.getFd());
 	}
-	if (user.getStatus() == PASS_NEEDED) {
+	if (user.getStatus() == PASS_NEEDED && user._cap == false) {
 		server.setBroadcast(ERR_NEEDMOREPARAMS(server.hostname, "PASS"), user.getFd());
 	}
 }

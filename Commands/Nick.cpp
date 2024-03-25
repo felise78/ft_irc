@@ -77,10 +77,10 @@ void	CommandHandler::handleNICK() {
 		user.setStatus(REGISTERED);
 	}
 	// The following logic is not necessary but nice to have anyway !!
-	if (user.getStatus() == PASS_NEEDED) {
+	if (user.getStatus() == PASS_NEEDED && user._cap == false) {
 		server.setBroadcast(ERR_NEEDMOREPARAMS(server.hostname, "PASS"), user.getFd());
 	}
-	if (user.getUserName().empty()) {
+	if (user.getUserName().empty() && user._cap == false) {
 		server.setBroadcast(ERR_NEEDMOREPARAMS(server.hostname, "USER"), user.getFd());
 	}
 }
