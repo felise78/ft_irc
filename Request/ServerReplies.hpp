@@ -46,8 +46,9 @@
 #define ERR_UMODEUNKNOWNFLAG(hostname, user_nick, char) (":" + hostname + " 501 " + user_nick + " :Unknown mode character " + char + "\r\n")
 #define ERR_EMPTYMODEPARAM(hostname, user_nick, channel, mode) (":" + hostname + " 696 " + user_nick + " " + channel + " " + mode + " * You must specify a parameter for the mode.\r\n")
 #define ERR_INVALIDMODEPARAM(hostname, user_nick, channel, mode, param) (":" + hostname + " 696 " + user_nick + " " + channel + " " + mode + " " + param + " Invalid mode parameter.\r\n")
+//#define MODE_CHANNELMSG(channel, mode) (":localhost MODE #" + channel + " " + mode + "\r\n")
+#define MODE_CHANNELMSGWITHPARAM(user_prefix, channel, mode, param) (user_prefix + " MODE " + channel + " " + mode + " " + param + "\r\n")
 // RPL_CHANNELMODEISWITHKEY
-// MODE_CHANNELMSGWITHPARAM
 // MODE_CHANNELMSG
 // RPL_UMODEIS
 
@@ -55,7 +56,7 @@
 #define ERR_ERRONEUSNICKNAME(hostname, user_nick, nick) (":" + hostname + " 432 " + user_nick + " " + nick + " :Erroneous nickname\r\n")
 #define ERR_NICKNAMEINUSE(hostname, user_nick, nick) (":" + hostname + " 433 " + user_nick + " " + nick + " :Nickname is already in use\r\n")
 #define ERR_NONICKNAMEGIVEN(hostname) (":" + hostname + " 431 :No nickname given\r\n")
-#define RPL_NICK(old_nick, username, new_nick) (":" + old_nick + "!" + username + "@localhost NICK " +  new_nick + "\r\n")
+#define RPL_NICK(oldnick_prefix, new_nick) (oldnick_prefix + " NICK " +  new_nick + "\r\n")
 
 /*JOIN COMMAND*/
 #define ERR_CHANNELISFULL(hostname, nick, channel) (":" + hostname + " 471 " + nick + " " + channel + " :Cannot join channel (+l)\r\n")

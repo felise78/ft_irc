@@ -62,9 +62,9 @@ void	CommandHandler::handleNICK() {
 	}
 
 	// Once all the above passed setting nickname and updating it in all channels
-	server.usersMap[server.getFdbyNickName(oldNick)].setNickName(nickname);
 	if (!oldNick.empty())
-		server.setBroadcast(RPL_NICK(oldNick, user.getUserName(), user.getNickName()), user.getFd()); 
+		server.setBroadcast(RPL_NICK(user.getPrefix(), nickname), user.getFd()); 
+	server.usersMap[server.getFdbyNickName(oldNick)].setNickName(nickname);
 
 	// the following part is to handle the initial registration of the user
 	// if the user is already registered return
