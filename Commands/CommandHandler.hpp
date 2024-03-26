@@ -17,33 +17,38 @@ class ServerManager;
 ** The following enumeration represents available commands 
 ** that the server can handle
 */
+
+//!\\ update the execute_Command() function if enum is modified
+//				↓↓↓
 typedef enum requestCMD {
 
-	NONE,
-	CAP,
-	INFO, //
-	INVITE,
-	JOIN,
-	KICK,
-	LIST, //
-	MODE,
-	NAMES, //
-	NICK, 
-	NOTICE, //
-	OPER,
-	PART,
-	PASS,
-	PING,
-	PONG,
-	PRIVMSG,
-	QUIT, // 
-	TOPIC,
-	USER,
-	VERSION,//
-	WHO,//
-	WHOIS//
+	NONE,		// 0
+	CAP,		// 1
+	INFO, //	// 2
+	INVITE,		// 3
+	JOIN,		// 4
+	KICK,		// 5
+	LIST, //	// 6
+	MODE,		// 7
+	NAMES, //	// 8
+	NICK, 		// 9
+	NOTICE, //	// 10
+	OPER,		// 11
+	PART,		// 12
+	PASS,		// 13
+	PING,		// 14
+	PONG,		// 15
+	PRIVMSG,	// 16
+	QUIT, // 	// 17
+	TOPIC,		// 18
+	USER,		// 19
+	VERSION,//	// 20
+	WHO,//		// 21
+	WHOIS//		// 22
 
 }	e_cmd;
+// 				↑↑↑
+//!\\ update the execute_Command() function if enum is modified
 
 class CommandHandler {
 
@@ -88,6 +93,7 @@ class CommandHandler {
 	
 		//COMMAND UTILS
 		const std::string	parse_channelName(std::string& channelName);
+		bool				handleemptystring(std::string& channelName);
 };
 
 #endif

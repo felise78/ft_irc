@@ -46,13 +46,16 @@ CommandHandler::CommandHandler(ServerManager& srv, User &usr, map<string, string
 	cmdToHandler["QUIT"] = &CommandHandler::handleQUIT;
 	// .. and so on
 
-	if (commandsFromClient["command"] != "QUIT" && (commandsFromClient.find("params") == commandsFromClient.end() || commandsFromClient["params"].empty()))
-	{
-		server.setBroadcast(ERR_NEEDMOREPARAMS(server.hostname, commandsFromClient["command"]), user.getFd());
-		return;
-	}
-
 	executeCommand();
+
+	// if ((commandsFromClient["command"] == "PASS" || commandsFromClient["command"] == "NICK" || commandsFromClient["command"] == "USER" 
+	// || commandsFromClient["command"] == "JOIN" || commandsFromClient["command"] == "PRIVMSG" || commandsFromClient["command"] == "TOPIC"
+	// || commandsFromClient["command"] == "INVITE" || commandsFromClient["command"] == "KICK" || commandsFromClient["command"] == "MODE"
+	// || commandsFromClient["command"] == "") && (commandsFromClient.find("params") == commandsFromClient.end() || commandsFromClient["params"].empty()))
+	// {
+	// 	server.setBroadcast(ERR_NEEDMOREPARAMS(server.hostname, commandsFromClient["command"]), user.getFd());
+	// 	return;
+	// }
 }
 
 CommandHandler::~CommandHandler() {
@@ -102,12 +105,22 @@ void	CommandHandler::executeCommand() {
 	std::cout << YELLOW << "Executing command: " << RESET << "[" << cmdStr << "]" << std::endl;
 	/* ***** */
 	e_cmd num = getCMD(cmdStr);
+
+	// update here if enum is modified
+	if ((num == 3 || num == 4 || num == 5 || num == 7 || num == 9 || num == 12 || num == 13 || num == 16
+	|| num == 18 || num == 19) && (commandsFromClient.find("params") == commandsFromClient.end() || commandsFromClient["params"].empty()))
+	{
+		server.setBroadcast(ERR_NEEDMOREPARAMS(server.hostname, commandsFromClient["command"]), user.getFd());
+		return;
+	}
+
 	cmdStr = mapEnumToString[num];
 
 	// The synax is important here !! (`cmdToHandler[cmdStr]()` - won't work)
 	// first we get the pointer to the handler method and then we call it on `this` object
 	if (cmdToHandler.find(cmdStr) != cmdToHandler.end())
 		(this->*cmdToHandler[cmdStr])();
+	
 }
 
 /*

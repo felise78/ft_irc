@@ -7,7 +7,12 @@ void	CommandHandler::handleJOIN() {
 	// format : /join #channel (password)
 
 	std::vector<std::string> params = split(commandsFromClient["params"], " ");
-	if (params.begin() + 1 == params.end() || params.begin() + 2 == params.end())
+	if (params.begin() == params.end())
+	{
+		server.setBroadcast(ERR_NEEDMOREPARAMS(server.hostname, "JOIN"), user.getFd());
+		return;
+	}
+	else if (params.begin() + 1 == params.end() || params.begin() + 2 == params.end())
 		;
 	else
 	{
@@ -15,6 +20,7 @@ void	CommandHandler::handleJOIN() {
 			server.setBroadcast(ERR_TOOMANYTARGETS(server.hostname, *(params.end() - 1)), user.getFd());
 		return;
 	}
+
 	std::string channelName = parse_channelName(*params.begin());
 	if (channelName.empty() == true)
 	{
@@ -23,7 +29,6 @@ void	CommandHandler::handleJOIN() {
 		//server.setBroadcast(ERR_NOSUCHCHANNEL(server.hostname, user.getNickName(), channelName), user.getFd());
 		return; 
 	}
-
 
 	// check if the channel doesn't exist, creates it and sets the user as chanOp
 	if (server.channelMap.find(channelName) == server.channelMap.end())
@@ -98,4 +103,18 @@ void	CommandHandler::handleJOIN() {
 	else
 		reply += RPL_TOPIC(server.hostname, user.getNickName(), channelName, topic);
 	server.setBroadcast(reply, user.getFd());
+}
+
+bool		CommandHandler::handleemptystring(std::string& channelName)
+{
+	bool empty = false;
+	std::string::iterator it;
+	for (it = channelName.begin() ; it != channelName.end(); ++it)
+	{
+		if (*it != ' ')
+			break;
+	}
+	if (it == channelName.end())
+		empty = true;
+	return empty;
 }
