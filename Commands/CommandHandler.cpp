@@ -70,18 +70,28 @@ e_cmd	CommandHandler::getCMD(const std::string & str) {
 	return NONE;
 }
 
+// const std::string	CommandHandler::parse_channelName(std::string& channelName)
+// {
+// 	if (channelName[0] != '#')
+// 		return "";
+// 	string::iterator it = channelName.begin() + 1;
+// 	for ( ; it != channelName.end(); ++it)
+// 	{
+// 		if (std::isalnum(*it) == false)
+// 			return "";
+// 	}
+// 	return channelName;
+// }
+
 const std::string	CommandHandler::parse_channelName(std::string& channelName)
 {
-	if (channelName[0] != '#') // ADD && channelName[0] != '&' ?
-		return "";
-	string::iterator it = channelName.begin() + 1;
-	for ( ; it != channelName.end(); ++it)
-	{
-		if (std::isalnum(*it) == false)
-			return "";
-	}
+	if (channelName.empty())
+		;
+	else if (channelName[0] != '#')
+		channelName = "#" + channelName;
 	return channelName;
 }
+
 
 void	CommandHandler::executeCommand() {
 
