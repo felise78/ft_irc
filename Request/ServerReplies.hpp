@@ -12,6 +12,9 @@
 #define ERR_PASSWDMISMATCH(hostname) (":" + hostname + " 464 :Password incorrect\r\n")
 #define PING(servername) ("PING :" + servername + "\r\n")
 #define ERR_UNKNOWNCOMMAND(hostname, command) (":" + hostname + " 421 " + command + " :Unknown command\r\n")
+#define ERR_NEEDUSERNAME(hostname) (":" + hostname + " 461 USER :Need username to register\r\n")
+#define ERR_NEEDNICKNAME(hostname) (":" + hostname + " 461 NICK :Need nickname to register\r\n")
+#define ERR_NEEDPASSWORD(hostname) (":" + hostname + " 461 PASS :Need password to register\r\n")
 
 /*PRIVMSG*/
 #define ERR_NOSUCHNICK(hostname, user_nick, target_nick) (":" + hostname + " 401 " + user_nick + " " + target_nick + " :No such nick\r\n")

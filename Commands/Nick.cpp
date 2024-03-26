@@ -78,9 +78,9 @@ void	CommandHandler::handleNICK() {
 	}
 	// The following logic is not necessary but nice to have anyway !!
 	if (user.getStatus() == PASS_NEEDED && user._cap == false) {
-		server.setBroadcast(ERR_NEEDMOREPARAMS(server.hostname, "PASS"), user.getFd());
+		server.setBroadcast(ERR_NEEDPASSWORD(server.hostname), user.getFd());
 	}
 	if (user.getUserName().empty() && user._cap == false) {
-		server.setBroadcast(ERR_NEEDMOREPARAMS(server.hostname, "USER"), user.getFd());
+		server.setBroadcast(ERR_NEEDUSERNAME(server.hostname), user.getFd());
 	}
 }
