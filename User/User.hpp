@@ -41,7 +41,7 @@
 		std::string						userMessageBuffer;
 		std::string						responseBuffer;
 		std::map<std::string, Channel*>	_channels;
-		std::vector<std::string>		_privmsg_nicks;
+		std::vector<int>				_privmsg_fds;
 		bool							_authenticated;
 		bool							_handshaked;
 		bool							_pinged;
@@ -63,6 +63,7 @@
 		void	setHandshaked(bool handshaked);
 		void	setAsBot();
 		void	setPinged(bool pinged);
+		void	setPrivFds(const int& Fd);
 		// Getters //
 		e_status getStatus();
 		const int& getFd( void ) const;

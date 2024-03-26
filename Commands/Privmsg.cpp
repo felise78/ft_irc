@@ -49,10 +49,10 @@ void	CommandHandler::handlePRIVMSG() {
 			server.setBroadcast(ERR_NOSUCHNICK(server.hostname, user.getNickName(), msgtarget), user.getFd());
 			return;
 		}
-		// ajout test pour ecrire un message a ceux a qui je parle quand je quit // faire le setter pour lisibilite
-		user._privmsg_nicks.push_back(msgtarget);
-		server.usersMap[server.getFdbyNickName(msgtarget)]._privmsg_nicks.push_back(user.getNickName());
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// saving the privmsg connexion in a vector to be able to send the quit message if users are not talking through a channel
+		user.setPrivFds(nick_fd);
+		server.usersMap[server.getFdbyNickName(msgtarget)].setPrivFds(user.getFd());
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		reply = RPL_PRIVMSG(user.getPrefix(), msgtarget, msg);
 		server.setBroadcast(reply, nick_fd);
 	}

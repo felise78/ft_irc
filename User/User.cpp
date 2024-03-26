@@ -57,6 +57,18 @@ void	User::setAsBot() { isBot = true; }
 
 void	User::setPinged(bool pinged) { _pinged = pinged; }
 
+void	User::setPrivFds(const int& Fd)
+{
+	std::vector<int>::iterator it;
+	for (it = _privmsg_fds.begin(); it != _privmsg_fds.end(); ++it)
+	{
+		if (*it == Fd)
+			break;
+	}
+	if (it == _privmsg_fds.end())
+		_privmsg_fds.push_back(Fd);
+}
+
 // --------------------------------- GETTERS ----------------------------------------- // 
 
 e_status	User::getStatus() { return _status; }
