@@ -44,8 +44,8 @@
 #define ERR_CANTCHANGETOPIC(hostname, nick, channel) (":" + hostname + " 482 " + nick + " " + channel + " :You do not have access to change the topic on this channel\r\n")
 
 /*MODE COMMAND*/
-#define RPL_CHANNELMODEIS(hostname, channel, mode, mode_params) (":" + hostname + " 324 " + channel + " " + mode + " " + mode_params + "\r\n")
-#define ERR_KEYSET(hostname, channel) (":" + hostname + " 467 " + channel + " :Channel key already set\r\n")
+// #define RPL_CHANNELMODEIS(prefix, nick, channel, mode_params) (prefix + " 324 " + nick + " " + channel + " MODE " + mode_params + "\r\n")
+#define RPL_CHANNELMODEIS(prefix, nick, channel, mode_params) (prefix + " MODE " + channel + " " + mode_params + "\r\n")
 #define ERR_UMODEUNKNOWNFLAG(hostname, user_nick, char) (":" + hostname + " 501 " + user_nick + " :Unknown mode character " + char + "\r\n")
 #define ERR_EMPTYMODEPARAM(hostname, user_nick, channel, mode) (":" + hostname + " 696 " + user_nick + " " + channel + " " + mode + " * You must specify a parameter for the mode.\r\n")
 #define ERR_INVALIDMODEPARAM(hostname, user_nick, channel, mode, param) (":" + hostname + " 696 " + user_nick + " " + channel + " " + mode + " " + param + " Invalid mode parameter.\r\n")

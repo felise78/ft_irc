@@ -2,7 +2,7 @@
 #define MODE_HANDLER_HPP
 
 #ifndef DEBUG
-	#define DEBUG 1
+	#define DEBUG 0
 #endif
 
 #include <string>
@@ -28,15 +28,16 @@ class ModeHandler
 		int						n_flags;
 		int						n_channels;
 		string					_channel;
+		vector<string>			_argsEnd;
 
 		int		parse_errors();
 		void	exec_mode();
-		void	handle_flag(string const& flag, Channel &channel);
-		void	handle_i(bool set_flag, Channel &channel);
-		void	handle_t(bool set_flag, Channel &channel);
-		void	handle_k(bool set_flag, Channel &channel, string const& flag);
-		void	handle_o(string const& flag, bool set_flag, Channel& channel);
-		void	handle_l(bool set_flag, string const& flag, Channel& channel);
+		void	handle_flag(string const& flag, Channel &channel, string& add, string& remove);
+		void	handle_i(bool set_flag, Channel &channel, string& add, string& remove);
+		void	handle_t(bool set_flag, Channel &channel, string& add, string& remove);
+		void	handle_k(bool set_flag, Channel &channel, string const& flag, string& add, string& remove);
+		void	handle_o(string const& flag, bool set_flag, Channel& channel, string& add, string& remove);
+		void	handle_l(bool set_flag, string const& flag, Channel& channel, string& add, string& remove);
 
 
 	public:
