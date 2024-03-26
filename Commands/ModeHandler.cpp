@@ -167,21 +167,22 @@ void	ModeHandler::exec_mode()
 		{
 			if (DEBUG)
 				std::cout << MAGENTA << "MODE 'k'" << RESET << std::endl;
-			if (channel.getProtected() == true && _extra_args.empty())
-			{
-				_server.setBroadcast(ERR_EMPTYMODEPARAM(_server.hostname, _user.getNickName(), _channel, _flag[i]), _user.getFd());
-				return;
-			}
-			else if (channel.getProtected() == false && set_flag)
-			{
-				channel.setKey(_extra_args[0]);
-				//_server.setBroadcast(MODE_CHANNELMSGWITHPARAM(_user.getPrefix(), _channel, "k", _extra_args[0]), _user.getFd());
-			}
-			else if (set_flag == false && channel.getProtected() == true)
+			if (set_flag == false && channel.getProtected() == true)
 			{
 				channel.setProtected(false);
 				channel.setKey("");
 			}
+			else if (channel.getProtected() == false && set_flag && !(_extra_args.empty())) 
+			{
+				channel.setKey(_extra_args[0]);
+				//_server.setBroadcast(MODE_CHANNELMSGWITHPARAM(_user.getPrefix(), _channel, "k", _extra_args[0]), _user.getFd());
+			}
+			else if (_extra_args.empty())
+			{
+				_server.setBroadcast(ERR_EMPTYMODEPARAM(_server.hostname, _user.getNickName(), _channel, _flag[i]), _user.getFd());
+				return;
+			}
+			
 		}
 		/*
 			 FLAG 'o' // CHANOP MODE
