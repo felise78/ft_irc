@@ -14,7 +14,15 @@ void	Channel::setName(const std::string & name) { _name = name; }
 
 void	Channel::setTopic(const std::string & topic) { _topic = topic; }
 
-void	Channel::setKey(const std::string & key) { _key = key; _protected = true; }
+void	Channel::setKey(const std::string & key)
+{ 
+	
+	_key = key;
+	if (!key.empty())
+		_protected = true;
+	else 
+		_protected = false;
+}
 
 void	Channel::setUser(User& user)
 {
