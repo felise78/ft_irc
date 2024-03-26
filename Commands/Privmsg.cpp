@@ -6,22 +6,19 @@ void	CommandHandler::handlePRIVMSG() {
 
 	// format : /msg <msgtarget> <message>
 
-	size_t i = commandsFromClient["params"].find_first_of(':');
-	if (i == std::string::npos)
-	{
-		server.setBroadcast(ERR_NOTEXTTOSEND(server.hostname), user.getFd());
-		return;
-	}
-	std::string msgtarget = commandsFromClient["params"].substr(0, i - 1);
-	std::string msg = ":" + commandsFromClient["params"].substr(i + 1);
-	std::string reply;
-	
-	// pas sur que ce soit utile car je pense que irssi et meme netcat ne tiennent pas compte des espaces
-	// if (msgtarget.find(' ') != std::string::npos)
+	size_t i = commandsFromClient["params"].find_first_of(' ');
+	// if (i == std::string::npos)
 	// {
-	// 	server.setBroadcast(ERR_NOSUCHNICK(server.hostname, user.getNickName(), msgtarget), user.getFd());
+	// 	server.setBroadcast(ERR_NOTEXTTOSEND(server.hostname), user.getFd());
 	// 	return;
 	// }
+	std::string msgtarget = commandsFromClient["params"].substr(0, i);
+	std::string msg;
+	if (user._cap == false)
+		msg = ":" + commandsFromClient["params"].substr(i + 1);
+	else	
+		msg = commandsFromClient["params"].substr(i + 1);
+	std::string reply;
 
 	// <msgtarget> is a Channel : 
 	if (*msgtarget.begin() == '#')
