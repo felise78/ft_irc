@@ -208,7 +208,7 @@ void	CommandHandler::handleUSER() {
 		}
 		else if (params.size() >= 4) {
 			user.setUserName(params[0]);
-			user.setHostName(params[1]);
+			user.setHostName(params[2]);
 			user.setRealName(params[3]);
 		}
 		/* DEBUG */
@@ -259,12 +259,11 @@ void	CommandHandler::sendHandshake()
 {
 	std::string hostName = user.getHostName();
 	std::string nickName = user.getNickName();
+	std:: string prefix = user.getPrefix();
 
 	std::stringstream reply_buffer;
-	// reply_buffer << RPL_WELCOME(nickName, hostName) << RPL_YOURHOST(nickName)
-	reply_buffer << RPL_WELCOME(server.hostname, nickName, hostName) << RPL_YOURHOST(server.hostname, nickName)
+	reply_buffer << RPL_WELCOME(server.hostname, nickName, prefix) << RPL_YOURHOST(server.hostname, nickName)
 	<< RPL_CREATED(server.hostname, nickName, CREATION_DATE) << RPL_MYINFO(server.hostname, nickName);
-	// user.responseBuffer = reply_buffer.str();
 	server.setBroadcast(reply_buffer.str(), user.getFd());
 	user.setHandshaked(true);
 }

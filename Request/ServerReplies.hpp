@@ -1,10 +1,10 @@
 #ifndef SERVERREPLIES_HPP
 #define SERVERREPLIES_HPP
 
-#define RPL_WELCOME(hostname, nick, host) (":" + hostname + " 001 " + nick + " :Welcome to the Internet Relay Network " + nick + "!" + nick + "@" + host + "\r\n")
+#define RPL_WELCOME(hostname, nick, prefix) (":" + hostname + " 001 " + nick + " :Welcome to the Internet Relay Network " + prefix + "\r\n")
 #define RPL_YOURHOST(hostname, nick) (":" + hostname + " 002 " + nick + " :Your host is ircserv, running version ircserv.1\r\n")
 #define RPL_CREATED(hostname, nick, date) (":" + hostname + " 003 " + nick + " :This server was created " + date + "\r\n")
-#define RPL_MYINFO(hostname, nick) (":" + hostname + " 004 " + nick + " : ircserv.1 modes itkol\r\n")
+#define RPL_MYINFO(hostname, nick) (":" + hostname + " 004 " + nick + " : ircserv.1 handles channel modes itkol\r\n")
 
 /*PASS / USER*/
 #define ERR_NOTREGISTERED(hostname) (":" + hostname + " 451 :You have not registered\r\n")
