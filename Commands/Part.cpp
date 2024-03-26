@@ -25,6 +25,8 @@ void	CommandHandler::handlePART()
 		server.setBroadcast(ERR_USERNOTINCHANNEL(server.hostname, user.getNickName(), channelName), user.getFd());
 		return;
 	}
+	// DEBUG //
+	// remove l'operateur du channel si le user qui part est operateur
 	user.removeChannel(channelName);
 	server.setBroadcast(RPL_PART(user.getPrefix(), channelName, msg), user.getFd());
 	server.setBroadcast(channelName, user.getNickName(), user.responseBuffer);

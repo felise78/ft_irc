@@ -29,6 +29,7 @@ class ModeHandler
 		int						n_channels;
 		string					_channel;
 		vector<string>			_argsEnd;
+		bool					_success;
 
 		int		parse_errors();
 		void	exec_mode();

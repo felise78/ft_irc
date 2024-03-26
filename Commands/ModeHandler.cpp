@@ -1,7 +1,7 @@
 #include "ModeHandler.hpp"
 
 /* CONSTRUCTOR/DESTRUCTOR */
-ModeHandler::ModeHandler(map<string, string>& commands, ServerManager& srv, User& user) : _commandsFromClient(commands), _server(srv), _user(user), n_flags(0), n_channels(0)
+ModeHandler::ModeHandler(map<string, string>& commands, ServerManager& srv, User& user) : _commandsFromClient(commands), _server(srv), _user(user), n_flags(0), n_channels(0), _success(false)
 {
 	if (_user.getStatus() != REGISTERED)
 	{
@@ -48,7 +48,7 @@ int	ModeHandler::parse_errors()
 	
 	for (size_t i = 0; i < args.size(); i++)
 	{
-		if (args[i][0] == '#')
+		if (args[i][0] == '#' && n_channels == 0)
 		{
 			n_channels++;
 			if (_server.channelMap.find(args[i]) != _server.channelMap.end())
@@ -146,7 +146,8 @@ void	ModeHandler::exec_mode()
 		}
 
 	}
-	_user.userMessageBuffer += RPL_CHANNELMODEIS(prefix, _user.getNickName(), _channel, params);
+	if (_success)
+		_user.userMessageBuffer += RPL_CHANNELMODEIS(prefix, _user.getNickName(), _channel, params);
 	string msg = _user.userMessageBuffer;
 	if (DEBUG)
 		std::cout << RED << "msg : " <<  msg << RESET << std::endl;
@@ -193,6 +194,7 @@ void	ModeHandler::handle_i(bool set_flag, Channel &channel, string& add, string&
 	if (DEBUG)
 		std::cout << MAGENTA << "MODE 'i'" << RESET << std::endl;
 	channel.setInvit(set_flag);
+	_success = true;
 	if (set_flag)
 		add += "i";
 	else
@@ -205,6 +207,7 @@ void	ModeHandler::handle_t(bool set_flag, Channel &channel, string& add, string&
 	if (DEBUG)
 		std::cout << MAGENTA << "MODE 't'" << RESET << std::endl;
 	channel.setTopicRestricted(set_flag);
+	_success = true;
 	if (set_flag)
 		add += "t";
 	else
@@ -217,13 +220,11 @@ void	ModeHandler::handle_k(bool set_flag, Channel &channel, string const& flag, 
 		std::cout << MAGENTA << "MODE 'k'" << RESET << std::endl;
 	if (set_flag == false && channel.getProtected() == true)
 	{
-		// debug
-		std::cout << GREEN << "Passes through here" << RESET << std::endl;
-		//
 		_argsEnd.push_back(channel.getKey());
 		channel.setProtected(false);
 		channel.setKey("");
 		remove += "k";
+		_success = true;
 	}
 	else if (channel.getProtected() == false && set_flag && !(_extra_args.empty())) 
 	{
@@ -231,6 +232,7 @@ void	ModeHandler::handle_k(bool set_flag, Channel &channel, string const& flag, 
 		add += "k";
 		_argsEnd.push_back(_extra_args[0]);
 		_extra_args.erase(_extra_args.begin()); // remove password since no longer required
+		_success = true;
 		//_server.setBroadcast(MODE_CHANNELMSGWITHPARAM(_user.getPrefix(), _channel, "k", _extra_args[0]), _user.getFd());
 	}
 	else if (_extra_args.empty())
@@ -252,11 +254,13 @@ void	ModeHandler::handle_o(string const& flag, bool set_flag, Channel& channel, 
 	if (_server.usersMap.find(_server.getFdbyNickName(_extra_args[0])) == _server.usersMap.end())
 	{
 		_server.setBroadcast(ERR_NOSUCHNICK(_server.hostname, _user.getNickName(), _extra_args[0]), _user.getFd());
+		_extra_args.erase(_extra_args.begin());
 		return;
 	}
 	if (channel._users.find(_extra_args[0]) == channel._users.end())
 	{
 		_server.setBroadcast(ERR_NOTONCHANNEL(_server.hostname, _user.getNickName(), _channel), _user.getFd());
+		_extra_args.erase(_extra_args.begin());
 		return ;
 	}
 	if (set_flag)
@@ -268,6 +272,7 @@ void	ModeHandler::handle_o(string const& flag, bool set_flag, Channel& channel, 
 			_argsEnd.push_back(_extra_args[0]);
 			_extra_args.erase(_extra_args.begin()); // remove operator nick since no longer required
 			add += "o";
+			_success = true;
 			//_server.setBroadcast(MODE_USERMSG(_extra_args[0], "+o"), _server.getFdbyNickName(_extra_args[0]));
 		}
 	}
@@ -278,6 +283,7 @@ void	ModeHandler::handle_o(string const& flag, bool set_flag, Channel& channel, 
 		_argsEnd.push_back(_extra_args[0]);
 		_extra_args.erase(_extra_args.begin()); // remove operator nick since no longer required
 		remove += "o";
+		_success = true;
 		//_server.setBroadcast(MODE_USERMSG(_extra_args[0], "-o"), _server.getFdbyNickName(_extra_args[0]));
 	}
 }
@@ -300,6 +306,7 @@ void	ModeHandler::handle_l(bool set_flag, string const& flag, Channel& channel, 
 			if (std::isdigit(*it) == false)
 			{
 				_server.setBroadcast(ERR_INVALIDMODEPARAM(_server.hostname, _user.getNickName(), _channel, flag, _extra_args[0]), _user.getFd());
+				_extra_args.erase(_extra_args.begin());
 				return;
 			}
 		}
@@ -307,10 +314,12 @@ void	ModeHandler::handle_l(bool set_flag, string const& flag, Channel& channel, 
 		_argsEnd.push_back(_extra_args[0]);
 		_extra_args.erase(_extra_args.begin()); // remove limit number since no longer required
 		add += "l";
+		_success = true;
 	}
 	else
 	{
 		channel.removeLimit(); // je pense il faut aussi envoyer un CHAN MODE MSG
 		remove += "l";
+		_success = true;
 	}
 }
