@@ -23,7 +23,7 @@ class ModeHandler
 		map<string, string>&	_commandsFromClient;
 		ServerManager&			_server;
 		User&					_user;
-		string					_flag;
+		vector<string>			_flag;
 		vector<string>			_extra_args;
 		int						n_flags;
 		int						n_channels;
@@ -31,6 +31,13 @@ class ModeHandler
 
 		int		parse_errors();
 		void	exec_mode();
+		void	handle_flag(string const& flag, Channel &channel);
+		void	handle_i(bool set_flag, Channel &channel);
+		void	handle_t(bool set_flag, Channel &channel);
+		void	handle_k(bool set_flag, Channel &channel, string const& flag);
+		void	handle_o(string const& flag, bool set_flag, Channel& channel);
+		void	handle_l(bool set_flag, string const& flag, Channel& channel);
+
 
 	public:
 		ModeHandler(map<string, string>& commands, ServerManager& srv, User& user);
