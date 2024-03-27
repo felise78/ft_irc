@@ -1,18 +1,13 @@
 #include "Request.hpp"
 
 /*CONSTRUCTORS/DESTRUCTORS*/
+
 Request::Request(ServerManager& server, std::string buffer) : _server(server), _input_buffer(buffer), _request_valid(false)
 {
-	// if (DEBUG)
-	// 	std::cout << "Request constructor called" << std::endl;
 	parse_args();
 }
 
-Request::~Request()
-{
-	// if (DEBUG)
-	// 	std::cout << "Request destructor called" << std::endl;
-}
+Request::~Request() {}
 
 /*SETTERS*/
 
@@ -39,11 +34,6 @@ void	Request::parse_args()
 		_input_map.insert(std::make_pair("command", _input_buffer));
 	
 	check_command_valid(_input_map["command"]);
-	// if (_input_map.find("params") == _input_map.end() || _input_map["params"].empty())
-	// {
-	// 	//user.responseBuffer = ERR_NEEDMOREPARAMS(_input_map["command"]); /// pas de user dans Request
-	// 	return;
-	// }
 }
 
 /* UTILS */
@@ -96,22 +86,5 @@ std::string const&	Request::getCommand() const
 std::map<std::string, std::string>& Request::getRequestMap()
 {
 	return (_input_map);
-}
-
-/*DEBUG*/
-void	Request::print_map() const
-{
-	std::cout << "Printing input map:" << std::endl;
-	std::map<std::string, std::string>::const_iterator it;
-	for (it = _input_map.begin(); it != _input_map.end(); ++it)
-	{
-		std::cout << "Key: " << it->first << "\nValue: " << it->second << std::endl;
-	}
-}
-
-void	Request::print_vector(std::vector<std::string> const& split_buffer)
-{
-	for (std::vector<std::string>::const_iterator it = split_buffer.begin(); it != split_buffer.end(); it++)
-		std::cout << *it << std::endl;
 }
 
