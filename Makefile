@@ -35,7 +35,7 @@ all: $(NAME)
 $(NAME): $(OBJS)
 	$(CXX) $(CXXFLAGS) $(OBJS) -o $(NAME)
 # cleaning the objects right after make
-	make clean
+# make clean
 
 valgrind: $(NAME)
 	clear
