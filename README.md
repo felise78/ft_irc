@@ -65,6 +65,17 @@ The server will send a PING message to the client to test the presence of the co
 so the server knows the connection is still alive.  
 If the client does not respond with PONG the server will close the connection within the ping timeout.  
 
+##### ABOUT NETCAT (nc) AND THE BEHAVIOR OF `CTRL-D` IN THE TERMINAL:
+`co^Dmma^Dnd` test  
+The terminal and netcat `nc` handle `Ctrl-D` as the EOF (End of File) signal.  
+When `Ctrl-D` pressed in the middle of a line (i.e., after typing some characters 
+but before pressing Enter), netcat and the terminal do not interpret this as an EOF signal !   
+Instead, they send the current line to the server, and then continue accepting input.
+This is why you can type `co^Dmma^Dnd` and the server shall receive `command`.  
+
+However, when `Ctrl-D` pressed on an empty line, netcat and the terminal interpret this as 
+an EOF signal. The connection to the server is then closed, and any subsequent characters 
+are not sent. So, pressind `Ctrl-D` twice or on an empty input, the characters typed after won't go through !!
 
 
 

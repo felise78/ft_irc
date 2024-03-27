@@ -3,22 +3,15 @@
 ServerManager::ServerManager(int port, std::string const& password) : _server(Server(port, password)) {
 
 	SM_instance = this; // This is needed for the signal handling
-
 	hostname = _server.getServerHostName();
-
 	FD_ZERO(&_recv_fd_pool);
 	FD_ZERO(&_send_fd_pool);
 	_serverFd = _server.getServerFd();
 	_max_fd = _serverFd;
 	_sigInt = false;
-	// DEBUG PRINT SERVERS DATA
-	_server.printServerData();
-
-	// This will set the server socket fd to non-blocking mode and add it to the recv_fd_pool
-	_fcntl();
-
-	// This will start the main loop of the server
-	_run();
+	_server.printServerData(); // This prints the server's data (hostname, port, password..)
+	_fcntl(); // This will set the server socket fd to non-blocking mode and add it to the recv_fd_pool
+	_run(); // This will start the main loop of the server
 }
 
 ServerManager::~ServerManager() {
@@ -36,9 +29,8 @@ void	ServerManager::_run() {
 	signal(SIGINT, signalhandler);
 
 	while (!_sigInt) {
-
-		// The copy is needed because select() will modify the fd_sets passed to it
-		recv_fd_pool_copy = _recv_fd_pool;
+		
+		recv_fd_pool_copy = _recv_fd_pool; // ..the copy is needed because select() will modify the fd_sets passed to it
 		send_fd_pool_copy = _send_fd_pool;
 
 		select_ret = select(_max_fd + 1, &recv_fd_pool_copy, &send_fd_pool_copy, NULL, NULL);
@@ -47,15 +39,12 @@ void	ServerManager::_run() {
 		for (int fd = 3; fd <= _max_fd && _sigInt == false; fd++) {
 
 			if (FD_ISSET(fd, &recv_fd_pool_copy) && fd == _server.getServerFd()) {
-
 				_accept(fd);
 			}
 			if (FD_ISSET(fd, &recv_fd_pool_copy) && isClient(fd)) {
-
 				_handle(fd);
 			}
 			if (FD_ISSET(fd, &send_fd_pool_copy)) {
-
 				_respond(fd);
 			}
 		}
@@ -80,14 +69,12 @@ void	ServerManager::_accept(int clientFd) {
 		std::cerr << RESET << std::endl;
 		return ;
 	}
-
 	std::cout << timeStamp() << GREEN << "[+] New connection. Cliend fd: [" << clientFd << "], IP:[" << inet_ntoa(address.sin_addr) << "], port:[" << ntohs(address.sin_port) << "]" << RESET << std::endl;
 
 	_addToSet(clientFd, &_recv_fd_pool);
 
 	// This will set the client socket fd to non-blocking mode (needed for select(), read(), recv(), write(), send()..)
 	int return_value = fcntl(clientFd, F_SETFL, O_NONBLOCK);
-
 	if (return_value == -1) {
 		std::cerr << RED << "\t[-] Error setting socket to non-blocking mode.. fcntl() failed." << RESET << std::endl;
 		_closeConnection(clientFd);
@@ -98,28 +85,13 @@ void	ServerManager::_accept(int clientFd) {
 	return_value = setsockopt(clientFd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable));
 	checkErrorAndExit(return_value, "\t[-] Error setting socket options.. setsockopt() failed.");
 
-	// Initializing the new User and adding its class instance to the UsersMap
-	initUser(clientFd, address);
-
-	log(clientFd);
+	initUser(clientFd, address); // Initializing the new User and adding its class instance to the UsersMap
 }
 
 /*
 ** This is handling the requests from the irc client side
 ** `_handle` is called from `run` function once the new connection 
 ** is accepted and the client's fd is added to the recv_fd_pool !! 
-**
-** ABOUT THE BEHAVIOR OF `CTRL-D` IN THE TERMINAL AND NETCAT: `co^Dmma^Dnd` test
-** The terminal and netcat `nc` handle `Ctrl-D` as the EOF (End of File) signal.
-** When `Ctrl-D` pressed in the middle of a line (i.e., after typing some characters 
-** but before pressing Enter), netcat and the terminal do not interpret this as an EOF signal !
-** Instead, they send the current line to the server, and then continue accepting input.
-** This is why you can type `co^Dmma^Dnd` and the server shall receive `command`.
-**
-** However, when `Ctrl-D` pressed on an empty line, netcat and the terminal interpret this as 
-** an EOF signal. The connection to the server is then closed, and any subsequent characters 
-** are not sent. 
-** So, pressind `Ctrl-D` twice or on an empty input, the characters typed after won't go through !!
 */
 void	ServerManager::_handle(int fd) {
 
@@ -139,24 +111,14 @@ void	ServerManager::_handle(int fd) {
 		return ;
 	}
 
+	// Processing the input message from the client
 	User &user = usersMap[fd];
-
 	user.userMessageBuffer += std::string(buffer, bytes_read);
 
 	if (noCRLFinBuffer(user.userMessageBuffer))
 		return ; // if no `\n` found in the buffer, we wait for the next read from this client fd
 
-	/* DEBUG */
-	std::cout << timeStamp();
-	std::cout << CYAN << "bytes read: [" << bytes_read << "] USER MESSAGE BUFFER: " << MAGENTA << usersMap[fd].userMessageBuffer;
-	std::cout << CYAN << "[*] client fd[" << fd << "]; "  << "Size of msg buffer: " << user.userMessageBuffer.size() << "; parsing..." << RESET << std::endl;
-	/* ***** */
-
-	vector<string> splitMessageBuffer = split(user.userMessageBuffer, "\n");
-	// Vector is used to split the input message buffer by `\n` 
-	// this way one string in this vector is a command with its parameters
-	// The COMMANDS handled in CommandHandler so we just need to check if 
-	// the passed string is a valid command (exist in cmdToHandler map in CommandHandler)
+	vector<string> splitMessageBuffer = split(user.userMessageBuffer, "\n"); // Vector is used to split the input message buffer by `\n`.. this way one string in this vector is a command with its parameters
 	for (size_t i = 0; i < splitMessageBuffer.size(); i++) {
 
 		std::cout << MAGENTA << splitMessageBuffer[i] << RESET << std::endl;
@@ -164,10 +126,7 @@ void	ServerManager::_handle(int fd) {
 		map<string, string> input_map = userRequest.getRequestMap();
 		CommandHandler cmdHandler(*this, user, input_map);
 	}
-
 	user.userMessageBuffer.clear();
-	// _removeFromSet(fd, &_recv_fd_pool);
-	// _addToSet(fd, &_send_fd_pool);
 }
 
 /*
@@ -189,11 +148,6 @@ void	ServerManager::_respond(int fd) {
 		_closeConnection(fd);
 		return ;
 	}
-	/* DEBUG */
-	std::cout << GREEN << "Response to fd:[" << fd << "]: " << user.responseBuffer;
-	std::cout << ", bytes sent: [" << bytes_sent << "]" << RESET << std::endl;
-	std::cout << ". . . . . . . . . . . . . . . . . . . . . . . . . . . " << std::endl;
-	/* ***** */
 
 	_removeFromSet(fd, &_send_fd_pool);
 	_addToSet(fd, &_recv_fd_pool);
@@ -201,24 +155,19 @@ void	ServerManager::_respond(int fd) {
 	user.userMessageBuffer.clear();
 	user.responseBuffer.clear();
 
-	/* NEW DEBUG */
 	if (user.getStatus() == DELETED) {
 		std::cout << RED << "[-] User Deleted. Closing connection, fd:[" << fd << "]" << RESET << std::endl;
 		_closeConnection(fd);
 	}
 }
 
-
 /*
 ** This function sets the server's socket fd to non-blocking mode
 */
 void	ServerManager::_fcntl() {
 
-	int	fcntl_ret = 0;
-
-	fcntl_ret = fcntl(_serverFd, F_SETFL, O_NONBLOCK);
+	int	fcntl_ret = fcntl(_serverFd, F_SETFL, O_NONBLOCK);
 	checkErrorAndExit(fcntl_ret, "fcntl() failed. Exiting..");
-
 
 	_addToSet(_serverFd, &_recv_fd_pool);
 }
@@ -256,7 +205,6 @@ void	ServerManager::_closeConnection(int fd) {
 /*
 ** This function will initialize an instance of a user
 ** as well as add its to the UsersMap !!
-** 
 */
 void	ServerManager::initUser(int clientFd, struct sockaddr_in &address) {
 
@@ -270,15 +218,12 @@ void	ServerManager::initUser(int clientFd, struct sockaddr_in &address) {
 
 	int	port = ntohs(address.sin_port);
 	newUser.setPort(port);
-
 	newUser.setFd(clientFd);
 	newUser.setHostName(client_ip);
 
-	// newUser.setHostName("must be parsed from the User's request: `UserMessageBuffer`");
-	// newUser.setUserName("must be parsed from the User's request: `UserMessageBuffer`");
-	// newUser.setPassword("must be parsed from the User's request: `UserMessageBuffer`");
-
 	usersMap.insert(std::make_pair(clientFd, newUser));
+
+	std::cout << timeStamp() << GREEN << "[+] New connection.. fd:[" << clientFd << "], IP:[" << client_ip << "], port:[" << port << "]" << RESET << std::endl;
 }
 
 
@@ -304,50 +249,29 @@ void	ServerManager::checkErrorAndExit(int returnValue, const std::string& msg) {
 	}
 }
 
-/*
-** Do we need this function ?!
-*/
-void	ServerManager::log(int clientFd) {
-
-	User &user = usersMap[clientFd];
-	(void)user;
-
-	// std::cout << timeStamp() << YELLOW << "[!] Logging client fd:[" << user.getFd() << "]" << RESET << std::endl;
-	// std::cout << YELLOW << "\tport: " << user.getPort() << RESET << std::endl;
-	// std::cout << YELLOW << "\thostName: " << user.getHostName() << RESET << std::endl;
-	// std::cout << YELLOW << "\tnickName: " << User.getNickName() << RESET << std::endl;
-	// std::cout << YELLOW << "\tuserName: " << User.getUserName() << RESET << std::endl;
-	// std::cout << YELLOW << "\tpassword: " << User.getPassword << RESET << std::endl;
-	// std::cout << YELLOW << "\trequestBuffer: " << User.UserMessageBuffer << RESET << std::endl;
-	// std::cout << YELLOW << "\tresponseBuffer: " << User.responseBuffer << RESET << std::endl;
-
-}
-
 bool	ServerManager::isClient(int fd) {
 
-	// return (UsersMap.find(fd) != UsersMap.end())
 	return usersMap.count(fd) > 0;
 }
 
 
-void	ServerManager::setChannel(const Channel& channel)
-{
-	if (channelMap.find(channel.getName()) != channelMap.end())
+void	ServerManager::setChannel(const Channel& channel) {
+
+	if (channelMap.find(channel.getName()) != channelMap.end()) {
 		return;
+	}
 	channelMap.insert(std::make_pair(channel.getName(), channel));
 }
 
-Channel& ServerManager::getChannel( const std::string& name )
-{
+Channel& ServerManager::getChannel( const std::string& name ) {
+
 	return channelMap.at(name);
 }
 
-int ServerManager::getFdbyNickName( const std::string& nickname ) const
-{
-	std::map<int, User>::const_iterator it;
+int ServerManager::getFdbyNickName( const std::string& nickname ) const {
 
-	for (it = usersMap.begin(); it != usersMap.end(); ++it)
-	{
+	std::map<int, User>::const_iterator it;
+	for (it = usersMap.begin(); it != usersMap.end(); ++it) {
 		if (it->second.getNickName() == nickname)
 			return it->second.getFd();
 	}
@@ -365,14 +289,7 @@ void	ServerManager::setBroadcast(std::string channelName, std::string sender_nic
 
 	std::map<string, User* >::iterator it = channelMap[channelName]._users.begin();
 
-	/* DEBUG */
-	// std::cout << RED << "\t[-] sender_nick: " << sender_nick << RESET << std::endl;
-	/* ***** */
-
 	for ( ; it != channelMap[channelName]._users.end(); it++) {
-	/* DEBUG */
-	// std::cout << RED << "\t[-] it->second.getNickName(): [" << it->second->getNickName() << "] vs [" << sender_nick << "] sender_nick" << RESET << std::endl;
-	/* ***** */
 		if (it->second->getNickName() != sender_nick)
 			setBroadcast(msg, it->second->getFd());
 	}
@@ -386,19 +303,15 @@ void	ServerManager::setBroadcast(std::string msg, int fd) {
 	std::map<int, User>::iterator it = usersMap.find(fd);
 	if (it == usersMap.end())
 		return ;
-	// THE MESSAGE `msg` TO BE SENT MUST BE ALREADY PROPERLY FORMATTED..
-	// it->second.responseBuffer = it->second.getPrefix() + " PRIVMSG " + it->second.getChannel() + " :" + msg + "\r\n";
 	if (it != usersMap.end()) {
 		it->second.responseBuffer += msg;
 	}
-
 	_removeFromSet(fd, &_recv_fd_pool);
 	_addToSet(fd, &_send_fd_pool);
 }
 
 /*
 ** SIGNAL HANDLING
-**
 ** Initialization of the static member `SM_instance` happens in the constructor above
 */
 ServerManager*	ServerManager::SM_instance = NULL;
@@ -413,16 +326,13 @@ void	ServerManager::signalhandler(int signal) {
 
 void	ServerManager::handleSignal() {
 	std::cout << RED << "\t[-] SIGINT received. Shutting down the server. Bye.." << RESET << std::endl;
-	// Closing all available connections, cleaning up and terminating the main loop..
 
 	for (int fd = _max_fd; fd > _serverFd; fd--) {
 		_closeConnection(fd);
 	}
-
 	_sigInt = true;
 }
 
-std::string const&	ServerManager::getPassword() const
-{
+std::string const&	ServerManager::getPassword() const {
 	return (_server.getServerPassword());
 }

@@ -61,7 +61,6 @@ class ServerManager {
 		// General Helpers
 		std::string					timeStamp();
 		void						checkErrorAndExit(int returnValue, const std::string& msg);
-		void						log(int UserFd);
 		bool						isClient(int fd);
 		void						setChannel(const Channel& channel);
 		Channel& 					getChannel( const std::string& name );
