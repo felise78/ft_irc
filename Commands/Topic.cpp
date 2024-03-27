@@ -43,8 +43,10 @@ std::cout << YELLOW << "TOPIC command received.." << RESET << std::endl;
 				return;
 			}
 		}
+		if (user._cap == false && topic[0] != ':')
+			topic = ":" + topic;
 		server.channelMap[channelName].setTopic(topic);
 		server.setBroadcast(RPL_TOPIC(server.hostname, user.getNickName(), channelName, topic), user.getFd());
-		server.setBroadcast(channelName, user.getNickName(), RPL_TOPIC(server.hostname, user.getPrefix(), channelName, topic));
+		server.setBroadcast(channelName, user.getNickName(), RPL_TOPIC(server.hostname, user.getNickName(), channelName, topic));
 	}
 }
