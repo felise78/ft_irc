@@ -28,7 +28,7 @@ class ModeHandler
 		int						n_flags;
 		int						n_channels;
 		string					_channel;
-		vector<string>			_argsEnd;
+		vector<string>			_argsEnd; // params to append to client reply
 		bool					_success;
 
 		int		parse_errors();

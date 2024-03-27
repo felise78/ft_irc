@@ -24,27 +24,27 @@ typedef enum requestCMD {
 
 	NONE,		// 0
 	CAP,		// 1
-	INFO, //	// 2
+	INFO, 		// 2
 	INVITE,		// 3
 	JOIN,		// 4
 	KICK,		// 5
-	LIST, //	// 6
+	LIST, 		// 6
 	MODE,		// 7
-	NAMES, //	// 8
+	NAMES, 		// 8
 	NICK, 		// 9
-	NOTICE, //	// 10
+	NOTICE, 	// 10
 	OPER,		// 11
 	PART,		// 12
 	PASS,		// 13
 	PING,		// 14
 	PONG,		// 15
 	PRIVMSG,	// 16
-	QUIT, // 	// 17
+	QUIT, 	 	// 17
 	TOPIC,		// 18
 	USER,		// 19
-	VERSION,//	// 20
-	WHO,//		// 21
-	WHOIS//		// 22
+	VERSION,	// 20
+	WHO,		// 21
+	WHOIS		// 22
 
 }	e_cmd;
 // 				↑↑↑
@@ -62,9 +62,6 @@ class CommandHandler {
 		map<string, string>							&commandsFromClient;
 		map<e_cmd, string>							mapEnumToString; // map to convert CMD enum to string
 		map<string, void (CommandHandler::*)() >	cmdToHandler; // map to convert CMD to handler method
-		// std::string									channelName;
-		// std::string									password;
-		// bool										errChannelName;
 		std::string									param1;
 		std::string									param2;
 		CommandHandler(ServerManager& srv, User &usr, map<string, string> &commands);
