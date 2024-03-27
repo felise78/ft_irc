@@ -51,6 +51,7 @@
 #define ERR_INVALIDMODEPARAM(hostname, user_nick, channel, mode, param) (":" + hostname + " 696 " + user_nick + " " + channel + " " + mode + " " + param + " Invalid mode parameter.\r\n")
 //#define MODE_CHANNELMSG(channel, mode) (":localhost MODE #" + channel + " " + mode + "\r\n")
 #define MODE_CHANNELMSGWITHPARAM(user_prefix, channel, mode, param) (user_prefix + " MODE " + channel + " " + mode + " " + param + "\r\n")
+#define ERR_KEYSET(hostname, channel) (":" + hostname + " 467 " + channel + " :Channel key already set\r\n")
 // RPL_CHANNELMODEISWITHKEY
 // MODE_CHANNELMSG
 // RPL_UMODEIS

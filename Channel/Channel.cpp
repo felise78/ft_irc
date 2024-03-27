@@ -3,7 +3,7 @@
 // -----------------------CONSTRUCTOR / DESTRUCTOR ---------------------------------//
 
 
-Channel::Channel(const std::string& name) : _name(name), _topic(""), _key(""), _nb(0), _limit(0), 
+Channel::Channel(const std::string& name) : _name(name), _topic(""), _key(""), _channelModes("+"), _nb(0), _limit(0), 
 _limited(false), _invit_only(false), _topic_restricted(false), _protected(false) {}
 
 Channel::~Channel() {}
