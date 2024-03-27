@@ -7,16 +7,11 @@ CommandHandler::CommandHandler(ServerManager& srv, User &usr, map<string, string
 	// Filling in the `mapEnumToString` map to convert enum to string, this will help to identify the command and execute when needed
 	mapEnumToString[NONE] = "NONE";
 	mapEnumToString[CAP] = "CAP";
-	mapEnumToString[INFO] = "INFO";
 	mapEnumToString[INVITE] = "INVITE";
 	mapEnumToString[JOIN] = "JOIN";
 	mapEnumToString[KICK] = "KICK";
-	mapEnumToString[LIST] = "LIST";
 	mapEnumToString[MODE] = "MODE";
-	mapEnumToString[NAMES] = "NAMES";
 	mapEnumToString[NICK] = "NICK";
-	mapEnumToString[NOTICE] = "NOTICE";
-	mapEnumToString[OPER] = "OPER";
 	mapEnumToString[PART] = "PART";
 	mapEnumToString[PASS] = "PASS";
 	mapEnumToString[PING] = "PING";
@@ -25,9 +20,6 @@ CommandHandler::CommandHandler(ServerManager& srv, User &usr, map<string, string
 	mapEnumToString[QUIT] = "QUIT";
 	mapEnumToString[TOPIC] = "TOPIC";
 	mapEnumToString[USER] = "USER";
-	mapEnumToString[VERSION] = "VERSION";
-	mapEnumToString[WHO] = "WHO";
-	mapEnumToString[WHOIS] = "WHOIS";
 
 	// Filling in the `cmdToHandler` map execute command given the command string
 	cmdToHandler["NONE"] = &CommandHandler::handleNONE;
@@ -86,8 +78,10 @@ void	CommandHandler::executeCommand() {
 		return;
 	}
 	cmdStr = mapEnumToString[num];
-	if (cmdToHandler.find(cmdStr) != cmdToHandler.end())
+	if (cmdToHandler.find(cmdStr) != cmdToHandler.end()) {
+		std::cout << server.timeStamp() << " ";
 		(this->*cmdToHandler[cmdStr])();
+	}
 }
 
 /*
@@ -99,7 +93,7 @@ void	CommandHandler::handleNONE() {
 }
 
 void	CommandHandler::handleCAP() {
-	// std::cout << YELLOW << "CAP command received.." << RESET << std::endl;
+	std::cout << YELLOW << "CAP command received.." << RESET << std::endl;
 	user._cap = true;
 }
 

@@ -69,7 +69,7 @@ void	ServerManager::_accept(int clientFd) {
 		std::cerr << RESET << std::endl;
 		return ;
 	}
-	std::cout << timeStamp() << GREEN << "[+] New connection. Cliend fd: [" << clientFd << "], IP:[" << inet_ntoa(address.sin_addr) << "], port:[" << ntohs(address.sin_port) << "]" << RESET << std::endl;
+	std::cout << timeStamp() << GREEN << " [+] New connection. Client fd: [" << clientFd << "], IP:[" << inet_ntoa(address.sin_addr) << "], port:[" << ntohs(address.sin_port) << "]" << RESET << std::endl;
 
 	_addToSet(clientFd, &_recv_fd_pool);
 
@@ -121,7 +121,6 @@ void	ServerManager::_handle(int fd) {
 	vector<string> splitMessageBuffer = split(user.userMessageBuffer, "\n"); // Vector is used to split the input message buffer by `\n`.. this way one string in this vector is a command with its parameters
 	for (size_t i = 0; i < splitMessageBuffer.size(); i++) {
 
-		std::cout << MAGENTA << splitMessageBuffer[i] << RESET << std::endl;
 		Request	userRequest(*this, splitMessageBuffer[i]);
 		map<string, string> input_map = userRequest.getRequestMap();
 		CommandHandler cmdHandler(*this, user, input_map);
@@ -141,7 +140,6 @@ void	ServerManager::_respond(int fd) {
 	int		bytes_to_send = user.responseBuffer.length();
 
 	bytes_sent = send(fd, user.responseBuffer.c_str(), bytes_to_send, 0);
-	std::cout << timeStamp();
 
 	if (bytes_sent == -1) {
 		std::cerr << RED << "[-] Error sending data to the User.. send() failed." << RESET << std::endl;
@@ -156,7 +154,7 @@ void	ServerManager::_respond(int fd) {
 	user.responseBuffer.clear();
 
 	if (user.getStatus() == DELETED) {
-		std::cout << RED << "[-] User Deleted. Closing connection, fd:[" << fd << "]" << RESET << std::endl;
+		std::cout << timeStamp() << RED << " [-] User Deleted. Closing connection, fd:[" << fd << "]" << RESET << std::endl;
 		_closeConnection(fd);
 	}
 }
@@ -190,7 +188,7 @@ void	ServerManager::_removeFromSet(int fd, fd_set *set) {
 }
 
 void	ServerManager::_closeConnection(int fd) {
-	std::cout << timeStamp() << YELLOW << "[!] Closing connection with fd:[" << fd << "]." << RESET << std::endl;
+	std::cout << timeStamp() << YELLOW << " [!] Closing connection with fd:[" << fd << "]." << RESET << std::endl;
 
 	if (FD_ISSET(fd, &_recv_fd_pool)) {
 		_removeFromSet(fd, &_recv_fd_pool);
@@ -222,8 +220,6 @@ void	ServerManager::initUser(int clientFd, struct sockaddr_in &address) {
 	newUser.setHostName(client_ip);
 
 	usersMap.insert(std::make_pair(clientFd, newUser));
-
-	std::cout << timeStamp() << GREEN << "[+] New connection.. fd:[" << clientFd << "], IP:[" << client_ip << "], port:[" << port << "]" << RESET << std::endl;
 }
 
 
@@ -325,7 +321,7 @@ void	ServerManager::signalhandler(int signal) {
 }
 
 void	ServerManager::handleSignal() {
-	std::cout << RED << "\t[-] SIGINT received. Shutting down the server. Bye.." << RESET << std::endl;
+	std::cout << timeStamp() << RED << " [-] SIGINT received. Shutting down the server. Bye.." << RESET << std::endl;
 
 	for (int fd = _max_fd; fd > _serverFd; fd--) {
 		_closeConnection(fd);
