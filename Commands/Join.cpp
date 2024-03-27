@@ -94,6 +94,11 @@ void	CommandHandler::handleJOIN() {
 			return ; 
 		}
 	}
+	if (server.channelMap[channelName].getNb() == 0)
+	{
+		server.channelMap[channelName].setOp(user.getNickName());
+		server.setBroadcast(MODE_USERMSG(user.getNickName(), "+o"), user.getFd());
+	}
 	// send response to client
 	std::string reply = RPL_JOIN(user.getPrefix(), channelName);
 	server.setBroadcast(channelName, user.getNickName(), reply);

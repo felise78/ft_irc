@@ -81,10 +81,14 @@ int	ModeHandler::parse_errors()
 	}
 	Channel &c_tmp = _server.channelMap[_channel];
 	std::string nickname = _user.getNickName();
+	if (DEBUG)
+		std::cout << "comes here?" << std::endl;
 	if (c_tmp.isOp(nickname) == true)
 		return 0;
 	else
 	{
+		if (DEBUG)
+			std::cout << RED << "don't come here ? " << RESET << std::endl; 
 		_server.setBroadcast(ERR_CHANOPRIVSNEEDED(_server.hostname, _user.getNickName(), _channel), _user.getFd());
 		return 1;
 	}

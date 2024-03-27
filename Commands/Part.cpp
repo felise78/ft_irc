@@ -25,8 +25,13 @@ void	CommandHandler::handlePART()
 		server.setBroadcast(ERR_USERNOTINCHANNEL(server.hostname, user.getNickName(), channelName), user.getFd());
 		return;
 	}
-	// DEBUG //
 	// remove l'operateur du channel si le user qui part est operateur
+	if (server.channelMap[channelName].isOp(user.getNickName()) == true)
+	{
+		server.channelMap[channelName].removeOp(user.getNickName());
+		server.setBroadcast(MODE_USERMSG(user.getNickName(), "-o"), user.getFd());
+	}
+	///////////
 	user.removeChannel(channelName);
 	server.setBroadcast(RPL_PART(user.getPrefix(), channelName, msg), user.getFd());
 	server.setBroadcast(channelName, user.getNickName(), user.responseBuffer);

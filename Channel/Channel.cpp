@@ -128,6 +128,14 @@ void	Channel::removeUser(const std::string& nickname)
 
 void	Channel::removeOp(const std::string& opNickname)
 {
+	if (DEBUG)
+	{
+		std::vector<std::string>::iterator it = _ops.begin();
+		for ( ; it != _ops.end() ; ++it )
+			std::cout << RED << *it << " ";
+		std::cout << std::endl;
+	}
+
 	for (std::vector<std::string>::iterator it = _ops.begin(); it != _ops.end(); ++it)
 	{
         if (*it == opNickname)
