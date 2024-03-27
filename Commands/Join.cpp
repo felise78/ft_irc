@@ -24,12 +24,9 @@ void	CommandHandler::handleJOIN() {
 	std::string channelName = parse_channelName(*params.begin());
 	if (channelName.empty() == true)
 	{
-		
 		server.setBroadcast(ERR_NOSUCHCHANNEL(server.hostname, user.getNickName(), *params.begin()), user.getFd());
-		//server.setBroadcast(ERR_NOSUCHCHANNEL(server.hostname, user.getNickName(), channelName), user.getFd());
 		return; 
 	}
-
 	// check if the channel doesn't exist, creates it and sets the user as chanOp
 	if (server.channelMap.find(channelName) == server.channelMap.end())
 	{
@@ -42,8 +39,6 @@ void	CommandHandler::handleJOIN() {
 		user.setChannel(new_channel);
 		server.setBroadcast(MODE_USERMSG(user.getNickName(), "+o"), user.getFd());
 	}
-
-
 	// if channel already exists
 	else
 	{
@@ -87,7 +82,7 @@ void	CommandHandler::handleJOIN() {
 			user.setChannel(server.getChannel(channelName));
 			server.channelMap[channelName].setUser(user);
 		}
-		else
+		else // if user is already on channel
 		{
 			std::string nickName = user.getNickName();
 			server.setBroadcast(ERR_USERONCHANNEL(server.hostname, user.getNickName(), nickName, channelName), user.getFd());

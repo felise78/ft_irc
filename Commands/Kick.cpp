@@ -9,7 +9,7 @@ void	CommandHandler::handleKICK()
 	std::vector<std::string> params = split(commandsFromClient["params"], " ");
 
 	std::string channelName = *params.begin();
-	// deja gere par irssi but keeping it for netcat ?
+	// deja gere par irssi but keeping it for netcat
 	if (params.begin() + 1 == params.end() || ( params.begin() + 2 == params.end() && channelName[0] == '#'))
 	{
 		server.setBroadcast(ERR_NEEDMOREPARAMS(server.hostname, commandsFromClient["command"]), user.getFd());
