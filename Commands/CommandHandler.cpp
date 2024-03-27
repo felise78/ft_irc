@@ -44,18 +44,8 @@ CommandHandler::CommandHandler(ServerManager& srv, User &usr, map<string, string
 	cmdToHandler["PING"] = &CommandHandler::handlePING;
 	cmdToHandler["PART"] = &CommandHandler::handlePART;
 	cmdToHandler["QUIT"] = &CommandHandler::handleQUIT;
-	// .. and so on
 
 	executeCommand();
-
-	// if ((commandsFromClient["command"] == "PASS" || commandsFromClient["command"] == "NICK" || commandsFromClient["command"] == "USER" 
-	// || commandsFromClient["command"] == "JOIN" || commandsFromClient["command"] == "PRIVMSG" || commandsFromClient["command"] == "TOPIC"
-	// || commandsFromClient["command"] == "INVITE" || commandsFromClient["command"] == "KICK" || commandsFromClient["command"] == "MODE"
-	// || commandsFromClient["command"] == "") && (commandsFromClient.find("params") == commandsFromClient.end() || commandsFromClient["params"].empty()))
-	// {
-	// 	server.setBroadcast(ERR_NEEDMOREPARAMS(server.hostname, commandsFromClient["command"]), user.getFd());
-	// 	return;
-	// }
 }
 
 CommandHandler::~CommandHandler() {
@@ -73,19 +63,6 @@ e_cmd	CommandHandler::getCMD(const std::string & str) {
 	return NONE;
 }
 
-// const std::string	CommandHandler::parse_channelName(std::string& channelName)
-// {
-// 	if (channelName[0] != '#')
-// 		return "";
-// 	string::iterator it = channelName.begin() + 1;
-// 	for ( ; it != channelName.end(); ++it)
-// 	{
-// 		if (std::isalnum(*it) == false)
-// 			return "";
-// 	}
-// 	return channelName;
-// }
-
 const std::string	CommandHandler::parse_channelName(std::string& channelName)
 {
 	if (channelName.empty())
@@ -98,12 +75,7 @@ const std::string	CommandHandler::parse_channelName(std::string& channelName)
 
 void	CommandHandler::executeCommand() {
 
-	// map<string, string>::iterator it = commandsFromClient.begin();
-
 	string cmdStr = commandsFromClient["command"];
-	/* DEBUG */
-	std::cout << YELLOW << "Executing command: " << RESET << "[" << cmdStr << "]" << std::endl;
-	/* ***** */
 	e_cmd num = getCMD(cmdStr);
 
 	// update here if enum is modified
@@ -113,28 +85,21 @@ void	CommandHandler::executeCommand() {
 		server.setBroadcast(ERR_NEEDMOREPARAMS(server.hostname, commandsFromClient["command"]), user.getFd());
 		return;
 	}
-
 	cmdStr = mapEnumToString[num];
-
-	// The synax is important here !! (`cmdToHandler[cmdStr]()` - won't work)
-	// first we get the pointer to the handler method and then we call it on `this` object
 	if (cmdToHandler.find(cmdStr) != cmdToHandler.end())
 		(this->*cmdToHandler[cmdStr])();
-	
 }
 
 /*
 ** Command Handlers
 */
 void	CommandHandler::handleNONE() {
-	// do nothing or/and print error message
 	std::cout << RED << "[-] command not found.." << RESET << std::endl;
-	// server.setBroadcast(ERR_UNKNOWNCOMMAND(commandsFromClient["command"]), user.getFd());
 	server.setBroadcast(ERR_UNKNOWNCOMMAND(server.hostname, commandsFromClient["command"]), user.getFd());
 }
 
 void	CommandHandler::handleCAP() {
-	std::cout << YELLOW << "CAP command received.." << RESET << std::endl;
+	// std::cout << YELLOW << "CAP command received.." << RESET << std::endl;
 	user._cap = true;
 }
 
@@ -148,39 +113,25 @@ void	CommandHandler::handlePASS() {
 
 	// if already registered
 	if (user.getStatus() == REGISTERED) {
-		// server.setBroadcast(ERR_ALREADYREGISTRED, user.getFd()); //replacing all instances of assigning to user.responseBuffer with setBroadcast server method
 		server.setBroadcast(ERR_ALREADYREGISTRED(server.hostname), user.getFd());
-		/* DEBUG */
-		std::cout << RED << "[-]" << ERR_ALREADYREGISTRED(server.hostname) << RESET << std::endl;
-		/* ***** */	
 		return;
 	}
 	// first check is the PASS is not empty
 	if (pass.empty() == true) {
 		std::string str = "PASS";
 		server.setBroadcast(ERR_NEEDMOREPARAMS(server.hostname, str), user.getFd());
-		/* DEBUG */
-		std::cout << RED << "[-] " << ERR_NEEDMOREPARAMS(server.hostname, str) << RESET << std::endl;
-		/* ***** */
 		return;
 	}
 	// pass missmatch check
 	if (pass != server.getPassword()) {
 		server.setBroadcast(ERR_PASSWDMISMATCH(server.hostname), user.getFd());
-		// server.setBroadcast(ERR_PASSWDMISMATCH, user.getFd());
-		/* DEBUG */
-		std::cout << RED << "[-] " << ERR_PASSWDMISMATCH(server.hostname) << RESET << std::endl;
-		/* ***** */
 		return;
 	}
 	// if the password is correct
 	user.setPassword(pass);
 	user.setStatus(PASS_MATCHED);
-	/* DEBUG */
-	std::cout << GREEN << "[+] PASS OK !" << RESET << std::endl;
-	/* ***** */
 
-	// if ther is NICK and USER set:
+	// if there is NICK and USER set:
 	if (!user.getNickName().empty() && !user.getUserName().empty()) {
 		sendHandshake();
 		user.setStatus(REGISTERED);
@@ -209,9 +160,6 @@ void	CommandHandler::handleUSER() {
 		if (!(params.size() == 1 || params.size() >= 4)) {
 			std::string str = "USER";
 			server.setBroadcast(ERR_NEEDMOREPARAMS(server.hostname, str), user.getFd());
-			/* DEBUG */
-			std::cout << RED << "[-] " << ERR_NEEDMOREPARAMS(server.hostname, str) << RESET << std::endl;
-			/* ***** */
 			return;
 		}
 		if (params.size() == 1) {
@@ -224,9 +172,6 @@ void	CommandHandler::handleUSER() {
 			user.setHostName(params[2]);
 			user.setRealName(params[3]);
 		}
-		/* DEBUG */
-		std::cout << GREEN << "[+] USER set !" << RESET << std::endl;
-		/* ***** */
 	}
 	if (user.getStatus() == PASS_MATCHED && !user.getNickName().empty()) {
 		sendHandshake();
@@ -245,10 +190,6 @@ void	CommandHandler::handleUSER() {
 void	CommandHandler::handleMODE()
 {
 	std::cout << YELLOW << "MODE command received.." << RESET << std::endl;
-
-	// format  : /MODE #channel flag [param]
-	// ou
-	// format  : /MODE nickname flag [param]
 
 	ModeHandler	mode_handler(commandsFromClient, server, user);
 }

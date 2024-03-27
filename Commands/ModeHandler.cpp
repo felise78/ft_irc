@@ -18,32 +18,20 @@ ModeHandler::~ModeHandler()
 {
 }
 
+/* PARSING */
 int	ModeHandler::parse_errors()
 {
-	if (_commandsFromClient["params"].find("#") == std::string::npos) //removed & 
-	{
-		if (DEBUG)
-			std::cout << "returns cuz no '#'" << std::endl;
+	if (_commandsFromClient["params"].find("#") == std::string::npos)
 		return 1;
-	}
 
 	stringstream params;
 	params.str(_commandsFromClient["params"]);
-	if (DEBUG)
-		std::cout << "params : " << params.str() << std::endl;
-
 	vector<string> args;
 	string			tmp;
 	while (getline(params, tmp, ' '))
 	{
 		if (!tmp.empty())
 			args.push_back(tmp);
-	}
-	if (DEBUG)
-	{
-		for (size_t i = 0; i < args.size(); i++)
-			std::cout << "arg[" << i << "] : " << args[i] << " ";
-		std::cout << std::endl;
 	}
 	
 	for (size_t i = 0; i < args.size(); i++)
@@ -81,19 +69,16 @@ int	ModeHandler::parse_errors()
 	}
 	Channel &c_tmp = _server.channelMap[_channel];
 	std::string nickname = _user.getNickName();
-	if (DEBUG)
-		std::cout << "comes here?" << std::endl;
 	if (c_tmp.isOp(nickname) == true)
 		return 0;
 	else
-	{
-		if (DEBUG)
-			std::cout << RED << "don't come here ? " << RESET << std::endl; 
+	{ 
 		_server.setBroadcast(ERR_CHANOPRIVSNEEDED(_server.hostname, _user.getNickName(), _channel), _user.getFd());
 		return 1;
 	}
 }
 
+/* EXECUTION */
 void	ModeHandler::exec_mode()
 {
 	string add;
@@ -101,36 +86,20 @@ void	ModeHandler::exec_mode()
 	std::map<std::string, Channel>::iterator it = _server.channelMap.find(_channel);
 	if (it == _server.channelMap.end() || _flag.empty())
 		return ;
+	// Handles all flags
 	Channel &channel = it->second;
 	for (size_t a = 0; a < _flag.size(); a++)
-	{
-		// DEBUG //////////////
-		std::cout << RED << "flag : " << _flag[a] << std::endl;
-		vector<string>::iterator it2 = _extra_args.begin();
-		for( ; it2 != _extra_args.end(); ++it2)
-			std::cout << "_extra_args : " << *it2 << " ";
-		std::cout << RESET << std::endl;
-		//////////////////////
-		// settings
 		handle_flag(_flag[a], channel, add, remove);
-	}
 	if (!_extra_args.empty())
 	{
-		if (DEBUG)
-			std::cout << MAGENTA << "Extra args are not empty" << RESET << std::endl;
 		for (size_t i = 0; i < _extra_args.size(); i++)
 		{
 			if (_extra_args[i][0] != '+' && _extra_args[i][0] != '-')
-			{
 				_extra_args[i] = "+" + _extra_args[i];
-			}
 			handle_flag(_extra_args[i], channel, add, remove);
 		}
 	}
-	/*
-		sends reply 
-	*/
-	// const string prefix = ":" + _user.getHostName();
+	//Formulate reply
 	const string prefix = _user.getPrefix();
 	string params;
 	if (!add.empty())
@@ -172,8 +141,6 @@ void	ModeHandler::exec_mode()
 	if (_success)
 		_user.userMessageBuffer += RPL_CHANNELMODEIS(prefix, _user.getNickName(), _channel, params);
 	string msg = _user.userMessageBuffer;
-	if (DEBUG)
-		std::cout << RED << "msg : " <<  msg << RESET << std::endl;
 	_server.setBroadcast(msg, _user.getFd());
 	_server.setBroadcast(_channel, _user.getNickName(), msg);
 }
@@ -190,49 +157,40 @@ void	ModeHandler::handle_flag(string const& flag, Channel &channel, string& add,
 	{
 		set_flag = false;
 		remove += "-";
-	}
-	// std::string chan_flags; //// RPL_flags // ???	
+	}	
 	for (size_t i = 1; i < flag.size(); i++)
 	{
-		if (flag[i] == 'i')
+		if (flag[i] == 'i') // CHANNEL INVITE MODE
 			handle_i(set_flag, channel, add, remove);
-		else if (flag[i] == 't')
+		else if (flag[i] == 't') // CHANNEL TOPIC MODE
 			handle_t(set_flag, channel, add, remove);
-		else if (flag[i] == 'k') // FLAG 'k' // CHANNEL PASSWORD MODE
+		else if (flag[i] == 'k') // CHANNEL PASSWORD MODE
 			handle_k(set_flag, channel, flag, add, remove);			
-		else if (flag[i] == 'o') // FLAG 'o' // CHANOP MODE
+		else if (flag[i] == 'o') // CHANOP MODE
 			handle_o(flag, set_flag, channel, add, remove);
-		else if (flag[i] == 'l') //FLAG 'l' // CHANNEL USER LIMIT 
+		else if (flag[i] == 'l') // CHANNEL USER LIMIT 
 			handle_l(set_flag, flag, channel, add, remove);
 		else // unknown flag 
-		{
 			_user.userMessageBuffer += ERR_UMODEUNKNOWNFLAG(_server.hostname, _user.getPrefix(), flag[i]);
-			//_server.setBroadcast(ERR_UMODEUNKNOWNFLAG(_server.hostname, _user.getPrefix(), _flag[i]), _user.getFd());
-		}
 	}
 }
 
 void	ModeHandler::handle_i(bool set_flag, Channel &channel, string& add, string& remove)
 {
-	if (DEBUG)
-		std::cout << MAGENTA << "MODE 'i'" << RESET << std::endl;
 	if (set_flag == channel.getInvit())
-		return ; //already set to what command is asking 
+		return ; 
 	channel.setInvit(set_flag);
 	_success = true;
 	if (set_flag && add.find('i') == string::npos)
 		add += "i";
 	else if (set_flag == false && remove.find('i') == string::npos)
 		remove += "i";
-	// RPL_CHANNELMODEIS
 }
 
 void	ModeHandler::handle_t(bool set_flag, Channel &channel, string& add, string& remove)
 {
-	if (DEBUG)
-		std::cout << MAGENTA << "MODE 't'" << RESET << std::endl;
 	if (set_flag == channel.getTopicRestricted())
-		return ; // already set to what command is asking 
+		return ; 
 	channel.setTopicRestricted(set_flag);
 	_success = true;
 	if (set_flag && add.find('t') == string::npos)
@@ -243,8 +201,7 @@ void	ModeHandler::handle_t(bool set_flag, Channel &channel, string& add, string&
 
 void	ModeHandler::handle_k(bool set_flag, Channel &channel, string const& flag, string& add, string& remove)
 {
-	if (DEBUG)
-		std::cout << MAGENTA << "MODE 'k'" << RESET << std::endl;
+	// Remove a password that is set
 	if (set_flag == false && channel.getProtected() == true)
 	{
 		_argsEnd.push_back(channel.getKey());
@@ -254,21 +211,23 @@ void	ModeHandler::handle_k(bool set_flag, Channel &channel, string const& flag, 
 			remove += "k";
 		_success = true;
 	}
+	// Add a password to unprotected channel
 	else if (channel.getProtected() == false && set_flag && !(_extra_args.empty())) 
 	{
 		channel.setKey(_extra_args[0]);
 		if (add.find('k') == string::npos)	
 			add += "k";
 		_argsEnd.push_back(_extra_args[0]);
-		_extra_args.erase(_extra_args.begin()); // remove password since no longer required
+		_extra_args.erase(_extra_args.begin());
 		_success = true;
-		//_server.setBroadcast(MODE_CHANNELMSGWITHPARAM(_user.getPrefix(), _channel, "k", _extra_args[0]), _user.getFd());
 	}
+	// If request to set password where one already exists
 	else if (channel.getProtected() == true && set_flag && !(_extra_args.empty()))
 	{
 		_server.setBroadcast(ERR_KEYSET(_server.hostname, _channel), _user.getFd());
 		return;
 	}
+	// If password param is missing
 	else if (_extra_args.empty())
 	{
 		_server.setBroadcast(ERR_EMPTYMODEPARAM(_server.hostname, _user.getNickName(), _channel, flag), _user.getFd());
@@ -278,61 +237,62 @@ void	ModeHandler::handle_k(bool set_flag, Channel &channel, string const& flag, 
 
 void	ModeHandler::handle_o(string const& flag, bool set_flag, Channel& channel, string& add, string& remove)
 {
-	if (DEBUG)
-		std::cout << MAGENTA << "MODE 'o'" << RESET << std::endl;
+	// Operator name missing
 	if (_extra_args.empty())
 	{
 		_server.setBroadcast(ERR_EMPTYMODEPARAM(_server.hostname, _user.getNickName(), _channel, flag), _user.getFd());
 		return;
 	}
+	// User specified doesn't exist
 	if (_server.usersMap.find(_server.getFdbyNickName(_extra_args[0])) == _server.usersMap.end())
 	{
 		_server.setBroadcast(ERR_NOSUCHNICK(_server.hostname, _user.getNickName(), _extra_args[0]), _user.getFd());
 		_extra_args.erase(_extra_args.begin());
 		return;
 	}
+	// User specified is not channel member
 	if (channel._users.find(_extra_args[0]) == channel._users.end())
 	{
 		_server.setBroadcast(ERR_NOTONCHANNEL(_server.hostname, _user.getNickName(), _channel), _user.getFd());
 		_extra_args.erase(_extra_args.begin());
 		return ;
 	}
+	// Set user as operator
 	if (set_flag && channel.isOp(_extra_args[0]) == false)
 	{
 		channel.setOp(_extra_args[0]);
 		_user.userMessageBuffer += MODE_USERMSG(_extra_args[0], "+o");
 		_argsEnd.push_back(_extra_args[0]);
-		_extra_args.erase(_extra_args.begin()); // remove operator nick since no longer required
+		_extra_args.erase(_extra_args.begin());
 		if (add.find('o') == string::npos)
 			add += "o";
 		_success = true;
-		//_server.setBroadcast(MODE_USERMSG(_extra_args[0], "+o"), _server.getFdbyNickName(_extra_args[0]));
 	}
+	// Remove user as operator 
 	else if (set_flag == false && channel.isOp(_extra_args[0]) == true)
 	{
 		channel.removeOp(_extra_args[0]);
 		_user.userMessageBuffer += MODE_USERMSG(_extra_args[0], "-o");
 		_argsEnd.push_back(_extra_args[0]);
-		_extra_args.erase(_extra_args.begin()); // remove operator nick since no longer required
+		_extra_args.erase(_extra_args.begin());
 		if (remove.find('o') == string::npos)
 			remove += "o";
 		_success = true;
-		//_server.setBroadcast(MODE_USERMSG(_extra_args[0], "-o"), _server.getFdbyNickName(_extra_args[0]));
 	}
 }
 
 void	ModeHandler::handle_l(bool set_flag, string const& flag, Channel& channel, string& add, string& remove)
 {
-	if (DEBUG)
-		std::cout << MAGENTA << "MODE 'l'" << RESET << std::endl;
+	//Set limit
 	if (set_flag)
 	{
+		//Limit not specified
 		if (_extra_args.empty())
 		{
 			_server.setBroadcast(ERR_EMPTYMODEPARAM(_server.hostname, _user.getNickName(), _channel, flag), _user.getFd());
 			return;
 		}
-		// protection if _extra_args contains letters (if so it could set the limit to 0)
+		//Limit invalid
 		std::string::iterator it;
 		for (it = _extra_args[0].begin(); it != _extra_args[0].end(); ++it)
 		{
@@ -343,17 +303,18 @@ void	ModeHandler::handle_l(bool set_flag, string const& flag, Channel& channel, 
 				return;
 			}
 		}
-		channel.setLimit(atoi(_extra_args[0].c_str())); // je pense il faut aussi envoyer un CHAN MODE MSG
+		channel.setLimit(atoi(_extra_args[0].c_str()));
 		_argsEnd.push_back(_extra_args[0]);
-		_extra_args.erase(_extra_args.begin()); // remove limit number since no longer required
+		_extra_args.erase(_extra_args.begin());
 		if (add.find('l') == string::npos)	
 			add += "l";
 		_success = true;
 	}
-	else
+	//Remove limit
+	else if (set_flag == false && channel.getChannelModes().find('l') != string::npos)
 	{
-		channel.removeLimit(); // je pense il faut aussi envoyer un CHAN MODE MSG
-		if (remove.find('l') == string::npos && channel.getChannelModes().find('l') != string::npos)
+		channel.removeLimit();
+		if (remove.find('l') == string::npos)
 			remove += "l";
 		_success = true;
 	}
