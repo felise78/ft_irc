@@ -44,17 +44,12 @@
 #define ERR_CANTCHANGETOPIC(hostname, nick, channel) (":" + hostname + " 482 " + nick + " " + channel + " :You do not have access to change the topic on this channel\r\n")
 
 /*MODE COMMAND*/
-// #define RPL_CHANNELMODEIS(prefix, nick, channel, mode_params) (prefix + " 324 " + nick + " " + channel + " MODE " + mode_params + "\r\n")
 #define RPL_CHANNELMODEIS(prefix, nick, channel, mode_params) (prefix + " MODE " + channel + " " + mode_params + "\r\n")
 #define ERR_UMODEUNKNOWNFLAG(hostname, user_nick, char) (":" + hostname + " 501 " + user_nick + " :Unknown mode character " + char + "\r\n")
 #define ERR_EMPTYMODEPARAM(hostname, user_nick, channel, mode) (":" + hostname + " 696 " + user_nick + " " + channel + " " + mode + " * You must specify a parameter for the mode.\r\n")
 #define ERR_INVALIDMODEPARAM(hostname, user_nick, channel, mode, param) (":" + hostname + " 696 " + user_nick + " " + channel + " " + mode + " " + param + " Invalid mode parameter.\r\n")
-//#define MODE_CHANNELMSG(channel, mode) (":localhost MODE #" + channel + " " + mode + "\r\n")
 #define MODE_CHANNELMSGWITHPARAM(user_prefix, channel, mode, param) (user_prefix + " MODE " + channel + " " + mode + " " + param + "\r\n")
 #define ERR_KEYSET(hostname, channel) (":" + hostname + " 467 " + channel + " :Channel key already set\r\n")
-// RPL_CHANNELMODEISWITHKEY
-// MODE_CHANNELMSG
-// RPL_UMODEIS
 
 /*NICK COMMAND*/
 #define ERR_ERRONEUSNICKNAME(hostname, user_nick, nick) (":" + hostname + " 432 " + user_nick + " " + nick + " :Erroneous nickname\r\n")
@@ -67,7 +62,6 @@
 #define ERR_INVITEONLYCHAN(hostname, user_nick, channel) (":" + hostname + " 473 " + user_nick + " " + channel + " :Cannot join channel (+i)\r\n")
 #define ERR_BADCHANNELKEY(hostname, nick, channel) (":" + hostname + " 475 " + nick + " " + channel + " :Cannot join channel (+k)\r\n")
 #define RPL_JOIN(user_prefix, channel) (user_prefix + " JOIN :" +  channel + "\r\n")
-//ERR_TOOMANYCHANNELS ???
 
 /*PART COMMAND*/
 #define RPL_PART(user_prefix, channel, reason) (user_prefix + " PART " + channel + " " + (reason.empty() ? "." : reason ) + "\r\n")

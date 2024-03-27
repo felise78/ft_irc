@@ -14,9 +14,6 @@ void	CommandHandler::handleNICK() {
 	// first check if NICK is valid
 	if (nickname.empty()) {
 		server.setBroadcast(ERR_NONICKNAMEGIVEN(server.hostname), user.getFd());
-		/* DEBUG */
-		std::cout << RED << "[-] " << "ERR_NONICKNAMEGIVEN" << RESET << std::endl;
-
 		return;
 	}
 	// if nickname starts with a digit, it is invalid
@@ -30,37 +27,26 @@ void	CommandHandler::handleNICK() {
 	for(it = nickname.begin(); it != nickname.end(); ++it) {
 		if (std::isalnum(*it) == false && *it != '-' && *it != '_') {
 			server.setBroadcast(ERR_ERRONEUSNICKNAME(server.hostname, user.getNickName(), nickname), user.getFd());
-			/* DEBUG */
-			std::cout << RED << "[-] " << ERR_ERRONEUSNICKNAME(server.hostname, user.getNickName(), nickname) << RESET << std::endl;
-
 			return;
 		}
 	}
-	
 	std::string oldNick = user.getNickName();
 	// if the nickname is already in use at registration : 
 	if (oldNick.empty() && server.getFdbyNickName(commandsFromClient["params"]) != -1)
 	{
 		while (server.getFdbyNickName(nickname) != -1)
 			nickname += '_';
-		if (DEBUG)
-			std::cout << RED << "nickname : " << nickname << std::endl; 
 	}
 	// if the nickname is already in user after registration : 
 	else if (server.getFdbyNickName(commandsFromClient["params"]) != -1) {
 		server.setBroadcast(ERR_NICKNAMEINUSE(server.hostname, user.getNickName() ,commandsFromClient["params"]), user.getFd());
 		return;
 	}
-	
 	// check the length (31 chars max)
 	if (nickname.length() > 31 || nickname.length() < 1) {
 		server.setBroadcast(ERR_ERRONEUSNICKNAME(server.hostname, user.getNickName(), nickname), user.getFd());
-		/* DEBUG */
-		std::cout << RED << "[-] " << ERR_ERRONEUSNICKNAME(server.hostname, user.getNickName(), nickname) << RESET << std::endl;
-
 		return;
 	}
-
 	// Once all the above passed setting nickname and updating it in all channels
 	if (!oldNick.empty())
 		server.setBroadcast(RPL_NICK(user.getPrefix(), nickname), user.getFd()); 

@@ -19,7 +19,6 @@ std::cout << YELLOW << "TOPIC command received.." << RESET << std::endl;
 	if (server.channelMap[channelName]._users.find(user.getNickName()) == server.channelMap[channelName]._users.end())
 	{
 		server.setBroadcast(ERR_NOTONCHANNEL(server.hostname, user.getNickName(), channelName), user.getFd());
-		//server.setBroadcast(ERR_USERNOTINCHANNEL(server.hostname, user.getNickName(), channelName), user.getFd());
 		return;
 	}
 	// if the user just wants to print the topic

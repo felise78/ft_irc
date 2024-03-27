@@ -3,8 +3,17 @@
 // -----------------------CONSTRUCTOR / DESTRUCTOR ---------------------------------//
 
 
-Channel::Channel(const std::string& name) : _name(name), _topic(""), _key(""), _channelModes("+"), _nb(0), _limit(0), 
-_limited(false), _invit_only(false), _topic_restricted(false), _protected(false) {}
+Channel::Channel(const std::string& name) : 
+	_name(name), 
+	_topic(""), 
+	_key(""), 
+	_channelModes("+"), 
+	_nb(0), 
+	_limit(0), 
+	_limited(false), 
+	_invit_only(false), 
+	_topic_restricted(false), 
+	_protected(false) {}
 
 Channel::~Channel() {}
 
@@ -16,7 +25,6 @@ void	Channel::setTopic(const std::string & topic) { _topic = topic; }
 
 void	Channel::setKey(const std::string & key)
 { 
-	
 	_key = key;
 	if (!key.empty())
 		_protected = true;
@@ -128,14 +136,6 @@ void	Channel::removeUser(const std::string& nickname)
 
 void	Channel::removeOp(const std::string& opNickname)
 {
-	if (DEBUG)
-	{
-		std::vector<std::string>::iterator it = _ops.begin();
-		for ( ; it != _ops.end() ; ++it )
-			std::cout << RED << *it << " ";
-		std::cout << std::endl;
-	}
-
 	for (std::vector<std::string>::iterator it = _ops.begin(); it != _ops.end(); ++it)
 	{
         if (*it == opNickname)

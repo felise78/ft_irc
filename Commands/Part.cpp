@@ -31,7 +31,6 @@ void	CommandHandler::handlePART()
 		server.channelMap[channelName].removeOp(user.getNickName());
 		server.setBroadcast(MODE_USERMSG(user.getNickName(), "-o"), user.getFd());
 	}
-	///////////
 	user.removeChannel(channelName);
 	server.setBroadcast(RPL_PART(user.getPrefix(), channelName, msg), user.getFd());
 	server.setBroadcast(channelName, user.getNickName(), user.responseBuffer);

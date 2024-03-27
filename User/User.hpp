@@ -5,7 +5,6 @@
 	#include <sstream>
 	#include <map>
 	#include <vector>
-	//#include "../Channel/Channel.hpp"
 
 	typedef enum Status {
 		PASS_NEEDED,
@@ -22,22 +21,18 @@
 		private :
 		int								_port;		// not used in this class but needed by ServerManager
 		int								_fd; 
-		std::string						_hostName; // ..parsed in `UserRequestParsing` class..
-		std::string 					_nickName;	// ..parsed in `UserRequestParsing` class..
-		std::string 					_userName; // ..parsed in `UserRequestParsing` class..
-		std::string						_realName; // ..parsed in `UserRequestParsing` class..
-		std::string 					_password; // ..parsed in `UserRequestParsing` class..
+		std::string						_hostName;
+		std::string 					_nickName;
+		std::string 					_userName;
+		std::string						_realName;
+		std::string 					_password;
 		e_status						_status;
-		// ..to use for composing the first response message to the client (RPL_WELCOME, RPL_YOURHOST, RPL_CREATED, RPL_MYINFO..)
+
 
 		public :
 
-		// user status enum
 		User();
-		// User(const User& copy);
-		// User& operator=(const User& src);
 		~User();
-		// attributs publics
 		std::string						userMessageBuffer;
 		std::string						responseBuffer;
 		std::map<std::string, Channel*>	_channels;

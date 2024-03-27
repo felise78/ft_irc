@@ -48,8 +48,8 @@ void 	User::setPassword(const std::string& password) { _password = password; }
 
 void	User::setChannel(Channel& channel)
 {
-	if (_channels.find(channel.getName()) != _channels.end()) 			// si le channel est deja dans User
-		return;															// dunknow if I still need this protection
+	if (_channels.find(channel.getName()) != _channels.end()) 
+		return;
 	_channels[channel.getName()] = &channel;
 }
 
