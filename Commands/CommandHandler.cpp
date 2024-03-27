@@ -79,7 +79,7 @@ void	CommandHandler::executeCommand() {
 	}
 	cmdStr = mapEnumToString[num];
 	if (cmdToHandler.find(cmdStr) != cmdToHandler.end()) {
-		std::cout << server.timeStamp() << " ";
+		std::cout << server.timeStamp() << CYAN << " fd[" << user.getFd() << "]" << MAGENTA << " [" << user.getNickName() << "] ";
 		(this->*cmdToHandler[cmdStr])();
 	}
 }
