@@ -125,6 +125,6 @@ This test verifies that the server properly handles partial message reception an
 
 Additional features that extend beyond basic IRC functionality:
 
-File transfer capabilities
-IRC bot integration (implemented using ChatGPT API)
-Enhanced logging system
+- File transfer capabilities
+- IRC bot integration (implemented using ChatGPT API)
+- Enhanced logging system
