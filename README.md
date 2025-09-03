@@ -1,85 +1,130 @@
-## IRC
+# ft_irc - Internet Relay Chat Server
 
-### Introduction  
-...
+A robust IRC (Internet Relay Chat) server implementation written in C++98, designed to handle multiple simultaneous client connections with full IRC protocol compliance.
 
-### How Does It Work ?  
+## 🌟 Overview
 
-Here is some information about `irc`, `irssi` - what it is and how it works:  
-[irc wiki](https://en.wikipedia.org/wiki/IRC)   
-[irssi client](https://irssi.org/New-users/)   
-[list of IRC commands (wiki)](https://en.wikipedia.org/wiki/List_of_Internet_Relay_Chat_commands)  
-[IRC protocol 2812](https://datatracker.ietf.org/doc/rfc2812/)  
-[IRC protocol 1459](https://datatracker.ietf.org/doc/rfc1459/)  
+This project implements a fully functional IRC server that can handle real IRC clients. The server supports user authentication, channel management, private messaging, and operator privileges - providing a complete IRC experience comparable to established IRC servers. Additionally, the server features an intelligent bot powered by the ChatGPT API for enhanced user interaction.
 
+## 🚀 Features
 
-#### How to use `netcat` to connect to an IRC server:  
-`nc -v localhost 6667` - connect to the server on port 6667 and display verbose output  
+### Core Functionality
+- **Multi-client Support**: Handle multiple simultaneous connections without blocking
+- **User Authentication**: Secure password-based server access
+- **Channel Management**: Create, join, and manage IRC channels
+- **Private Messaging**: Direct user-to-user communication
+- **Operator System**: Channel operators with administrative privileges
 
-At this point the server will look for the `hostname`, `NICK`, `USER` and `PASS` commands from the client.  
-If those are not received the server will timeout and close the connection.  
+### Supported IRC Commands
+- `NICK` - Set or change nickname
+- `USER` - Register user information
+- `PASS` - Authenticate with server password
+- `JOIN` - Join or create channels
+- `PRIVMSG` - Send messages to users or channels
+- `LIST` - List available channels and users
+- `WHO` - Query user information
+- `WHOIS` - Get detailed user information
+- `PING/PONG` - Connection heartbeat
 
-To register the `NICK`, `USER` and `PASS` commands are required from the client.  
-`PASS` - syntax:  
-`PASS <password>` - Sets a connection password. This command must be sent before the NICK/USER registration combination.  
+### Operator Commands
+- `KICK` - Remove users from channels
+- `INVITE` - Invite users to channels
+- `TOPIC` - Set or view channel topics
+- `MODE` - Manage channel modes:
+  - `+i/-i` - Invite-only mode
+  - `+t/-t` - Topic restriction mode
+  - `+k/-k` - Channel password
+  - `+o/-o` - Operator privileges
+  - `+l/-l` - User limit
 
-`NICK` - syntax:  
-`NICK <nickname>` - Allows the client to change their IRC nickname.  
+## 🛠️ Technical Implementation
 
-`USER` - syntax:  
-`USER <username> <hostname> <servername> <realname>` - This command is used at the beginning of connection to specify the username, hostname, servername and realname of a new user.  
-`<realname>` may contain spaces, and thus must be prefixed with a colon: `:real name`  
+### Architecture
+- **Language**: C++98 compliant
+- **I/O Model**: Non-blocking I/O with `poll()` (or equivalent: `select()`, `kqueue()`, `epoll()`)
+- **Protocol**: TCP/IP (IPv4/IPv6)
+- **Design**: Single-threaded, event-driven architecture
 
+### Key Technical Features
+- **Non-blocking Operations**: All I/O operations are non-blocking to prevent server freezing
+- **Efficient Connection Management**: Single `poll()` call handles all file descriptors
+- **Robust Message Parsing**: Handles partial message reception and command reconstruction
+- **Memory Safe**: Proper resource management and error handling
 
-Once the client is authenticated (server received NICK, USER, PASS..) the server will send the first handshake response to the client.  
-Handshake response is composed of 4 messages:  
-[001 RPL_WELCOME](https://dd.ircdocs.horse/refs/numerics/001)  
-[002 RPL_YOURHOST](https://dd.ircdocs.horse/refs/numerics/002)  
-[003 RPL_CREATED](https://dd.ircdocs.horse/refs/numerics/003)  
-[004 RPL_MYINFO](https://dd.ircdocs.horse/refs/numerics/004)  
+## 📋 Requirements
 
-At this point the client is authenticated and the client can request a certain action from the server with the commands.  
+### System Requirements
+- C++98 compatible compiler (g++, clang++)
+- POSIX-compliant operating system (Linux, macOS, BSD)
+- Make utility
 
-#### Some of the commands that can be used:  
-See more here: [list of IRC commands (wiki)](https://en.wikipedia.org/wiki/List_of_Internet_Relay_Chat_commands)  
-`PRIVMSG` - syntax:  
-`PRIVMSG <receiver> <message>` - Sends `<message>` to `<receiver>`, which is usually a user or a channel: `.. #<channel>..`.  
-This will work only if the `<receiver>` is a channel or the user that currently exists on the server.  
+### Dependencies
+- Standard C++ library only
+- No external libraries or Boost allowed
+- System networking functions (socket, bind, listen, etc.)
 
-`LIST` by itself will list all channels on the server.  
-`LIST <channel>` will list all users on the channel.  
+## 🔧 Installation & Usage
 
-`JOIN` - syntax:  
-`JOIN #<channel>` - Joins a channel. If the channel does not exist, it will be created.  
+### Compilation
+```bash
+# Clone the repository
+git clone [repository-url]
+cd ft_irc
 
-`WHO` - syntax:  
-`WHO <channel>` - Lists all users on the channel.  
+# Compile the project
+make
 
-`WHOIS` - syntax:  
-`WHOIS <nickname>` - Returns information about the user with the nickname `<nickname>`.  
+# The executable 'ircserv' will be created
+```
 
-`PING` - syntax:  
-`PING <server1> [<server2>]` - Tests the presence of a connection. The server will respond with a PONG message.  
-The server will send a PING message to the client to test the presence of the connection:
-`PING :<server1>` to this message the client should respond with `PONG :<server1>`
-so the server knows the connection is still alive.  
-If the client does not respond with PONG the server will close the connection within the ping timeout.  
+### Running the Server
+```bash
+./ircserv <port> <password>
+```
 
-##### ABOUT NETCAT (nc) AND THE BEHAVIOR OF `CTRL-D` IN THE TERMINAL:
-`co^Dmma^Dnd` test  
-The terminal and netcat `nc` handle `Ctrl-D` as the EOF (End of File) signal.  
-When `Ctrl-D` pressed in the middle of a line (i.e., after typing some characters 
-but before pressing Enter), netcat and the terminal do not interpret this as an EOF signal !   
-Instead, they send the current line to the server, and then continue accepting input.
-This is why you can type `co^Dmma^Dnd` and the server shall receive `command`.  
+**Parameters:**
+- `port`: Port number for incoming connections (e.g., 6667)
+- `password`: Server password required for client authentication
 
-However, when `Ctrl-D` pressed on an empty line, netcat and the terminal interpret this as 
-an EOF signal. The connection to the server is then closed, and any subsequent characters 
-are not sent. So, pressind `Ctrl-D` twice or on an empty input, the characters typed after won't go through !!
+**Example:**
+```bash
+./ircserv 6667 mypassword
+```
 
+### Connecting with IRC Clients
 
+You can connect using any standard IRC client:
 
-### STANDARD C++ LIBRARY FUNCTIONS USED IN THIS PROJECT:  
-[Quick Reference Functions](QUICK_REF_FUNCTIONS.md)
+#### Using irssi
+```bash
+irssi -c localhost -p 6667 -w mypassword
+```
 
+#### Using netcat (for testing)
+```bash
+nc localhost 6667
+PASS mypassword
+NICK mynickname
+USER myuser hostname servername :Real Name
+```
 
+## 🧪 Testing
+
+### Basic Connection Test
+```bash
+# Connect with netcat
+nc 127.0.0.1 6667
+
+# Send fragmented command (using Ctrl+D)
+com^Dman^Dd
+```
+
+This test verifies that the server properly handles partial message reception and command reconstruction.
+
+## 🎯 Bonus Features
+
+Additional features that extend beyond basic IRC functionality:
+
+File transfer capabilities
+IRC bot integration (implemented using ChatGPT API)
+Enhanced logging system
